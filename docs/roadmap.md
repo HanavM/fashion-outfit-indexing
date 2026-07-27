@@ -42,12 +42,25 @@ Status snapshot and phased plan following the audit of the codebase against
   garment parsing, a much better fit for spec §4.2 detection than the
   current SAM2-guess approach, but nothing calls it yet.
 
-**Not yet reviewed:** several DINOv3-related notebooks exist in
-`~/Downloads` (`run_hybrid_dinov3_siglip_apparel_matching.ipynb`,
-`hybrid_dinov3_siglip_apparel_matching.py`, multiple `base_DINO_visual_search*`
-copies) that weren't part of this pass — they weren't mentioned until after
-the audit ran. These need the same clean-and-review treatment as the SigLIP
-notebook before I can say what the DINOv3 identity pipeline actually covers.
+- `notebooks/base_dino_visual_search.ipynb` (cleaned copy of the
+  `base_DINO_visual_search*` notebooks — 4 redundant, monotonically-growing
+  copies existed in Downloads, deduplicated into one): frozen DINOv3
+  (`facebook/dinov3-vitb16-pretrain-lvd1689m`) global-pooled, L2-normalized
+  embedding index with save/reload, nearest-neighbor search, product-level
+  aggregation, and held-out 80/20 evaluation (R@1/R@5/R@10/MRR). Fixed two
+  real bugs while deduplicating: a variable-name collision that silently let
+  the held-out eval gallery include the test queries themselves (inflating
+  Recall@K), and a cell calling a function before its definition. Same
+  `shoe_dataset`-path staleness as the SigLIP notebook — needs repointing at
+  `apparel_dataset` before the next real run (Phase 0 below covers both).
+- **The hybrid DINOv3+SigLIP fusion/reranking pipeline
+  (`hybrid_dinov3_siglip_apparel_matching.py` + its runner notebook) was
+  deleted, per user direction** — it measurably decreased retrieval
+  performance vs. the plain approaches, and is being restarted from scratch
+  rather than carried forward or debugged. It had real substance (hard-negative
+  fusion reranker training, patch-level reranking, optional OCR brand
+  evidence) that mapped well onto spec §4.4/§6/§7, so the *shape* of that
+  work is worth reconstructing later — just not its current implementation.
 
 **Absent entirely (no code anywhere):** confidence calibration / open-set
 rejection (§7), product-candidate ranking (§4.5), separate
@@ -104,19 +117,29 @@ outfit images with multiple visible items need multi-item records eventually
 (Phase 3 of the spec's own MVP plan), and retrofitting the schema later is
 more expensive than building it in now.
 
-### Phase 3 — Review and continue the DINOv3 identity pipeline
-Once the DINOv3 notebooks in Downloads are reviewed (same clean-and-assess
-treatment as this pass did for the SigLIP notebook), determine what's
-salvageable vs. what needs to be built per spec §4.4/§5.2:
-- Frozen DINOv3 backbone → trainable projection head → L2-normalized
-  identity vector, trained on identity-balanced P×K batches (same pattern
-  already proven out in the SigLIP notebook's `ProductBatchSampler`).
-- Hard negatives prioritized as: same model/different colorway → same
-  brand/similar silhouette → visually similar competing models → same
-  category+color. Current dataset needs a hard-negative mining step; none
-  exists yet.
-- Frozen-backbone-first, then only unfreeze final blocks if held-out
-  retrieval improves — same staged approach as the SigLIP fine-tune.
+### Phase 3 — Build the DINOv3 identity pipeline forward from the base index
+`base_dino_visual_search.ipynb` currently does frozen-backbone embedding +
+exact search only — no projection head, no training loop, no hard negatives.
+That's actually the correct Phase-1-equivalent starting point per spec
+§5.2's fine-tuning order (frozen first, evaluate, then adapt). Build up from
+there rather than reintroducing the deleted hybrid pipeline's complexity in
+one jump:
+1. Repoint at `apparel_dataset`, re-run the held-out eval to get a real
+   frozen-DINOv3 Recall@K baseline across all 6 brands (currently only ever
+   evaluated against the old 2-brand shoe set).
+2. Train a projection head only (`heads` mode, same staged-unfreezing
+   pattern as the SigLIP notebook) on identity-balanced P×K batches —
+   `ProductBatchSampler` from the SigLIP notebook is directly reusable here.
+3. Add hard-negative mining once head-only training shows a held-out
+   improvement, prioritized per spec §5.2: same model/different colorway →
+   same brand/similar silhouette → visually similar competing models → same
+   category+color.
+4. Only revisit SigLIP+DINO score fusion and patch-level reranking (what the
+   deleted hybrid pipeline attempted) after both encoders have their own
+   validated frozen-and-adapted baselines — evaluate fusion against each
+   encoder alone before trusting it, since that's likely why the previous
+   attempt regressed (fusion was probably layered on before either side was
+   validated in isolation).
 
 ### Phase 4 — Real dual-encoder index + retrieval
 - Separate metadata (structured facts), semantic (SigLIP2), and identity
