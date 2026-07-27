@@ -1,0 +1,741 @@
+# Apparel catalog scraping + captioning pipeline — process summary
+
+Context for a fresh Claude session: this documents how a 4-brand shoe image
+dataset (Adidas, Nike, New Balance, Skechers — 563 variants, 4334 images)
+was scraped, enriched, captioned, and filtered for CLIP finetuning, **and**
+how the same `apparel_dataset/` was later extended with 200 Nike men's
+clothing records (Tops and T-Shirts, Shorts, Hoodies and Pullovers, Pants
+and Tights — 50 each) using an upgraded structured-caption schema and a
+SAM2+FashionCLIP garment-cropping step, and then with 176 PacSun men's
+clothing records (Pants, Graphic Tees, Sweaters, Shorts — 50 each targeted,
+Sweaters capped at 26 by catalog size) — the first extension to an entirely
+new *site*, not just a new brand on an already-handled site pattern. Most
+recently, 177 Gap men's clothing records (T-Shirts, Shorts, Pants, Sweaters
+— 50 each targeted, Sweaters capped at 27 by catalog size) were added via
+`gap_scraper.py` — the easiest site of the pipeline (no bot protection
+anywhere, plain `requests` for the catalog), notable mainly for a
+client-side-rendering trap in the PDP accordions (see "Gap" section below).
+Written so the same pattern can be adapted to scrape other product
+categories/sites.
+
+Working directory: `/Users/hanavmodasiya/fashion-tests`
+Environments: `.venv` (Python 3.14, pip: playwright, patchright, openai,
+python-dotenv) for scraping/captioning; conda env `mint` (torch,
+open_clip_torch, pillow) for CLIP-based embedding/classification work.
+
+## Goal
+
+Build an image+metadata dataset per shoe colorway variant, suitable for
+finetuning a CLIP-style model (Marqo FashionSigLIP) to match a photo of a
+worn shoe to the exact product/colorway — for an outfit-identification app.
+
+## Pipeline stages (each is its own script, each is idempotent/checkpointed)
+
+1. **Catalog scrape** (`{brand}_scraper.py`) — discover all color variants
+   of every model, download full-res images **directly into
+   `apparel_dataset/{brand}/{slug}/{product_code}/image_N.jpg`**, and write
+   that brand's records straight into `apparel_dataset/metadata.json`
+   (append/update in place, keyed by `product_code`, same checkpoint-every-
+   N-records pattern as everything else in this pipeline). There is no
+   intermediate `{brand}_catalog/` staging folder and no separate merge
+   step — a shoe-brand scraper run before this change wrote to
+   `{brand}_catalog/` + `{brand}_products.json` and needed a one-off
+   `build_dataset.py` copy pass to bundle into a portable dataset folder;
+   new scrapers should skip that indirection and target the shared dataset
+   folder from the start.
+2. **Detail enrichment** (`enrich_{brand}_details.py`) — revisit each
+   variant's PDP, scrape the "product details" copy (description, features,
+   materials) into a `details` field on each record **in
+   `apparel_dataset/metadata.json`** (filter records by `brand` field,
+   same as before but no per-brand JSON file to open).
+3. **Captioning** (`caption_shoes.py`) — Azure OpenAI (gpt-4o-mini) turns
+   each record's name/color/details into one dense CLIP-training caption,
+   written into `apparel_dataset/metadata.json` directly.
+4. **View classification** (`classify_views.py`) — zero-shot FashionSigLIP
+   classification of every image into a camera-angle category (side/front/
+   top/back/hero/on-foot vs. sole/insole/material-closeup/packaging), so
+   angles that would never appear in a real "outfit photo" can be excluded
+   without touching image files (non-destructive — writes `image_views.json`
+   as a separate lookup, doesn't delete anything).
+5. **Structured captioning** (`caption_apparel.py`) — added when the dataset
+   grew beyond shoes. Same Azure OpenAI text-only pattern as
+   `caption_shoes.py`, but fills the JSON-schema prompt in `newLLMprompt.py`
+   (taxonomy path, per-attribute color/material/fit/etc., 5-10 `positive_texts`
+   at varying specificity) instead of one free-text line, and writes it to a
+   **new** `structured_caption` field — `caption` is left untouched
+   (non-destructive; it already cost real money to generate). Run once with
+   no filter to backfill every existing record, then again per new scrape
+   batch. See "Structured captioning" section below.
+6. **Garment cropping** (`segment_apparel.py`) — added for the Nike clothing
+   expansion only (shoe photos don't have the same "model's face/body
+   dominates the frame" problem apparel photos do). SAM2 automatic mask
+   generation + FashionCLIP zero-shot label matching crops each apparel photo
+   down to just the garment, writing a `cropped_images` field (never touches
+   or deletes the original `images`). See "Garment cropping" section below —
+   several non-obvious tuning passes were needed to get this right.
+
+## Per-brand scraping notes (each site has a different bot-protection tier
+and a different embedded-data source — always check for a JSON blob before
+writing CSS-selector scraping code)
+
+### Nike — easiest
+- Plain `playwright` (not patchright) works, headless, with
+  `--disable-blink-features=AutomationControlled` + webdriver-undefined
+  init script. No real bot protection encountered.
+- All product data (title, description, **productDetails**,
+  **featuresAndBenefits**, price, image gallery) is in a `__NEXT_DATA__`
+  JSON script tag — no clicking needed, not even for "product details" (the
+  click just reveals a UI accordion; the data is server-rendered already).
+  Parse via `<script id="__NEXT_DATA__">...</script>` →
+  `data['props']['pageProps']['selectedProduct']['productInfo']`.
+- Images: opaque CDN UUIDs, **no per-image view/angle metadata at all** —
+  every image shares identical generic alt text.
+
+### Adidas — medium
+- `playwright`, `headless=False`, `channel="chrome"`, same anti-automation
+  flags. Occasionally an "Account Portal AUTHN" login modal or cookie
+  banner intercepts clicks — always `remove_overlays()` (delete
+  `dialog[open]`, `[data-mf-id^="ap/"]`, cookie-consent nodes via
+  `page.evaluate`) before clicking, and retry once after removal.
+- Description/bullets are NOT server-rendered — must scroll down and click
+  a `button:has-text("Details")` accordion, then read
+  `[data-testid*="accordion"]` elements.
+- Price element `[data-testid='main-price']` returns label-prefixed text
+  like `"Price\n$90"` — extract with `re.search(r"\$[\d,]+(?:\.\d+)?", ...)`,
+  don't try to strip known prefixes (they vary).
+- Image gallery: CDN filenames originally carried view codes (`HM1`-`HM9`,
+  `HB1`-`HB9` — "Hero Model"/"Hero Back" presumably) used only for
+  dedup-by-filename in the scraper, then discarded — **not saved to JSON,
+  and lost once files are renamed to `image_N.jpg`**. If you want that
+  signal, save it into the JSON at scrape time; it can't be recovered
+  after the fact.
+
+### New Balance — hardest (Akamai bot protection)
+- Requires `patchright` (a Playwright fork that evades headless
+  detection) — plain `playwright` gets blocked outright on category/search
+  pages. `headless=False`, `channel="chrome"`.
+- Product data comes from a `Product-Variation` SFCC JSON endpoint (visit
+  via `page.goto(url)` then `json.loads(page.evaluate("document.body.innerText"))`
+  since it returns raw JSON, not HTML): master PDP page also has an
+  ld+json `ProductGroup` block listing all colorways + style IDs.
+- Master PDP URL requires a `master_id` embedded in the URL path
+  (`/pd/{model-slug}/{master_id}.html?dwvar_{master_id}_style={style_id}`)
+  that is **not derivable from the style_id (SKU) alone** — this bit us
+  hard (see Lessons Learned below). To resolve a master URL from just a
+  style code, query NB's site search:
+  `GET /on/demandware.store/Sites-NBUS-Site/en_US/Search-UpdateGrid?q={style_id}&start=0&sz=6`
+  and regex out `href="(/pd/[^"]+\.html)`.
+- Description + Product Details are two separate `<accordion-component>`
+  elements (`[data-title="Description"]`, `[data-title="Product Details"]`)
+  that are **mutually exclusive** — opening one collapses the other, and
+  Playwright's `inner_text()` only returns currently-visible text. **Read
+  Description BEFORE clicking the Product Details button**, or you'll
+  silently get an empty description on every record.
+- Description text has a boilerplate prefix `"Looking for other options?
+  Shop the {model}\n\n"` — strip with regex before storing.
+- **Akamai will intermittently serve a bot-block page** ("Oops! Something
+  went wrong", error code like `0.xxxxxxx.timestamp.xxxxxxxx") mid-run,
+  even mid-session — not just a hard one-time wall. Symptoms: some requests
+  succeed, then a long unbroken streak fails, sometimes a few succeed again
+  later (non-deterministic, looks IP-reputation-based). It can also start
+  blocking the *human's own browser* on the same network/IP once triggered
+  hard enough. Mitigation implemented: `is_blocked(page)` checks
+  `page.title()` / first 200 chars of body text for "Oops! Something went
+  wrong", and `goto_with_retry()` retries with escalating backoff
+  (5s/10s/15s/20s) up to 4 attempts before giving up and leaving that
+  record's `details` field absent (NOT recorded as empty — see lessons).
+  If a whole run hits a sustained block, the practical fix is just waiting
+  (tens of minutes) before re-running — the script is safe to re-run any
+  number of times since it only processes records missing `details`.
+- Per-image alt/title text is generic and identical across all images of a
+  variant (`"New Balance 9060, U9060GRY"`) — **no per-image view metadata**.
+  Only an undocumented numeric suffix in the CDN URL differs
+  (`u9060gry_nb_02_i`, `_16_i`, `_05_i`...) with no legend to decode it.
+
+### Skechers — easiest of all, plus the only brand with real view labels
+- No real bot protection — plain `requests`/HTTP works, no browser needed
+  at all for the catalog scrape.
+- Image CDN URLs are **self-describing**:
+  `https://images.skechers.com/image/{sku}_HERO_LG`,
+  `..._INSOLE`, `..._OUTSOLE`, `..._PROFILE_01`, `..._PROFILE_05` — these
+  are genuine, reliable, human-readable view names. This is the only brand
+  where you can filter by camera angle from metadata alone without any ML.
+- "Key Features" and "Design Details" sections are present directly in the
+  static page HTML (no click/JS needed) — just parse with regex/BS4.
+
+### Nike clothing category pages — one product per grouping, not per colorway
+
+Extending `nike_scraper.py`'s pattern to Nike's men's-clothing subcategories
+(`nike_clothing_scraper.py`) surfaced a few differences from the shoe scrape:
+
+- **Category left-nav sections resolve to their own `/w/...` category paths**,
+  found inside `__NEXT_DATA__`'s `facetNav.categories` list on the parent
+  category page (fetch `https://www.nike.com/w/mens-clothing-6ymx6znik1`,
+  parse `<script id="__NEXT_DATA__">`, look for `displayText` matching the
+  left-nav label — e.g. `"Hoodies and Pullovers"` → `navigation.canonicalUrl`
+  gives `/w/mens-hoodies-and-pullovers-6riveznik1`). These paths work as
+  the `path` param on the same `product_wall` search API the base scraper
+  already uses — no new endpoint needed, just a different `path`.
+- **Use `queryType=PRODUCTS`, not `FACETED`**, when paginating a category path
+  with `anchor`/`count`. `FACETED` silently under-reports the `pages.next`
+  flag on some categories (e.g. "Pants and Tights" reported no next page
+  after just 18 unique groupings on page 1, when the category has hundreds
+  of products) — `PRODUCTS` (the query type `nike_scraper.py`'s shoe search
+  already validated) paginates correctly on every category tested.
+- **"Top 50 products" means one record per product, not per colorway.** The
+  shoe scraper expands every colorway of a grouping into its own record;
+  for a "top N products" clothing scrape, take only the grouping's
+  `selectedProduct` (the one variant the PDP actually resolves to), not
+  every product in `productGroups[groupIndex]`.
+- **The same product can be cross-listed under two different left-nav
+  categories** (e.g. a fleece pullover appeared under both "Tops and
+  T-Shirts" and "Hoodies and Pullovers"). If you dedupe globally by
+  `product_code` across categories (recommended — avoids storing the same
+  images/data twice), a category can come up short of its target count
+  purely from these collisions. Don't pre-fetch a fixed batch of N groupings
+  per category and hope none collide — page the search API as a generator
+  and keep pulling additional groupings until the category actually reaches
+  N *new* records, skipping (not counting against the target) any grouping
+  whose resolved `product_code` turns out to already be in the dataset.
+- **Paginating deep into a "mens" category path can drift into
+  women's/kids items.** Topping up "Pants and Tights" past the first page
+  (to reach 50 after cross-category dedupe losses) pulled in
+  `nikeskims-studio-stretch-womens-*` leggings, `*-big-kids-boys-*` tights,
+  etc. — this is what Nike's own API returns for that exact category path
+  at depth, not a scraper bug, but worth a manual pass if strict gender
+  scoping matters more than hitting the exact target count.
+
+## Captioning (`caption_shoes.py`) — Azure AI Foundry / Azure OpenAI
+
+### Setup gotcha (cost real debugging time)
+Azure AI Foundry's UI shows the **project** endpoint by default, e.g.
+`https://{resource}.services.ai.azure.com/api/projects/{project-name}` —
+but the OpenAI Python SDK's `AzureOpenAI` client needs the bare **resource**
+root only: `https://{resource}.services.ai.azure.com/` (strip everything
+after the domain). Using the project-style URL produces
+`BadRequest: API version not supported` regardless of which api-version
+string you try — the fix is the URL, not the version. Working
+`api_version` for this setup: `2024-10-21`.
+
+Config lives in `.env` (gitignored) copied from `.env.example`
+(placeholders only, safe to commit):
+```
+AZURE_OPENAI_ENDPOINT=https://{resource}.services.ai.azure.com/
+AZURE_OPENAI_API_KEY=...
+AZURE_OPENAI_DEPLOYMENT=gpt-4o-mini
+AZURE_OPENAI_API_VERSION=2024-10-21
+```
+**Never put a real key in the `.example` file** — only `.env` is
+gitignored, `.env.example` is meant to be committed with placeholders.
+
+### Prompt design (iterated several times based on user review)
+Caption structure: `{Brand} {Model family} in {exact colorway}, with
+{upper material}, {2-4 distinctive visual design details}.`
+
+Key rules that mattered in practice:
+- Text-only (no vision calls) — reads scraped `name`/`color_name`/
+  `details.description`/`details.features`/etc., not the images. Kept cost
+  to **~$0.11 total for 563 captions** with gpt-4o-mini (~490K input
+  tokens, ~19K output tokens across the full run + test iterations).
+- Ban marketing/vague-adjective filler explicitly by name in the system
+  prompt (list of banned words: "playful", "character-inspired",
+  "classic silhouette", "sturdy", "stylish", "sleek", "versatile",
+  "unique", "iconic", etc.) — **gpt-4o-mini does not reliably honor
+  negative/banned-word instructions even at temperature=0**, especially
+  when the source scraped text itself uses that language (e.g. Adidas's
+  "Pixar Toy Story" themed shoes kept pulling in "character-inspired"
+  despite the explicit ban). A retry-loop-with-corrective-followup was
+  prototyped and worked, but the user opted for simplicity over strict
+  enforcement — current script does a single call, no retry. If caption
+  purity matters more next time, either re-add the retry pattern or do a
+  cheap regex post-filter pass.
+- Capitalize brand names deterministically in code after generation
+  (`fix_brand_casing()`) rather than trusting the model — it was
+  inconsistent about "Adidas" vs "adidas" even when told to pick one.
+- Gender/collection qualifiers ("men's", "junior", "kids") are omitted by
+  default UNLESS they're the only thing distinguishing two otherwise
+  near-identical SKUs (e.g. a "Junior" size-tier variant of the same
+  colorway) — in that case surfacing it is essential for retrieval, so the
+  rule is conditional, not a blanket ban.
+- Records without scraped `details` (e.g. the ~99 New Balance variants that
+  hit the Akamai block and never got enriched) still get captioned from
+  just name/color/price — `build_prompt()` degrades gracefully via
+  `record.get("details", {})`. Quality is still decent because gpt-4o-mini
+  has real-world knowledge of well-known shoe models, but it's inferred
+  rather than strictly grounded in scraped text — worth flagging as lower
+  trust if this matters downstream.
+
+## View classification (`classify_views.py`)
+
+Since only Skechers has real per-image view labels, a zero-shot classifier
+using the same Marqo FashionSigLIP model (`hf-hub:Marqo/marqo-fashionSigLIP`,
+loaded via `open_clip`, run on MPS) was used to tag every image in all 4
+brands consistently. 10 candidate view/prompt pairs (hero shot, side
+profile, front three-quarter, back/heel, top-down, on-foot/lifestyle =
+keep; sole/bottom, insole, material close-up, packaging = exclude).
+Confidence scores from softmax over these prompts are low in absolute terms
+(~0.10, barely above the 1/10 uniform baseline) because SigLIP is trained
+with a sigmoid/contrastive objective, not calibrated softmax — **the
+relative ranking (argmax) is still reliable**, confirmed via manual spot
+image review (4/4 checks correct) before trusting it on the full set.
+Result on 4334 images: 84.5% (3664) kept, sole shots were by far the
+largest excluded category (662/670 excluded).
+
+Non-destructive by design: writes `image_views.json` (path → view label +
+confidence + keep bool) as a separate file; does not move or delete any
+image. Physically filtering the dataset (vs. just tagging) was left as a
+user decision, not yet applied as of this summary.
+
+## Structured captioning (`caption_apparel.py`)
+
+Added alongside the Nike clothing expansion because the downstream use case
+grew from "one CLIP caption per shoe" to structured retrieval-training data
+(taxonomy path, per-attribute breakdown, multiple positive texts at varying
+specificity) — the schema and prompt live in `newLLMprompt.py`, filled from
+each record's `name`/`brand`/`product_code`/`category`/`color_name` plus a
+`DESCRIPTION` block built from `details.description` + joined
+`features`/`product_details`.
+
+- Sent as a single user message (the template already contains the full
+  instruction set + schema + examples, no separate system prompt needed).
+  The prompt already mandates "exactly one valid JSON object, no markdown" —
+  parse with a strip-code-fences regex first, and if that still fails, retry
+  **once** with a corrective follow-up message ("that wasn't valid JSON,
+  return only the object") appended to the same conversation rather than
+  restarting from scratch. In practice this never needed to fire (0/560 on
+  the full backfill run).
+- Every existing record needed a `category` field added (a one-off
+  migration — all 563 pre-existing records are shoes, tagged
+  `category: "sneaker"`) before this could run, since the prompt's
+  `{{CATEGORY}}` slot and the later garment-cropping step both need it.
+- Cost: **560 records backfilled for ~$0.17** with gpt-4o-mini (~519K input
+  / ~153K output tokens) — cheap enough that re-running with `--force` to
+  regenerate everyone isn't a real cost concern if the prompt changes again.
+- Writes to a **new** `structured_caption` field; never touches or removes
+  the old `caption` string field. Keep both — `caption` already cost money
+  to generate and some downstream code may still read it.
+
+## Garment cropping (`segment_apparel.py`)
+
+Only applied to the Nike clothing records (shoe photos don't have the
+"model's face/body dominates the frame" problem the same way apparel photos
+do). Uses SAM2 automatic mask generation + FashionCLIP zero-shot
+classification, adapted from the prototype in `fashionCLIP_SAM2.py` — but
+getting from that prototype to something that runs safely and correctly
+took several non-obvious fixes:
+
+### Performance: never use MPS for SAM2 on Apple Silicon
+The prototype script picks `device = "cuda" if available else "cpu"` —
+it never uses `"mps"`. Rewriting it to prefer MPS on this Mac (reasonable-
+looking "use the GPU if there is one" logic) made `SAM2AutomaticMaskGenerator
+.generate()` take **over 2 minutes per image with no progress and no OOM**
+(confirmed via direct timing test, not just a hunch) — SAM2 hits slow/
+unsupported-op fallbacks on Apple's MPS backend that don't affect plain CPU.
+Switching to `device="cpu"` explicitly (matching the original prototype)
+dropped the same call to **7.2s**. If a script "based on" a working
+prototype changes the device selection "for speed," verify that assumption
+before trusting it — the opposite was true here.
+
+### Performance: resize before mask generation
+SAM2's automatic mask generator upsamples every candidate mask back to the
+*input* image's resolution — these Nike product photos are natively
+~2880x3600, and upsampling ~64-256 candidate masks (one per grid point) to
+that resolution was the single biggest cost driver. Downsizing to max 1024px
+on the long edge before calling `.generate()` (via `PIL.Image.thumbnail`)
+took the same image from 42.3s down to 2.9-7.2s depending on point count —
+larger effect than any point-count tuning. `points_per_side=16` (vs. the
+default 32) plus this resize is the config that ended up safe and fast
+enough: ~7s/image, ~2.5 hours for ~1300 images, peak RSS ~5.6GB (stable, not
+a leak — confirmed by watching it plateau rather than climb over a full test
+run) on a 16GB Mac with no dedicated GPU.
+
+### Model size: switch to the "small" SAM2 checkpoint
+`sam2.1_hiera_large` (898MB) is the prototype's default. Combined with MPS
+(before that was fixed) it pushed the machine close to a crash — switched to
+`sam2.1_hiera_small` (184MB, `configs/sam2.1/sam2.1_hiera_s.yaml`) as a
+lighter default; masks are somewhat less precise but adequate for this
+bounding-box-crop use case.
+
+### Mask/crop selection: neither "highest score" nor "smallest area" alone works
+The intuitive selection rule — among crops whose top FashionCLIP label
+matches the record's category, pick the one with the highest confidence
+score — **picks the whole person**, not the garment. CLIP-style models tend
+to score the "typical" full framing of someone wearing a t-shirt *higher*
+for the label "a t-shirt" than a tight fabric-only crop of the same shirt
+(confirmed by dumping every candidate mask's area/score for a test image:
+a 58%-of-frame "whole person" crop scored 0.991 for "a t-shirt", while a
+25.7%-of-frame torso-only crop scored 0.983 — the tighter, better crop lost
+by a hair to the looser one). The opposite rule — pick the *smallest*
+qualifying crop — swings too far the other way and picks tiny homogeneous
+fabric fragments (a sleeve, a waistband sliver) that coincidentally clear
+the confidence threshold just by having plausible garment-colored texture,
+without containing anything recognizable.
+
+**What worked**: bound candidate masks to a mid-sized area-fraction band
+(`0.08 <= area/full_image_area <= 0.55`) *and* a higher confidence floor
+(`0.4`, up from an initial `0.25` that let fragments through), then pick the
+**highest-scoring** crop only among that filtered band. This excludes both
+failure modes (too-big, too-small) and consistently picked the actual garment
+region across manual spot checks. These thresholds were tuned by hand against
+one test image with full mask/score dumps, not derived analytically — worth
+re-checking against a few images from any new category before trusting it.
+
+### Crop shape: bounding box, not a mask-shaped cutout
+`crop_masked_region()` crops to the mask's bounding box, not a pixel-exact
+mask cutout with the background blanked out. This is deliberate, not a
+shortcut: DINOv3/SigLIP-style ViT models are trained on natural, continuous
+photos, and a hard mask cutout (background pixels replaced with a flat
+fill color) creates out-of-distribution patch artifacts at every mask edge
+that tend to hurt embedding/classification quality rather than help it —
+production visual-search pipelines generally crop to a bounding box with a
+little natural context for the same reason. A bounding-box crop still
+includes a sliver of skin/background at the edges sometimes, but that's
+preferable to an artificial blank region for anything feeding a ViT-based
+model downstream.
+
+### Safety: watch memory when running unattended
+Peak RSS for this pipeline (FashionCLIP + SAM2 small, CPU) sits around
+5.5-5.7GB and plateaus rather than climbing — but don't assume that from
+theory alone on a shared machine. Wrap any long unattended run with a
+watchdog loop (`ps -o rss= -p $pid`, kill if it crosses a hard ceiling well
+under total system RAM) rather than trusting a "should be fine" estimate,
+especially the first time a new model/config combination runs at scale.
+
+### PacSun men's clothing — Pants, Graphic Tees, Sweaters, Shorts
+
+Extending the pipeline to a new *site* (not just a new brand on an existing
+site pattern) via `pacsun_scraper.py`, targeting 50 colorway variants per
+section (200 requested; PacSun's `mens-sweaters` category only has 26 items
+total, so 176 were actually reachable).
+
+- **Plain `playwright`, even non-headless, gets an "Access to this page has
+  been denied" bot-block page.** `patchright` (headed, `channel="chrome"`) —
+  no extra anti-automation flags needed beyond that — gets through cleanly.
+  Same mitigation family as New Balance, but PacSun blocks *harder*: it
+  blocked plain Playwright even with the browser visibly open, where New
+  Balance only blocked headless.
+- **SFCC (Salesforce Commerce Cloud) site — same family as New Balance.**
+  Category pages page via `Search-UpdateGrid?cgid={cgid}&start=N&sz=12`, an
+  HTML fragment (not JSON) meant for AJAX infinite-scroll — fetched directly
+  via `page.goto()` in the same browser context so it inherits the bot-check
+  pass, then PDP hrefs are regexed out of the fragment. Page until a request
+  returns zero *new* hrefs (matches the New Balance/Nike "page until
+  exhausted" pattern) rather than trusting a fixed count.
+- **Each PDP embeds a `ProductGroup` ld+json block**, same schema.org pattern
+  as New Balance — but PacSun's `hasVariant` list is every *size* of one
+  fixed colorway, not multiple colorways like New Balance's. Each colorway
+  is already its own separate PDP/URL (the category grid lists colorways as
+  distinct tiles) — so unlike the shoe brands, there is no groupKey/colorway-
+  expansion step: one PDP visit = one dataset record. `productGroupID` in the
+  ld+json (a 13-digit code) is the stable per-colorway `product_code`.
+- **Human-readable color name is NOT in the ld+json** — the `hasVariant`
+  entries only carry a numeric swatch code (e.g. `"349"`). The actual name
+  lives in a rendered `aria-label="Select Color MEDIUM INDIGO"` attribute
+  elsewhere on the page — regex that out and title-case it.
+- **Description, "Fit & Sizing" bullets, and "Care & Composition" bullets
+  (materials) are all server-rendered in accordion `<div>`s already present
+  in the initial HTML** — no click/JS needed at all, unlike Adidas/New
+  Balance's JS-gated accordions. This meant no separate `enrich_pacsun_*.py`
+  detail-enrichment stage was needed — `details` (description/features/
+  materials) is captured directly during the catalog scrape, in the same
+  PDP visit that grabs images and price.
+- **Product images already come as clean full-body lifestyle/model photos**
+  (2-3 per colorway) suited to the same SAM2+FashionCLIP cropping step used
+  for Nike clothing — no PacSun-specific tuning of `CATEGORY_LABELS` was
+  needed beyond adding label phrasings for the 3 new category names not
+  already covered (`"Pants"`, `"Graphic Tees"`, `"Sweaters"`; `"Shorts"` was
+  already defined from the Nike expansion and reused as-is).
+- **`patchright` held up for the entire run, not just the initial page
+  load** — ~500 PDP/grid-fragment navigations across the full 176-record
+  scrape (plus a full re-scrape after the data-loss incident below) hit zero
+  mid-run bot-blocks. `pacsun_scraper.py` still checks every fetched page for
+  the "Access to this page has been denied" string and backs off 15s if seen
+  (same shape as New Balance's Akamai `is_blocked()` check), but that branch
+  never fired in practice — unlike New Balance's Akamai, which blocks
+  intermittently *during* a session even after the initial page loads fine.
+- **`caption_apparel.py` is safe to run concurrently with `segment_apparel.py`**
+  even under tight memory — it's I/O-bound (waiting on the Azure API, no
+  local model), using ~50MB RSS, vs. SAM2+FashionCLIP's ~5GB+. Two
+  `segment_apparel.py` invocations at once (different `--brand` filters) is
+  riskier — one ran concurrently with this PacSun run for a while, and free
+  memory dropped to double-digit MB (macOS paged rather than OOM-killing
+  either, but it's not a configuration to rely on deliberately).
+
+### Concurrent-write data loss incident (and the fix: `dataset_utils.py`)
+
+While `pacsun_scraper.py` was scraping fresh records into
+`apparel_dataset/metadata.json`, a **separate, already-running**
+`segment_apparel.py --brand nike` process (started hours earlier, mid a long
+unattended run) periodically checkpointed by writing back its own **stale
+in-memory copy** of the full record list — loaded before the PacSun records
+existed. Every one of its checkpoints silently overwrote the file, erasing
+whatever PacSun had appended since. Net effect: a full category's worth of
+freshly-scraped PacSun records (Shorts, all 50) vanished with no error from
+either script — both scripts "succeeded" from their own point of view.
+
+**Fix**: `dataset_utils.py` now provides `load_records()` /
+`save_records_safe(touched: dict)` shared by every checkpointing script
+(`pacsun_scraper.py`, `segment_apparel.py`, `caption_apparel.py`).
+`save_records_safe` re-reads the current on-disk file at save time and
+merges the caller's changed records into it (keyed by `product_code`)
+instead of blindly overwriting with an old in-memory list. This doesn't
+eliminate the race entirely — two processes could still both read-merge-
+write in the same instant and one write could still lose — but it turns
+"guaranteed to erase anything written since I started" into "only loses
+data in an actual same-instant collision," and recovery is now just
+re-running the affected scraper (already-scraped `product_code`s are
+skipped, so a re-run only backfills what's actually missing).
+
+**Lesson**: any two of this pipeline's scripts that checkpoint by
+periodically rewriting the *entire* shared JSON file are unsafe to run
+concurrently unless they merge-on-save. If you add a new script that
+touches `apparel_dataset/metadata.json`, use `dataset_utils` — don't
+`load()`-once-at-startup-then-blind-`write()`-on-checkpoint.
+
+### Gap men's clothing — T-Shirts, Shorts, Pants, Sweaters
+
+Via `gap_scraper.py`, targeting 50 colorway variants per section (200
+requested; Gap's `mens-sweaters` category (cid `5180`) only had 26-27
+colorways at scrape time, so 177 were actually reachable — same
+"capped by catalog size" situation PacSun's `mens-sweaters` hit).
+
+- **No bot protection anywhere** — plain `requests` (not even a browser)
+  works for the entire catalog listing, the easiest tier of any site in
+  this pipeline (matches Skechers). Category ids for men's clothing:
+  T-Shirts `5225`, Shorts `5156`, Pants `80799`, Sweaters `5180`, all under
+  `department=75`.
+- **Catalog listing is a clean JSON API**, not an embedded blob or scraped
+  HTML: `https://api.gap.com/commerce/search/products/v2/cc?pageSize=200&
+  pageNumber=0&cid={cid}&department=75&vendor=constructorio&client_id=0&
+  session_id=0&brand=gap&locale=en_US&market=us`. `pageSize=200` covered
+  every category tested here in a single page (largest was 171 colorways).
+- **One API "style" bundles every colorway inline** as a `styleColors` list
+  — no separate per-colorway page visit needed to discover them, unlike
+  PacSun (where each colorway was already its own separate PDP requiring an
+  extra grid-fragment page visit). `ccId` (9-digit) is the stable
+  per-colorway `product_code`; `styleId` is the shared product-family id.
+- **Each image position (camera angle) carries ~10 resolution/crop variants
+  of the same shot** (thumbnail, quicklook, hero, etc.) under one style
+  color; the full-res one to keep is whichever `type` is exactly `"Z"`
+  (position 1) or ends in `"_Z"` (`AV1_Z`, `AV2_Z`, ...) — Gap's zoom
+  variant, confirmed 1500x2000 in spot checks vs. tiny thumbnails for the
+  other types at the same position. Image paths are relative
+  (`/webcontent/0061/457/472/cn61457472.jpg`) served off
+  `https://www1.assets-gap.com`.
+- **PDP url is trivially `https://www.gap.com/browse/product.do?pid={ccId}`**
+  — no styleId, category, or slug needed in the URL at all.
+- **The "Product details" and "Fabric & care" accordion bullets sit behind
+  a React Suspense boundary that a plain `requests.get()` always receives
+  as an empty `BAILOUT_TO_CLIENT_SIDE_RENDERING` placeholder — even though
+  the heading text ("Product details") IS present in that same raw HTML.**
+  This is a genuine trap, not just a missing-click accordion like
+  PacSun/New Balance: checking for the heading substring as a "did this
+  work" signal looks like success on every single PDP while silently
+  returning zero bullets every time (confirmed on 15/15 sampled PDPs before
+  catching it). The fix needed a real browser: plain headless `playwright`
+  (no patchright, no anti-automation flags — Gap has no bot protection on
+  the PDP either) with a ~2s wait renders the actual bullet content
+  client-side. No separate `enrich_gap_details.py` stage was needed since
+  everything (images/price/color from the API, description/materials from
+  the rendered PDP) is captured in one pass per colorway — but that pass
+  still needs a browser context open for the whole run, unlike the
+  fully-`requests`-based catalog step.
+- **Bullet text needs `html.unescape()`** — the rendered PDP HTML contains
+  literal `&amp;` and `&nbsp;` entities inside the accordion text (e.g.
+  "Career &amp; Enhancement", "Learn more&nbsp;here") that a plain
+  tag-strip regex leaves un-decoded.
+- Product images are already clean full-body/flat-lay product photos
+  suited to the same SAM2+FashionCLIP cropping step used for Nike/PacSun —
+  only needed adding `"T-Shirts"` to `segment_apparel.py`'s
+  `CATEGORY_LABELS` (Shorts/Pants/Sweaters were already defined from the
+  PacSun expansion and reused as-is).
+
+### Field-level concurrent-write collision (a second, narrower case dataset_utils doesn't fully cover)
+
+Running `caption_apparel.py --brand gap` and `segment_apparel.py --brand gap`
+concurrently on the *same* 177 records (following the documented "safe to
+run concurrently, I/O-bound vs. SAM2" guidance from the PacSun run) lost 175
+of 177 `structured_caption` fields, even though `dataset_utils.
+save_records_safe` was used by both scripts. Captioning finished first
+(cheap/fast) and merged its `structured_caption` field onto disk; the much
+longer `segment_apparel.py` run had already loaded its own in-memory copy of
+every gap record *before* captioning wrote anything, so its later
+checkpoints kept calling `save_records_safe({code: record})` with a
+`record` object that still had no `structured_caption` key — and
+`save_records_safe` merges *whole records* keyed by `product_code`, not
+individual fields, so each of segment's checkpoints clobbered the caption
+that had just landed for that same code.
+
+**Why the earlier PacSun incident's fix didn't catch this**: that fix
+(re-read-and-merge-by-`product_code`) fully solves the case where two
+scripts touch *disjoint* records (one brand/category appending new records
+while another processes a different brand) — the original incident. It does
+NOT solve two scripts both mutating fields on the *same* records at the
+same time, because the merge granularity is per-record, not per-field. A
+script that loads a record, adds one field, and checkpoints the whole
+record back will always overwrite any other field added by someone else in
+the meantime, `save_records_safe` or not.
+
+**Recovery**: simply re-ran `caption_apparel.py --brand gap` once
+`segment_apparel.py` had fully finished — cheap ($0.047, ~175 records) and
+safe by design (only processes records missing `structured_caption`).
+
+**Lesson**: "safe to run concurrently" only holds when the two scripts
+touch disjoint records. Two checkpointing scripts that will mutate
+different fields on the *same* records should still be run sequentially,
+not concurrently — `dataset_utils` protects against a stale full-file
+overwrite, not a stale full-record overwrite from a script whose in-memory
+snapshot predates a field that landed on disk after it loaded.
+
+## Directory / data conventions
+
+Everything lives directly under one shared dataset folder — scrapers write
+here from the start, there is no per-brand staging folder to merge later:
+
+```
+apparel_dataset/{brand}/{slug}/{product_code}/image_N.jpg  # all images
+apparel_dataset/metadata.json                              # all records
+image_views.json                                            # image path -> view tag
+```
+
+(The original 4-brand shoe run predates this convention and scraped into
+`{brand}_catalog/` + `{brand}_products.json` per brand, then used a one-off
+`build_dataset.py` to copy/merge into what was then called `shoe_dataset/`
+— that folder has since been renamed to `apparel_dataset/` and is now the
+single target going forward. New scrapers for other product categories
+should append/update records straight into `apparel_dataset/metadata.json`
+and download straight into `apparel_dataset/{brand}/...`, tagging each
+record's `brand`/category appropriately so multiple product types can
+coexist in the same dataset folder.)
+
+`apparel_dataset/metadata.json` record schema (after all enrichment stages;
+`category`, `structured_caption`, `cropped_images` were added for the Nike
+clothing expansion — older shoe records have `category` backfilled but no
+`cropped_images` since cropping was never applied to shoes):
+```json
+{
+  "brand": "...", "category": "sneaker | Tops and T-Shirts | Shorts | ...",
+  "name": "...", "color_name": "...", "price": "...",
+  "product_code": "SKU", "slug": "...", "product_url": "...",
+  "image_count": N, "images": ["path", ...], "image_urls": ["cdn url", ...],
+  "cropped_images": ["path", ...],
+  "details": {"description": "...", "features": [...], "materials": [...]},
+  "caption": "one-line CLIP caption",
+  "structured_caption": {
+    "product_id": "...", "positive_texts": ["...", ...],
+    "taxonomy_path": ["...", ...],
+    "attributes": {"color": [...], "material": [...], "defining_features": [...]}
+  }
+}
+```
+
+## Lessons learned (apply these to any new scraping target)
+
+1. **Never `rm -f` a scraped-data JSON to "reset" test state.** Strip the
+   specific field you're re-testing on the affected records instead
+   (`del record["details"]` on N records, rewrite file). Some fields
+   (New Balance's `master_id`-bearing `product_url`) cannot be
+   reconstructed from anything else on disk — deleting the file cost real
+   recovery time (had to re-derive master IDs via targeted site searches
+   per orphaned style code).
+2. **Watch disk space aggressively when scraping images.** This machine's
+   root volume runs chronically near-full from unrelated things, and a
+   scraper crashing mid-`write_text()` due to `ENOSPC` can (rarely, but
+   possibly) leave a JSON file truncated — always verify
+   `json.load()` succeeds immediately after any crash before assuming data
+   is intact. Checkpoint the JSON to disk every N records (10-20), not just
+   at the end, so a crash loses at most one checkpoint interval.
+3. **When a script "completes successfully" after a network hiccup, verify
+   the actual content, not just that a field exists.** The first New
+   Balance detail-enrichment run reported "173/173 have details" but 139 of
+   those were silently empty (Akamai serving a block page that the script
+   didn't detect, so it happily parsed nothing into an empty dict). Add an
+   explicit "is this actually the expected page" check
+   (title/body-text sniff for the site's known error-page markers) rather
+   than trusting HTTP 200 + no-exception as success.
+4. **Always check for a hidden JSON blob before writing CSS-selector
+   scraping logic.** `__NEXT_DATA__` (Next.js), ld+json `ProductGroup`
+   (schema.org, common on SFCC/Salesforce Commerce Cloud sites like New
+   Balance), and direct XHR/API endpoints (New Balance's
+   `Product-Variation` SFCC endpoint) are far more complete and stable than
+   scraping rendered DOM text, and often contain fields the visible page
+   doesn't even show.
+5. **If you want per-image view/angle labels, capture them at scrape time**
+   — check CDN filenames/URLs for embedded codes (Skechers: `_HERO_`,
+   `_INSOLE_`, `_OUTSOLE_`, `_PROFILE_NN`; Adidas: `_HM1`-`_HM9`/`_HB1`-`_HB9`)
+   and save them into the JSON immediately. Renaming files to generic
+   `image_N.jpg` for a clean directory structure destroys this signal
+   permanently unless you save it elsewhere first.
+6. **Azure AI Foundry endpoint gotcha**: strip the `/api/projects/...`
+   suffix the Foundry UI shows you — the OpenAI SDK wants the bare resource
+   domain.
+7. **gpt-4o-mini does not reliably obey banned-word lists**, even at
+   temperature 0, when the source material keeps nudging toward that
+   language. If strict compliance matters, verify programmatically
+   (substring check) and either retry-with-correction or regex-strip,
+   don't rely on the prompt alone.
+8. **Don't assume a "based on a working prototype" rewrite preserves its
+   working behavior if you change a config value that looks like a pure
+   improvement.** Switching a device string from `"cpu"` to a preferred
+   `"mps"` looked like a straightforward speedup; it was actually the whole
+   cause of a >2min-per-image stall on SAM2. When a script derived from a
+   known-working one behaves much worse, diff the actual runtime config
+   against the original before assuming the *logic* changed — check what
+   changed in *how* it runs, not just what it computes.
+9. **The intuitive "pick whichever crop/label scores highest" selection
+   rule is often wrong when the goal is a tight/precise region, not a
+   confident one.** CLIP-style models reward "typical" framing, which for a
+   garment often means the whole photographed person, not a tight crop of
+   just the fabric. When tuning any selection-by-score logic meant to
+   isolate a *sub-region*, dump the full candidate list (score + size) for
+   at least one real example before trusting either "highest score" or
+   "smallest region" as the rule — the actual answer here needed both a
+   confidence floor *and* an area band, not a single sort key.
+10. **Verify a "no OOM, memory looks fine" background run isn't actually
+    hung.** Low, non-growing CPU time over a couple of minutes can mean
+    "computing efficiently on a GPU/accelerator with little CPU-side work"
+    (fine) or "stalled" (not fine) — memory staying flat doesn't distinguish
+    these. Time a single unit of work (one image, one record) directly with
+    explicit timestamps before trusting a multi-hour unattended run to
+    finish in a reasonable time.
+11. **Never let a checkpointing script blindly overwrite the shared
+    metadata JSON with its own in-memory copy — always merge-on-save.** A
+    long-running `segment_apparel.py` loaded the record list once at
+    startup, then a separate `pacsun_scraper.py` run appended new records
+    to the same file while it was still running; every subsequent
+    checkpoint from the first script rewrote the file from its stale
+    snapshot and silently erased the new records (see "Concurrent-write
+    data loss incident" above). Fixed via `dataset_utils.save_records_safe`,
+    which re-reads and merges by `product_code` at save time instead of
+    overwriting wholesale. Any new script that checkpoints against
+    `apparel_dataset/metadata.json` must use it.
+12. **A page's raw HTML can contain a section's heading text while the
+    section's actual content never rendered** — don't treat "the label I'm
+    looking for is present in the response" as proof the data came through.
+    Gap's PDP wraps "Product details"/"Fabric & care" bullets in a React
+    Suspense boundary that `requests.get()` always receives as an empty
+    `BAILOUT_TO_CLIENT_SIDE_RENDERING` placeholder, but the heading text sits
+    outside that boundary and is present either way — so a naive
+    `"Product details" in html` check reports success on every PDP while
+    silently returning zero bullets every time. Caught by dumping and
+    reading one full extracted-bullets result before trusting the batch, not
+    by the presence check itself. When a field that should be non-empty
+    keeps coming back empty, check for a framework-specific bailout/
+    placeholder marker in the raw response, not just the field's own
+    absence.
+13. **"Safe to run concurrently" (per lesson 11's `dataset_utils` fix) only
+    covers two scripts touching *disjoint* records — not two scripts
+    mutating *different fields on the same records* at the same time.**
+    Running `caption_apparel.py --brand gap` alongside `segment_apparel.py
+    --brand gap` (following the earlier PacSun-era guidance that
+    caption_apparel is I/O-bound and cheap to run alongside one segment job)
+    lost 175/177 `structured_caption` fields: `save_records_safe` merges
+    whole records by `product_code`, so segment's long-running in-memory
+    copy (loaded before captioning wrote anything) kept overwriting the
+    caption field on every checkpoint even though the merge-by-code logic
+    worked exactly as designed. Fixed by simply re-running the captioning
+    pass once segmentation finished (cheap, idempotent). If two scripts will
+    both write fields onto the *same* set of records, run them
+    sequentially — `dataset_utils` prevents a stale full-file overwrite, not
+    a stale full-record overwrite from a snapshot taken before a sibling
+    field landed on disk.
