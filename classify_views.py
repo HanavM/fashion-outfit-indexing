@@ -1,10 +1,11 @@
 """
-Zero-shot classify every scraped shoe image by camera angle/view, using the
-same Marqo FashionSigLIP model already used for the search index. Goal: tag
-which images resemble a realistic "outfit photo" shot (side/front/angled
-views of the whole shoe) vs. views that would never appear in a real photo
-of someone wearing the shoe (sole, insole, extreme material close-ups,
-packaging).
+Zero-shot classify every scraped apparel image by camera angle/view, using
+the same Marqo FashionSigLIP model already used for the search index. Goal:
+tag which images resemble a realistic "outfit photo" shot (side/front/angled
+views of the whole item) vs. views that would never appear in a real photo
+of someone wearing it (sole, insole, extreme material close-ups, packaging).
+
+Runs in Colab against Google Drive, not local disk -- mount Drive first.
 
 Does NOT delete or move any images — writes a JSON report per image with
 the predicted view label + a keep/exclude flag, so filtering stays a
@@ -12,7 +13,7 @@ reversible, inspectable decision.
 
 Usage:
     python classify_views.py --limit 40   # quick test sample across brands
-    python classify_views.py              # full run over shoe_dataset/
+    python classify_views.py              # full run over apparel_dataset/
 """
 
 import argparse, json
@@ -21,8 +22,8 @@ from pathlib import Path
 import torch
 from PIL import Image
 
-DATASET_DIR = Path("shoe_dataset")
-OUT_FILE = Path("image_views.json")
+DATASET_DIR = Path("/content/drive/MyDrive/apparel_dataset")
+OUT_FILE = DATASET_DIR / "image_views.json"
 MODEL_NAME = "hf-hub:Marqo/marqo-fashionSigLIP"
 BATCH_SIZE = 32
 
@@ -51,19 +52,56 @@ def load_model():
     return model, preprocess, device
 
 
+def resolve_image_path(raw_path: str) -> Path | None:
+    """
+    metadata.json's `images` entries carry inconsistent prefixes -- some
+    products still have a stale "shoe_dataset/..." prefix baked in from
+    before the apparel_dataset rename, others have the correct
+    "apparel_dataset/..." prefix. Real files always live at
+    DATASET_DIR/<brand>/<slug>/<product_code>/image_N.jpg, so reconstruct
+    from the last 4 path components regardless of what prefix is present.
+    """
+    raw_path = Path(raw_path)
+
+    candidates = [raw_path, DATASET_DIR / raw_path]
+
+    if raw_path.parts and raw_path.parts[0] == DATASET_DIR.name:
+        candidates.append(DATASET_DIR.joinpath(*raw_path.parts[1:]))
+
+    if len(raw_path.parts) >= 4:
+        candidates.append(DATASET_DIR.joinpath(*raw_path.parts[-4:]))
+
+    for candidate in candidates:
+        if candidate.is_file():
+            return candidate.resolve()
+
+    return None
+
+
 def collect_image_paths(limit: int | None) -> list[str]:
     meta = json.loads((DATASET_DIR / "metadata.json").read_text())
-    paths = [img for r in meta for img in r["images"]]
+
+    def resolved(raw_images):
+        out = []
+        for raw in raw_images:
+            resolved_path = resolve_image_path(raw)
+            if resolved_path is not None:
+                out.append(str(resolved_path))
+        return out
+
     if limit:
         # spread the sample across brands rather than just the first N
         by_brand: dict[str, list[str]] = {}
         for r in meta:
-            by_brand.setdefault(r["brand"], []).extend(r["images"])
+            by_brand.setdefault(r["brand"], []).extend(resolved(r["images"]))
         paths = []
         per_brand = max(1, limit // len(by_brand))
         for imgs in by_brand.values():
             paths.extend(imgs[:per_brand])
         paths = paths[:limit]
+    else:
+        paths = [p for r in meta for p in resolved(r["images"])]
+
     return paths
 
 

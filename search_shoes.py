@@ -1,12 +1,15 @@
 """
-Search the shoe catalog for a query image.
+Search the apparel catalog for a query image.
+
+Runs in Colab against Google Drive, not local disk -- mount Drive first,
+then run embed_catalog.py to build the index before using this.
 
 Usage:
-    # Basic — embed the whole image (good if the image is already a cropped shoe)
+    # Basic — embed the whole image (good if the image is already a cropped item)
     python search_shoes.py --query path/to/shoe.jpg --top 5
 
     # With SAM2 segmentation — segments the image first, classifies each segment,
-    # then runs retrieval on the shoe crop. Requires SAM2 checkpoint.
+    # then runs retrieval on the shoe crop. Requires a SAM2 checkpoint on Drive.
     python search_shoes.py --query path/to/outfit.jpg --segment --top 5
 
     # Write results to a file
@@ -21,10 +24,11 @@ import numpy as np
 import torch
 from PIL import Image
 
-EMBEDDINGS_PATH = Path("catalog_embeddings.npy")
-METADATA_PATH = Path("catalog_metadata.json")
+DATASET_ROOT = Path("/content/drive/MyDrive/apparel_dataset")
+EMBEDDINGS_PATH = DATASET_ROOT / "catalog_embeddings.npy"
+METADATA_PATH = DATASET_ROOT / "catalog_metadata.json"
 MODEL_NAME = "hf-hub:Marqo/marqo-fashionSigLIP"
-SAM2_CHECKPOINT = Path("checkpoints/sam2.1_hiera_large.pt")
+SAM2_CHECKPOINT = Path("/content/drive/MyDrive/apparel_dataset/checkpoints/sam2.1_hiera_large.pt")
 SAM2_CONFIG = "configs/sam2.1/sam2.1_hiera_l.yaml"
 SHOE_LABELS = ["sneakers", "shoes", "boots", "running shoes", "basketball shoes", "sandals"]
 MIN_SEGMENT_AREA = 2000
@@ -191,7 +195,8 @@ def main():
     print(f"{'─'*60}")
     for rank, r in enumerate(all_results, 1):
         print(f"#{rank}  {r['product_code']}  score={r['score']:.4f}")
-        print(f"     slug: {r['slug']}")
+        print(f"     brand: {r.get('brand', '')}")
+        print(f"     label: {r.get('display_label', '')}")
         print(f"     url:  {r['product_url']}")
         print(f"     img:  {r['image_path']}")
         print()

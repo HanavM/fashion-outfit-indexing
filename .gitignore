@@ -15,6 +15,7 @@ __pycache__/
 # Images and Drive-hosted model dirs live in Google Drive for Colab access,
 # not in this repo. Only small manifests/metadata JSON are tracked below.
 apparel_dataset/*/
+apparel_dataset_sample/
 checkpoints/
 Self-Correction-Human-Parsing/
 
