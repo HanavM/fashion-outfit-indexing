@@ -72,21 +72,33 @@ calibration error, unsupported-fact rate).
 
 ## Phased plan
 
-### Phase 0 — Repoint the pipeline at current data (do first, small, unblocks everything)
-1. Fix `embed_catalog.py`/`search_shoes.py`/`classify_views.py` to read
-   `apparel_dataset/metadata.json` and its real image paths instead of the
-   dead `*_catalog`/`shoe_dataset` directories.
-2. Update the fine-tuning notebook's `DATASET_ROOT`/`METADATA_PATH` to
-   `apparel_dataset/metadata.json`, and swap its label-building step from
-   regex-based extraction over a flat `caption` string to reading
-   `structured_caption.taxonomy_path` / `.attributes` / `.positive_texts`
-   directly — this removes a whole layer of fragile parsing since the LLM
-   captioner already emits structured fields.
-3. Replace the notebook's hand-written shoe-only `HIERARCHY` dict with one
-   generated from the actual `taxonomy_path` values observed across all 1115
-   records (union of paths, deduped) so the hierarchy reflects 6 brands and
-   non-shoe categories (jeans, shorts, tops, jackets from gap/pacsun/nike
-   clothing) instead of a hardcoded example.
+### Phase 0 — Repoint the pipeline at current data — DONE (2026-07-27)
+All data/model work now runs against Google Drive via Colab, not local
+disk — verified `apparel_dataset` (1115 products, 6 brands) is fully backed
+up to Drive before clearing ~8.3GB of local image data (kept a 2-products/
+brand local sample, gitignored, for spot-checks).
+
+1. ✅ `embed_catalog.py`/`search_shoes.py`/`classify_views.py` now read
+   `apparel_dataset/metadata.json` on Drive instead of the dead
+   `*_catalog`/`shoe_dataset` directories.
+2. ✅ Both notebooks' `DATASET_ROOT`/`METADATA_PATH` now point at
+   `/content/drive/MyDrive/apparel_dataset`. The fine-tuning notebook's
+   label-building step was rewritten to read `structured_caption.taxonomy_path`
+   / `.attributes` / `.positive_texts` directly instead of regex-parsing a
+   flat `caption` string — removed the old shoe-only
+   COLOR_ALIASES/MATERIALS/SNEAKER_TERMS/detect_category machinery entirely.
+3. **Found and fixed a real data-quality bug** while doing this: ~563/1115
+   products' `images` entries in `metadata.json` still carry a stale
+   `shoe_dataset/...` prefix baked in from before the `apparel_dataset`
+   rename. `resolve_image_path` in both notebooks and both scripts now
+   reconstructs from the last 4 path components
+   (`brand/slug/product_code/filename`) regardless of prefix. Smoke-tested
+   against the local sample: 87/87 resolved correctly.
+4. **Not done yet, deferred to Phase 1/2:** the notebook's hand-written
+   shoe-only `HIERARCHY` dict (used only by the zero-shot HSC climbing demo
+   cell, not by training) still needs replacing with one generated from the
+   actual `taxonomy_path` values observed across all 1115 records. Low
+   priority — it's a demo cell, not load-bearing for training/eval.
 
 ### Phase 1 — Re-run frozen baselines, then re-train SigLIP2 on the full dataset
 Per spec §5.1, re-establish frozen baselines first now that the eval set is
