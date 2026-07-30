@@ -571,3 +571,106 @@ this update; worth deciding whether to run the Phase 4 eval against v3 now
 or wait for v4 to land, since v4 is a strict methodology improvement over
 v3 and swapping checkpoints later is cheap (auto-detected by path
 preference order already).
+
+**v4 turned out not to be a strict improvement** — it regressed on every
+exact-label metric vs. v3 (R@1 18.83% → 16.00%, see `docs/eval_log.md`).
+Confirms the predicted tradeoff from when v4 was built: cutting the
+"model" kind's `LABEL_KIND_WEIGHTS` share (0.42 → 0.30) to fund color/fit/
+closure hurt the exact-label task more than expected, since that task *is*
+essentially the "model" kind. Doesn't affect Phase 4 today (checkpoint
+auto-detection only knows v2/v3), but a by-facet eval on v4 is still
+needed to know whether color/fit/closure improved enough to be worth a
+less aggressive v5 reweighting.
+
+## Update — 2026-07-30 (later): dedicated pixel-color pipeline
+
+**New problem, deliberately separate from SigLIP2**: the user wants two
+future product features that a text-embedding model is the wrong tool
+for — (1) a "filter by color" facet reliable enough to be a real filter,
+not an approximate semantic match, and (2) "show me clothing in this exact
+color" from a photo, i.e. continuous perceptual color similarity, not
+discrete label matching. Researched real published practice before
+building anything (not just asserted): fashion dominant-color-extraction
+papers/writeups consistently converge on segment → CIELAB → k-means →
+filter-by-area → dedupe via CIEDE2000 (e.g. the "Color Feature Based
+Dominant Color Extraction" IEEE paper, and an independent Medium writeup
+implementing the same shape end to end). CIELAB specifically because it's
+perceptually uniform — equal numeric distance ≈ equal perceived
+difference, which plain RGB distance doesn't give you. Recommendation from
+that research, followed here: LAB Euclidean (CIE76) for cheap bulk
+ranking, CIEDE2000 reserved for re-ranking a short candidate list since
+it's expensive and its extra accuracy mostly matters in specific hue
+regions (blues).
+
+**`build_color_index.py`** — per product: prefer the existing SAM2 crop
+(`cropped_images`, Nike-only, 552/1234 products, from `segment_apparel.py`)
+to isolate the garment from background before extracting color; for the
+other ~680 products, fall back to a background-removal heuristic instead
+of a naive image crop (see next paragraph for why). Downsample to 128×128,
+convert sRGB→CIELAB via a direct numpy implementation (no scikit-image/
+colormath dependency — verified against known reference conversions,
+e.g. pure red → LAB (53.24, 80.09, 67.20), to 2 decimal places), k-means
+into 5 candidate colors (3-6 is the typical range found in the
+literature), filter clusters under 3% area as noise, map survivors to the
+nearest of the 21 canonical colors from `build_color_hierarchy.py` via LAB
+distance against reference swatches.
+
+**Real bug caught during validation, not just asserted-and-shipped**: the
+first version of the no-crop fallback trimmed a fixed 15%-border ring on
+the assumption the garment is roughly centered with the border being
+background. Validated against known ground truth before trusting it
+(cross-checked extracted colors against real product colorways) and found
+it catastrophically wrong — nearly every uncropped product came back
+"cream" (the studio background color), because these catalog photos often
+have background padding well past 15%. Fixed by estimating the actual
+background color from the full border ring's median (not a fixed crop)
+and masking out every pixel in the whole image close to that color, with
+a safety fallback (trust unmasked pixels) for products where masking would
+remove almost everything — i.e. genuine white-on-white product shots. Re-
+validated after the fix: results went from uniformly wrong to plausible
+and varied (spot-checked against known colorways: "Better Scarlet" → red,
+"Core Black" → black, etc.).
+
+**Quantitative validation, not just spot-checks**: cross-referenced the
+pixel-extracted primary color against the independent text-based
+`canonical_color` signal (`build_color_hierarchy.py`, built from scraped
+brand copy, not pixels) across all 1,204 products that have both. Primary
+pixel color matches a text-canonical color 39.2% of the time; primary-or-
+secondary matches 56.1% of the time. Being upfront about what this does
+and doesn't prove: it's not a clean ground-truth check (text colors are
+also imperfect, and "largest area by pixel count" doesn't always agree
+with which color a multi-color colorway name lists first), but it's a
+real, honest number computed across the whole dataset, not a handful of
+cherry-picked examples — this is a genuinely useful new signal, not yet a
+"perfect" one as originally asked for.
+
+Writes `structured_caption.attributes.pixel_color` (new field, non-
+destructive) to every product with an extractable color, and
+`docs/color_similarity_index.json` (product_code → primary LAB + hex) for
+`color_similarity_search.py`'s query side. That query script takes a
+photo, extracts its dominant color the same way, and ranks the whole
+catalog by CIEDE2000 distance (LAB-distance-first, CIEDE2000-reranked-top-
+50, per the validated two-tier approach above) — tested end to end against
+a real photo, returned a tightly-clustered, sensible result set (all
+within ΔE2000 ≈ 1–3.3 of the query, genuinely close perceptually).
+
+**Known limitations, for the next round of work, not silently glossed
+over**:
+1. Crop coverage is still Nike-only (Phase 2's own long-standing gap) —
+   extending SAM2 crops to the other 5 brands should measurably improve
+   the ~680 products currently relying on the background-removal
+   fallback, which is inherently noisier than a real crop.
+2. Multi-color products only get one "primary" color by area, which is a
+   real simplification when a colorway genuinely has 2-3 comparably-sized
+   regions (secondary colors are captured, up to 2, but downstream
+   consumers need to actually use them, not just the primary).
+3. The canonical-swatch nearest-neighbor mapping has real boundary cases
+   (e.g. a very light desaturated gray landing on "silver" vs. "cream"
+   depending on a few LAB units) — the 21 reference swatches were chosen
+   as reasonable representatives, not tuned against this dataset
+   specifically.
+4. Real-world (non-catalog) query photos, e.g. a person's outfit photo,
+   don't have a clean seamless background for the border-ring heuristic to
+   estimate against — expect materially noisier color extraction for that
+   use case than for catalog-photo queries, until/unless a proper person/
+   garment segmentation step is added to the query path too.
