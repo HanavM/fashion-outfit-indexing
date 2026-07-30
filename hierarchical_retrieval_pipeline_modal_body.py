@@ -231,8 +231,19 @@ for _product in _metadata:
     _resolved_images = []
     for _raw_path in _product.get("images", []):
         _path = resolve_image_path(_raw_path)
-        if _path is not None:
-            _resolved_images.append(str(_path))
+        if _path is None:
+            continue
+        # Corrupted/truncated-file skip, same convention as
+        # finetune_siglip2_v3.py / dino_identity_finetune.py -- without
+        # this a single bad JPEG crashes the whole identity-index build
+        # deep inside HierarchicalRetriever.__init__ instead of being
+        # filtered out here at catalog-build time.
+        try:
+            with Image.open(_path) as _check_image:
+                _check_image.verify()
+        except Exception:
+            continue
+        _resolved_images.append(str(_path))
     if not _resolved_images:
         continue
     CATALOG[_product_code] = {
@@ -458,16 +469,35 @@ def build_or_load_identity_index(backbone, projection_head, use_projection, proc
             owners.append(code)
 
     all_embeddings = []
+    valid_owners = []
     batch_size = 32
     for start in range(0, len(flat_paths), batch_size):
         batch_paths = flat_paths[start:start + batch_size]
-        images = [load_rgb_image(p) for p in batch_paths]
+        batch_owners = owners[start:start + batch_size]
+        images, kept_owners = [], []
+        for path, owner in zip(batch_paths, batch_owners):
+            try:
+                images.append(load_rgb_image(path))
+                kept_owners.append(owner)
+            except Exception as error:
+                # Belt-and-suspenders: the catalog build already verify()s
+                # every image, but that doesn't catch every corruption
+                # mode -- skip rather than crash the whole index build over
+                # one bad file.
+                print(f"Skipped (unreadable): {path} ({error})")
+        if not images:
+            continue
         all_embeddings.append(embed_images_dino(backbone, projection_head, use_projection, processor, images, batch_size=batch_size))
+        valid_owners.extend(kept_owners)
     all_embeddings = torch.cat(all_embeddings, dim=0) if all_embeddings else torch.empty(0, DINOV3_PROJECTION_DIM)
 
     embeddings_by_product = defaultdict(list)
-    for embedding, code in zip(all_embeddings, owners):
+    for embedding, code in zip(all_embeddings, valid_owners):
         embeddings_by_product[code].append(embedding)
+    # Drop any product whose every gallery image failed to load (should be
+    # rare given the catalog-build verify() pass, but a product left with
+    # zero embeddings would otherwise crash the stack() below).
+    product_codes = [code for code in product_codes if embeddings_by_product.get(code)]
     product_embeddings = torch.stack([
         F.normalize(torch.stack(embeddings_by_product[code]).mean(dim=0), dim=-1) for code in product_codes
     ])
