@@ -69,6 +69,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from PIL import Image, ImageOps
+from tqdm.auto import tqdm
 from transformers import AutoImageProcessor, AutoModel, AutoProcessor
 
 # facebook/dinov3-vitb16-pretrain-lvd1689m is a gated HF repo -- same
@@ -223,7 +224,8 @@ with METADATA_PATH.open("r", encoding="utf-8") as f:
 CATALOG = {}          # product_code -> {brand, name, category, model_identity, images: [resolved paths]}
 IMAGES_BY_PRODUCT = defaultdict(list)
 
-for _product in _metadata:
+print("Building catalog (verifying every image -- slow on Drive FUSE, this is expected to take a while, not hung)...")
+for _product in tqdm(_metadata, desc="Verifying catalog images"):
     _product_code = normalize_text(_product.get("product_code", ""))
     if not _product_code:
         continue
