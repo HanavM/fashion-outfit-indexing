@@ -90,7 +90,14 @@ if os.environ.get("HF_TOKEN"):
 # against the full local rsync copy) without touching the Colab default.
 DATASET_ROOT = Path("/data/apparel_dataset")
 METADATA_PATH = DATASET_ROOT / "metadata.json"
-HIERARCHY_PATH = Path(__file__).parent / "docs" / "hierarchy.json"
+# Checks the script's own directory first (e.g. Colab drag-and-drop
+# upload, where only single files land, not the docs/ subfolder), then
+# falls back to the repo's real docs/ layout.
+_HIERARCHY_CANDIDATES = [
+    Path(__file__).parent / "hierarchy.json",
+    Path(__file__).parent / "docs" / "hierarchy.json",
+]
+HIERARCHY_PATH = next((p for p in _HIERARCHY_CANDIDATES if p.is_file()), _HIERARCHY_CANDIDATES[0])
 
 INDEX_DIR = DATASET_ROOT / "retrieval_indexes"
 INDEX_DIR.mkdir(parents=True, exist_ok=True)
