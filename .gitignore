@@ -6,6 +6,7 @@ __pycache__/
 *.pyc
 .venv/
 .venv2/
+.venv_test/
 
 # Editor/OS cruft
 .DS_Store
@@ -16,6 +17,7 @@ __pycache__/
 # not in this repo. Only small manifests/metadata JSON are tracked below.
 apparel_dataset/*/
 apparel_dataset_sample/
+apparel_dataset_full/
 checkpoints/
 Self-Correction-Human-Parsing/
 

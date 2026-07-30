@@ -1,0 +1,70 @@
+{
+  "footwear": {
+    "sneaker": [
+      "golf sneaker",
+      "indoor sneaker",
+      "low-top sneaker"
+    ],
+    "loafer": []
+  },
+  "apparel": {
+    "t-shirt": [
+      "crop t-shirt",
+      "graphic tee"
+    ],
+    "shirt": [
+      "button-down shirt"
+    ],
+    "sweatshirt": [],
+    "hoodie": [
+      "pullover hoodie"
+    ],
+    "shorts": [
+      "biker shorts",
+      "cargo shorts",
+      "denim shorts",
+      "jean shorts",
+      "volley shorts"
+    ],
+    "pants": [
+      "baggy jeans",
+      "baggy pants",
+      "briefs",
+      "cargo jeans",
+      "cargo pants",
+      "jeans",
+      "joggers",
+      "khakis",
+      "leggings",
+      "relaxed taper pants",
+      "straight jeans",
+      "straight pants",
+      "sweater pant",
+      "sweatpants",
+      "tights",
+      "track pants",
+      "trousers"
+    ],
+    "tank top": [
+      "muscle tank top"
+    ],
+    "sweater": [
+      "jersey",
+      "polo sweater"
+    ],
+    "jacket": [
+      "bomber jacket",
+      "field jacket",
+      "puffer jacket",
+      "shirt jacket",
+      "track jacket"
+    ]
+  },
+  "accessory": {
+    "hat": [
+      "baseball cap",
+      "beanie"
+    ],
+    "socks": []
+  }
+}

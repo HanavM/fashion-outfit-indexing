@@ -85,6 +85,9 @@ CATEGORY_LABELS = {
     "Graphic Tees": ["a t-shirt", "a graphic tee"],
     "Sweaters": ["a sweater", "a knit sweater"],
     "T-Shirts": ["a t-shirt", "a top"],
+    "Jackets": ["a jacket", "a coat"],
+    "Hats": ["a hat", "a baseball cap", "a beanie"],
+    "Socks": ["a sock", "a pair of socks"],
 }
 
 
