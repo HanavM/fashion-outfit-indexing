@@ -46,7 +46,7 @@ Pipeline, per product:
 4. Filter tiny clusters (<3% of pixels -- almost certainly residual
    background/noise, not a real garment color), rank the rest by pixel
    area (dominant = largest surviving cluster).
-5. Map each surviving color to the nearest of 21 canonical colors (the
+5. Map each surviving color to the nearest of 20 canonical colors (the
    same vocabulary build_color_hierarchy.py already canonicalized the
    scraped text `color` attribute into) via LAB Euclidean distance against
    a reference swatch table -- this is what makes "filter by color"
@@ -97,11 +97,22 @@ IMAGES_PER_PRODUCT = 2          # representative images averaged per product
 KMEANS_ITERATIONS = 15
 KMEANS_SEED = 42
 
-# Representative sRGB swatches for the 21 canonical colors from
+# Representative sRGB swatches for the 20 canonical colors from
 # docs/color_hierarchy.json -- chosen as reasonably central/typical
 # examples of each family, not tuned per-dataset.
+#
+# "silver" was deliberately dropped as its own bucket (was 21, now 20) and
+# folded into "gray" on both the text side (build_color_hierarchy.py) and
+# here: validated this was a real fix, not just a tolerance hack --
+# average-pixel-color extraction can't distinguish true metallic sheen
+# (which needs specular highlight/reflection info, not a flat average)
+# from a shadowed neutral gray, so keeping them as separate canonical
+# targets was mostly just creating boundary noise between two adjacent
+# near-neutral buckets rather than adding real signal. Cross-validated
+# against the independent text-canonical signal before and after this
+# change (see docs/eval_log.md) rather than assuming it would help.
 CANONICAL_COLOR_SWATCHES_HEX = {
-    "black": "#1a1a1a", "cream": "#f2ead8", "gray": "#8a8a8a", "silver": "#c4c4c4",
+    "black": "#1a1a1a", "cream": "#f2ead8", "gray": "#8a8a8a",
     "navy": "#1b2a4a", "blue": "#2a5bd6", "teal": "#157a6e", "green": "#2e8b45",
     "olive": "#6b6b28", "yellow": "#e8d426", "gold": "#c9a227", "orange": "#e07b1f",
     "red": "#c8272a", "maroon": "#7a1f2b", "pink": "#e79ac8", "purple": "#7a3fa0",

@@ -69,7 +69,7 @@
       4.5
     ],
     "hex": "#cbc6be",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "HQ9265": {
     "lab": [
@@ -78,7 +78,7 @@
       2.28
     ],
     "hex": "#c2bfbc",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "KH8484": {
     "lab": [
@@ -105,7 +105,7 @@
       5.82
     ],
     "hex": "#bfb6ad",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "KK2802": {
     "lab": [
@@ -123,7 +123,7 @@
       2.29
     ],
     "hex": "#b2b0ac",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "ID7056": {
     "lab": [
@@ -132,7 +132,7 @@
       8.49
     ],
     "hex": "#c7c0b1",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "IE0420": {
     "lab": [
@@ -159,7 +159,7 @@
       9.99
     ],
     "hex": "#c3b9a8",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "IH4202": {
     "lab": [
@@ -177,7 +177,7 @@
       3.88
     ],
     "hex": "#c3b5b1",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "IH4210": {
     "lab": [
@@ -186,7 +186,7 @@
       -5.53
     ],
     "hex": "#b6b7c1",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "IH4211": {
     "lab": [
@@ -231,7 +231,7 @@
       5.68
     ],
     "hex": "#cdc2b9",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "KI0374": {
     "lab": [
@@ -258,7 +258,7 @@
       2.89
     ],
     "hex": "#c7c0bc",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "HQ5154": {
     "lab": [
@@ -285,7 +285,7 @@
       3.59
     ],
     "hex": "#d9bdbe",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "IH9639": {
     "lab": [
@@ -384,7 +384,7 @@
       11.57
     ],
     "hex": "#bead9b",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "IH9661": {
     "lab": [
@@ -420,7 +420,7 @@
       6.35
     ],
     "hex": "#c5bfb4",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "IH9676": {
     "lab": [
@@ -429,7 +429,7 @@
       6.39
     ],
     "hex": "#c6bfb4",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "IH9679": {
     "lab": [
@@ -492,7 +492,7 @@
       8.02
     ],
     "hex": "#cac6b7",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "JQ8399": {
     "lab": [
@@ -609,7 +609,7 @@
       -14.0
     ],
     "hex": "#70bfcc",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "HQ7269": {
     "lab": [
@@ -645,7 +645,7 @@
       0.9
     ],
     "hex": "#b8bcb9",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "IF6561": {
     "lab": [
@@ -663,7 +663,7 @@
       5.72
     ],
     "hex": "#bdb8ae",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "IF7086": {
     "lab": [
@@ -762,7 +762,7 @@
       5.11
     ],
     "hex": "#ddc1be",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "IH1500": {
     "lab": [
@@ -780,7 +780,7 @@
       8.83
     ],
     "hex": "#cbbcaf",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "IH1503": {
     "lab": [
@@ -816,7 +816,7 @@
       -2.18
     ],
     "hex": "#bebfc3",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "CW2288-001": {
     "lab": [
@@ -843,7 +843,7 @@
       -1.19
     ],
     "hex": "#c6c7c9",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "DD8959-001": {
     "lab": [
@@ -861,7 +861,7 @@
       -2.04
     ],
     "hex": "#c6c7cb",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "IR0273-100": {
     "lab": [
@@ -969,7 +969,7 @@
       -0.97
     ],
     "hex": "#c1c0c2",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "IR0270-002": {
     "lab": [
@@ -1104,7 +1104,7 @@
       -0.88
     ],
     "hex": "#cfa9b5",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "FB9109-500": {
     "lab": [
@@ -1338,7 +1338,7 @@
       2.51
     ],
     "hex": "#b5b0ad",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "IV4311-100": {
     "lab": [
@@ -1347,7 +1347,7 @@
       -3.63
     ],
     "hex": "#a8a8af",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "IV4311-300": {
     "lab": [
@@ -1356,7 +1356,7 @@
       2.85
     ],
     "hex": "#b9c1ba",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "IV2381-025": {
     "lab": [
@@ -1365,7 +1365,7 @@
       -16.83
     ],
     "hex": "#a4b8d5",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "HF1877-001": {
     "lab": [
@@ -1428,7 +1428,7 @@
       0.94
     ],
     "hex": "#b9b9b7",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "II6236-400": {
     "lab": [
@@ -1437,7 +1437,7 @@
       -14.37
     ],
     "hex": "#a3b0ca",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "IB8929-002": {
     "lab": [
@@ -1464,7 +1464,7 @@
       2.5
     ],
     "hex": "#a8a7a2",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "IM9467-001": {
     "lab": [
@@ -1473,7 +1473,7 @@
       2.33
     ],
     "hex": "#bab8b4",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "HF6998-111": {
     "lab": [
@@ -1527,7 +1527,7 @@
       3.57
     ],
     "hex": "#cac0bc",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "HF6998-012": {
     "lab": [
@@ -1545,7 +1545,7 @@
       -0.88
     ],
     "hex": "#b7aaaf",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "HF6998-601": {
     "lab": [
@@ -1563,7 +1563,7 @@
       -1.39
     ],
     "hex": "#b9b1b6",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "IM7160-133": {
     "lab": [
@@ -1671,7 +1671,7 @@
       -2.68
     ],
     "hex": "#b0aab0",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "IV5674-100": {
     "lab": [
@@ -1680,7 +1680,7 @@
       1.19
     ],
     "hex": "#c0b0b2",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "IH7803-101": {
     "lab": [
@@ -1770,7 +1770,7 @@
       -1.74
     ],
     "hex": "#c1c0c4",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "HQ2056-502": {
     "lab": [
@@ -1797,7 +1797,7 @@
       -2.07
     ],
     "hex": "#bcb5bb",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "HQ2056-103": {
     "lab": [
@@ -1806,7 +1806,7 @@
       0.03
     ],
     "hex": "#bab8b8",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "IM9570-200": {
     "lab": [
@@ -1833,7 +1833,7 @@
       -1.79
     ],
     "hex": "#bcbec1",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "IO4862-500": {
     "lab": [
@@ -1869,7 +1869,7 @@
       7.61
     ],
     "hex": "#c6b9ad",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "IQ0278-214": {
     "lab": [
@@ -1905,7 +1905,7 @@
       2.75
     ],
     "hex": "#ccc8c4",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "U9060BLK": {
     "lab": [
@@ -1923,7 +1923,7 @@
       3.32
     ],
     "hex": "#c8c6c0",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "U9060LBC": {
     "lab": [
@@ -1932,7 +1932,7 @@
       3.05
     ],
     "hex": "#cbc4c0",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "U906051K": {
     "lab": [
@@ -1959,7 +1959,7 @@
       6.68
     ],
     "hex": "#cfcdc0",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "U204LSC": {
     "lab": [
@@ -1986,7 +1986,7 @@
       3.36
     ],
     "hex": "#cbc5c0",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "U204LMMB": {
     "lab": [
@@ -1995,7 +1995,7 @@
       -3.84
     ],
     "hex": "#a6a9b0",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "U204L3GD": {
     "lab": [
@@ -2031,7 +2031,7 @@
       1.72
     ],
     "hex": "#aeaba8",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "U204L5AV": {
     "lab": [
@@ -2049,7 +2049,7 @@
       5.59
     ],
     "hex": "#b8b4aa",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "U204L273": {
     "lab": [
@@ -2067,7 +2067,7 @@
       2.5
     ],
     "hex": "#ccbfbe",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "U204L6KQ": {
     "lab": [
@@ -2076,7 +2076,7 @@
       4.2
     ],
     "hex": "#c9c5bd",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "U204L5WZ": {
     "lab": [
@@ -2094,7 +2094,7 @@
       1.58
     ],
     "hex": "#b7afae",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "U204L67Q": {
     "lab": [
@@ -2112,7 +2112,7 @@
       5.51
     ],
     "hex": "#aeaba1",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "U992GY": {
     "lab": [
@@ -2139,7 +2139,7 @@
       1.59
     ],
     "hex": "#cbc9c6",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "U90603EG": {
     "lab": [
@@ -2148,7 +2148,7 @@
       6.88
     ],
     "hex": "#cecabd",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "U90606H1": {
     "lab": [
@@ -2157,7 +2157,7 @@
       6.88
     ],
     "hex": "#cecabd",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "U90609XS": {
     "lab": [
@@ -2166,7 +2166,7 @@
       6.88
     ],
     "hex": "#cecabd",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "U90601RJ": {
     "lab": [
@@ -2175,7 +2175,7 @@
       6.88
     ],
     "hex": "#cecabd",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "U90601BV": {
     "lab": [
@@ -2184,7 +2184,7 @@
       6.88
     ],
     "hex": "#cecabd",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "GC9060LL": {
     "lab": [
@@ -2193,7 +2193,7 @@
       2.78
     ],
     "hex": "#b3b2ad",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "GC9060BK": {
     "lab": [
@@ -2211,7 +2211,7 @@
       2.46
     ],
     "hex": "#bdbdb8",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "GC9060BE": {
     "lab": [
@@ -2238,7 +2238,7 @@
       1.6
     ],
     "hex": "#c4c5c2",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "G90604BR": {
     "lab": [
@@ -2247,7 +2247,7 @@
       8.25
     ],
     "hex": "#ccc9b9",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "G906034H": {
     "lab": [
@@ -2256,7 +2256,7 @@
       4.28
     ],
     "hex": "#c7c3bc",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "G90609SI": {
     "lab": [
@@ -2265,7 +2265,7 @@
       7.59
     ],
     "hex": "#b6afa2",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "G90602P4": {
     "lab": [
@@ -2283,7 +2283,7 @@
       1.97
     ],
     "hex": "#cfbbbc",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "G90605FP": {
     "lab": [
@@ -2337,7 +2337,7 @@
       0.51
     ],
     "hex": "#bfc1bf",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "U2000601": {
     "lab": [
@@ -2346,7 +2346,7 @@
       -1.27
     ],
     "hex": "#c1c0c3",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "U20004PO": {
     "lab": [
@@ -2355,7 +2355,7 @@
       6.57
     ],
     "hex": "#c1bdb1",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "W1540NS4": {
     "lab": [
@@ -2382,7 +2382,7 @@
       6.25
     ],
     "hex": "#c3c0b4",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "MR530SG": {
     "lab": [
@@ -2391,7 +2391,7 @@
       6.97
     ],
     "hex": "#ccbfb5",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "MR530EMA": {
     "lab": [
@@ -2400,7 +2400,7 @@
       0.94
     ],
     "hex": "#c9c4c4",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "MR530CC": {
     "lab": [
@@ -2418,7 +2418,7 @@
       0.28
     ],
     "hex": "#aeacac",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "MR530ASM": {
     "lab": [
@@ -2427,7 +2427,7 @@
       9.66
     ],
     "hex": "#cfcab8",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "U530ESB": {
     "lab": [
@@ -2436,7 +2436,7 @@
       -0.72
     ],
     "hex": "#c7c4c7",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "U5307VI": {
     "lab": [
@@ -2535,7 +2535,7 @@
       -0.59
     ],
     "hex": "#b8b8b9",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "U204L1KP": {
     "lab": [
@@ -2553,7 +2553,7 @@
       1.89
     ],
     "hex": "#c1bebb",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "U204L7A8": {
     "lab": [
@@ -2562,7 +2562,7 @@
       -1.74
     ],
     "hex": "#bebfc2",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "M990BK6": {
     "lab": [
@@ -2598,7 +2598,7 @@
       -0.32
     ],
     "hex": "#c9c9ca",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "GR740BM": {
     "lab": [
@@ -2625,7 +2625,7 @@
       0.78
     ],
     "hex": "#c4c5c3",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "G7405GL": {
     "lab": [
@@ -2634,7 +2634,7 @@
       2.49
     ],
     "hex": "#c0acad",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "WS327BL": {
     "lab": [
@@ -2652,7 +2652,7 @@
       4.24
     ],
     "hex": "#c8c1bb",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "WS327GD": {
     "lab": [
@@ -2661,7 +2661,7 @@
       3.35
     ],
     "hex": "#ccc8c2",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "WS327NKD": {
     "lab": [
@@ -2670,7 +2670,7 @@
       7.72
     ],
     "hex": "#cdc6b9",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "W327910": {
     "lab": [
@@ -2679,7 +2679,7 @@
       -3.72
     ],
     "hex": "#cac9d1",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "W327628": {
     "lab": [
@@ -2688,7 +2688,7 @@
       1.86
     ],
     "hex": "#d3c4c4",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "W327SUB": {
     "lab": [
@@ -2697,7 +2697,7 @@
       4.24
     ],
     "hex": "#c4c0b9",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "PC9060BB": {
     "lab": [
@@ -2715,7 +2715,7 @@
       3.28
     ],
     "hex": "#cec7c2",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "PC9060RB": {
     "lab": [
@@ -2724,7 +2724,7 @@
       1.34
     ],
     "hex": "#ababa8",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "P90601Z6": {
     "lab": [
@@ -2733,7 +2733,7 @@
       1.6
     ],
     "hex": "#c6c5c2",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "P90602HQ": {
     "lab": [
@@ -2742,7 +2742,7 @@
       7.24
     ],
     "hex": "#d2cec1",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "P90601PK": {
     "lab": [
@@ -2751,7 +2751,7 @@
       5.83
     ],
     "hex": "#b3b0a5",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "P90603RP": {
     "lab": [
@@ -2760,7 +2760,7 @@
       0.28
     ],
     "hex": "#aeaead",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "P9060719": {
     "lab": [
@@ -2769,7 +2769,7 @@
       1.47
     ],
     "hex": "#b9b9b6",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "P906033P": {
     "lab": [
@@ -2787,7 +2787,7 @@
       1.8
     ],
     "hex": "#bfbeba",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "M108078J": {
     "lab": [
@@ -2796,7 +2796,7 @@
       1.8
     ],
     "hex": "#bfbeba",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "M10802FR": {
     "lab": [
@@ -2805,7 +2805,7 @@
       1.8
     ],
     "hex": "#bfbeba",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "M10808MP": {
     "lab": [
@@ -2814,7 +2814,7 @@
       1.8
     ],
     "hex": "#bfbeba",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "M10803S0": {
     "lab": [
@@ -2823,7 +2823,7 @@
       1.8
     ],
     "hex": "#bfbeba",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "W10807PK": {
     "lab": [
@@ -2832,7 +2832,7 @@
       2.54
     ],
     "hex": "#cbccc7",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "W10803AW": {
     "lab": [
@@ -2841,7 +2841,7 @@
       2.54
     ],
     "hex": "#cbccc7",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "W10805VC": {
     "lab": [
@@ -2850,7 +2850,7 @@
       2.54
     ],
     "hex": "#cbccc7",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "W10801L7": {
     "lab": [
@@ -2859,7 +2859,7 @@
       2.54
     ],
     "hex": "#cbccc7",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "W10802QR": {
     "lab": [
@@ -2868,7 +2868,7 @@
       3.18
     ],
     "hex": "#bdb3af",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "W10806FT": {
     "lab": [
@@ -2877,7 +2877,7 @@
       3.18
     ],
     "hex": "#bdb3af",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "W10804VQ": {
     "lab": [
@@ -2886,7 +2886,7 @@
       3.18
     ],
     "hex": "#bdb3af",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "G204L3L2": {
     "lab": [
@@ -2895,7 +2895,7 @@
       2.31
     ],
     "hex": "#cacbc6",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "G204L3IU": {
     "lab": [
@@ -2904,7 +2904,7 @@
       2.31
     ],
     "hex": "#cacbc6",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "G204L6RI": {
     "lab": [
@@ -2913,7 +2913,7 @@
       2.31
     ],
     "hex": "#cacbc6",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "G204L2PR": {
     "lab": [
@@ -2922,7 +2922,7 @@
       2.31
     ],
     "hex": "#cacbc6",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "MPRO524": {
     "lab": [
@@ -3021,7 +3021,7 @@
       0.23
     ],
     "hex": "#bcbbbb",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "MACR11FV": {
     "lab": [
@@ -3030,7 +3030,7 @@
       0.23
     ],
     "hex": "#bcbbbb",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "MACR13XO": {
     "lab": [
@@ -3039,7 +3039,7 @@
       0.23
     ],
     "hex": "#bcbbbb",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "MACR199J": {
     "lab": [
@@ -3048,7 +3048,7 @@
       0.23
     ],
     "hex": "#bcbbbb",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "MACR15JM": {
     "lab": [
@@ -3057,7 +3057,7 @@
       0.23
     ],
     "hex": "#bcbbbb",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "MACR161F": {
     "lab": [
@@ -3066,7 +3066,7 @@
       0.23
     ],
     "hex": "#bcbbbb",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "U5746O5": {
     "lab": [
@@ -3075,7 +3075,7 @@
       3.61
     ],
     "hex": "#c5c2bc",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "U5746SG": {
     "lab": [
@@ -3084,7 +3084,7 @@
       3.61
     ],
     "hex": "#c5c2bc",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "W880411": {
     "lab": [
@@ -3093,7 +3093,7 @@
       -0.9
     ],
     "hex": "#c3c8c9",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "W8804I9": {
     "lab": [
@@ -3102,7 +3102,7 @@
       4.18
     ],
     "hex": "#c4b5b1",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "W880H15": {
     "lab": [
@@ -3111,7 +3111,7 @@
       3.47
     ],
     "hex": "#bcbcb5",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "W880W15": {
     "lab": [
@@ -3120,7 +3120,7 @@
       1.29
     ],
     "hex": "#bdbdba",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "UN933LNV": {
     "lab": [
@@ -3129,7 +3129,7 @@
       7.42
     ],
     "hex": "#c7c1b3",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "UN933ONE": {
     "lab": [
@@ -3138,7 +3138,7 @@
       7.42
     ],
     "hex": "#c7c1b3",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "U90609IH": {
     "lab": [
@@ -3246,7 +3246,7 @@
       7.34
     ],
     "hex": "#cec9bc",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "U201011N": {
     "lab": [
@@ -3255,7 +3255,7 @@
       7.34
     ],
     "hex": "#cec9bc",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "U2010892": {
     "lab": [
@@ -3264,7 +3264,7 @@
       7.34
     ],
     "hex": "#cec9bc",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "U2010281": {
     "lab": [
@@ -3273,7 +3273,7 @@
       7.34
     ],
     "hex": "#cec9bc",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "U201079X": {
     "lab": [
@@ -3282,7 +3282,7 @@
       7.34
     ],
     "hex": "#cec9bc",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "U992PK": {
     "lab": [
@@ -3300,7 +3300,7 @@
       3.11
     ],
     "hex": "#c6c3be",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "W8604NE": {
     "lab": [
@@ -3309,7 +3309,7 @@
       3.11
     ],
     "hex": "#c6c3be",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "W86038B": {
     "lab": [
@@ -3318,7 +3318,7 @@
       3.11
     ],
     "hex": "#c6c3be",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "W86019F": {
     "lab": [
@@ -3327,7 +3327,7 @@
       3.11
     ],
     "hex": "#c6c3be",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "W8602JM": {
     "lab": [
@@ -3336,7 +3336,7 @@
       3.11
     ],
     "hex": "#c6c3be",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "L4040TB8": {
     "lab": [
@@ -3345,7 +3345,7 @@
       -2.8
     ],
     "hex": "#bcb8bf",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "L4040BK8": {
     "lab": [
@@ -3381,7 +3381,7 @@
       0.52
     ],
     "hex": "#cecaca",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "L4040TR8": {
     "lab": [
@@ -3399,7 +3399,7 @@
       -1.6
     ],
     "hex": "#c0bfc2",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "M8607B2": {
     "lab": [
@@ -3480,7 +3480,7 @@
       0.92
     ],
     "hex": "#ccd4d0",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "150510_LTPK": {
     "lab": [
@@ -3489,7 +3489,7 @@
       1.51
     ],
     "hex": "#dececf",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "150510_LTBL": {
     "lab": [
@@ -3498,7 +3498,7 @@
       -3.76
     ],
     "hex": "#caced5",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "150510_LAV": {
     "lab": [
@@ -3507,7 +3507,7 @@
       -0.73
     ],
     "hex": "#d7cdd1",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "150404_NTTP": {
     "lab": [
@@ -3516,7 +3516,7 @@
       2.97
     ],
     "hex": "#dfd4d1",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "150404_SAGE": {
     "lab": [
@@ -3525,7 +3525,7 @@
       4.53
     ],
     "hex": "#dad5cd",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "150404_WNV": {
     "lab": [
@@ -3534,7 +3534,7 @@
       -2.19
     ],
     "hex": "#d4d1d6",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "183222_NVY": {
     "lab": [
@@ -3615,7 +3615,7 @@
       2.76
     ],
     "hex": "#d8d4cf",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "177253_BLK": {
     "lab": [
@@ -3696,7 +3696,7 @@
       0.51
     ],
     "hex": "#d7d4d3",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "150420_SLTP": {
     "lab": [
@@ -3741,7 +3741,7 @@
       -2.15
     ],
     "hex": "#d7d5da",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "232619_CCBK": {
     "lab": [
@@ -3768,7 +3768,7 @@
       0.08
     ],
     "hex": "#d7c9cc",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "117624_WHT": {
     "lab": [
@@ -3777,7 +3777,7 @@
       1.25
     ],
     "hex": "#d4d3d1",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "117624_SLT": {
     "lab": [
@@ -3831,7 +3831,7 @@
       3.49
     ],
     "hex": "#b6a9a5",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "177195_RED": {
     "lab": [
@@ -3840,7 +3840,7 @@
       0.75
     ],
     "hex": "#c0bbbb",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "177195_NVY": {
     "lab": [
@@ -3885,7 +3885,7 @@
       -2.82
     ],
     "hex": "#d0d3d8",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "150730_LVMT": {
     "lab": [
@@ -3894,7 +3894,7 @@
       0.3
     ],
     "hex": "#dcd0d2",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "150730_BKCL": {
     "lab": [
@@ -3912,7 +3912,7 @@
       -0.44
     ],
     "hex": "#c3c1c3",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "220421_BLOR": {
     "lab": [
@@ -3948,7 +3948,7 @@
       -2.57
     ],
     "hex": "#c5d0d3",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "246215_WSL": {
     "lab": [
@@ -3957,7 +3957,7 @@
       -2.56
     ],
     "hex": "#d3d9dd",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "246215_SAGE": {
     "lab": [
@@ -3966,7 +3966,7 @@
       2.99
     ],
     "hex": "#ceddd3",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "117756_BKMT": {
     "lab": [
@@ -4002,7 +4002,7 @@
       -2.05
     ],
     "hex": "#aaacaf",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "124836_BLU": {
     "lab": [
@@ -4065,7 +4065,7 @@
       0.96
     ],
     "hex": "#a9a6a5",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "158949_BBK": {
     "lab": [
@@ -4209,7 +4209,7 @@
       8.73
     ],
     "hex": "#d3c5b7",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "183421_OLV": {
     "lab": [
@@ -4479,7 +4479,7 @@
       -1.65
     ],
     "hex": "#d6d1d6",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "220425_WGR": {
     "lab": [
@@ -4488,7 +4488,7 @@
       3.01
     ],
     "hex": "#cfd4cd",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "220425_BKW": {
     "lab": [
@@ -4515,7 +4515,7 @@
       3.39
     ],
     "hex": "#d4cdc8",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "205188_DSRT": {
     "lab": [
@@ -4587,7 +4587,7 @@
       1.82
     ],
     "hex": "#aaa8a5",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "232930_BLK": {
     "lab": [
@@ -4605,7 +4605,7 @@
       -3.59
     ],
     "hex": "#afb2b8",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "221040_NAT": {
     "lab": [
@@ -4650,7 +4650,7 @@
       1.84
     ],
     "hex": "#dbd8d5",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "150292_NVY": {
     "lab": [
@@ -4677,7 +4677,7 @@
       -2.92
     ],
     "hex": "#d1d3d8",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "214110_GRY": {
     "lab": [
@@ -4704,7 +4704,7 @@
       -7.07
     ],
     "hex": "#d7dae8",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "100827_NVSL": {
     "lab": [
@@ -4776,7 +4776,7 @@
       8.02
     ],
     "hex": "#d6c7ba",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "200234_CDB": {
     "lab": [
@@ -4812,7 +4812,7 @@
       -1.85
     ],
     "hex": "#bdbfc2",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "237744_BBK": {
     "lab": [
@@ -4830,7 +4830,7 @@
       2.77
     ],
     "hex": "#d4d3cd",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "177194_NVRD": {
     "lab": [
@@ -4875,7 +4875,7 @@
       -2.42
     ],
     "hex": "#d5d8dc",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "129720_LBPK": {
     "lab": [
@@ -4884,7 +4884,7 @@
       -5.06
     ],
     "hex": "#c5cfd7",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "129720_BKW": {
     "lab": [
@@ -4965,7 +4965,7 @@
       2.35
     ],
     "hex": "#d8d3cf",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "117629_BBK": {
     "lab": [
@@ -5010,7 +5010,7 @@
       6.3
     ],
     "hex": "#d9d2c7",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "246240_YEL": {
     "lab": [
@@ -5064,7 +5064,7 @@
       -0.62
     ],
     "hex": "#c8c7c9",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "IQ6594-514": {
     "lab": [
@@ -5091,7 +5091,7 @@
       -4.05
     ],
     "hex": "#d2e4e8",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "HQ9157-011": {
     "lab": [
@@ -5118,7 +5118,7 @@
       -1.61
     ],
     "hex": "#aaa8ac",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "HQ5974-010": {
     "lab": [
@@ -5181,7 +5181,7 @@
       -1.6
     ],
     "hex": "#e7e2e7",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "IR8955-102": {
     "lab": [
@@ -5208,7 +5208,7 @@
       0.87
     ],
     "hex": "#b9b5b4",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "IW3028-247": {
     "lab": [
@@ -5280,7 +5280,7 @@
       -0.94
     ],
     "hex": "#b0afb1",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "II3688-486": {
     "lab": [
@@ -5298,7 +5298,7 @@
       -1.96
     ],
     "hex": "#b6b5ba",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "IM8469-010": {
     "lab": [
@@ -5307,7 +5307,7 @@
       -0.94
     ],
     "hex": "#b0afb1",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "IO0040-010": {
     "lab": [
@@ -5343,7 +5343,7 @@
       -0.76
     ],
     "hex": "#b1afb1",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "IR6760-133": {
     "lab": [
@@ -5361,7 +5361,7 @@
       -0.9
     ],
     "hex": "#b2b3b4",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "IM5463-133": {
     "lab": [
@@ -5406,7 +5406,7 @@
       2.53
     ],
     "hex": "#dbd9d5",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "HV5350-448": {
     "lab": [
@@ -5424,7 +5424,7 @@
       -5.27
     ],
     "hex": "#d3d3de",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "IF4362-010": {
     "lab": [
@@ -5478,7 +5478,7 @@
       1.12
     ],
     "hex": "#aba9a7",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "IW3887-010": {
     "lab": [
@@ -5505,7 +5505,7 @@
       -0.06
     ],
     "hex": "#c8c8c8",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "IF4361-010": {
     "lab": [
@@ -6072,7 +6072,7 @@
       -14.22
     ],
     "hex": "#d0cae8",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "IU0249-485": {
     "lab": [
@@ -6198,7 +6198,7 @@
       -0.88
     ],
     "hex": "#bcbbbd",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "IF1398-045": {
     "lab": [
@@ -6360,7 +6360,7 @@
       -1.47
     ],
     "hex": "#e2e1e4",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "IV5321-661": {
     "lab": [
@@ -6450,7 +6450,7 @@
       -0.9
     ],
     "hex": "#bababc",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "IF2040-486": {
     "lab": [
@@ -6486,7 +6486,7 @@
       -0.99
     ],
     "hex": "#b6b6b8",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "FB7952-646": {
     "lab": [
@@ -6531,7 +6531,7 @@
       -1.01
     ],
     "hex": "#acacae",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "DD1919-010": {
     "lab": [
@@ -6594,7 +6594,7 @@
       -0.87
     ],
     "hex": "#dbdbdd",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "N1013626-010": {
     "lab": [
@@ -6612,7 +6612,7 @@
       -1.01
     ],
     "hex": "#b7b7b9",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "IF0899-010": {
     "lab": [
@@ -6666,7 +6666,7 @@
       -1.3
     ],
     "hex": "#d1ccd0",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "IO9673-010": {
     "lab": [
@@ -6945,7 +6945,7 @@
       -1.52
     ],
     "hex": "#caced0",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "0131602840052": {
     "lab": [
@@ -6981,7 +6981,7 @@
       -1.15
     ],
     "hex": "#a4a8a9",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "0133522800001": {
     "lab": [
@@ -7062,7 +7062,7 @@
       0.49
     ],
     "hex": "#d8d8d7",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "0131505850005": {
     "lab": [
@@ -7080,7 +7080,7 @@
       -2.12
     ],
     "hex": "#d1d5d9",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "0131602840062": {
     "lab": [
@@ -7089,7 +7089,7 @@
       -10.18
     ],
     "hex": "#b1c1d2",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "0133484260050": {
     "lab": [
@@ -7098,7 +7098,7 @@
       1.04
     ],
     "hex": "#d9d6d5",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "0131611110031": {
     "lab": [
@@ -7134,7 +7134,7 @@
       -1.83
     ],
     "hex": "#cdd1d3",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "0131454210207": {
     "lab": [
@@ -7161,7 +7161,7 @@
       -15.64
     ],
     "hex": "#94aec7",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "0133603430022": {
     "lab": [
@@ -7197,7 +7197,7 @@
       -1.13
     ],
     "hex": "#d5d8da",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "0131604890123": {
     "lab": [
@@ -7440,7 +7440,7 @@
       6.28
     ],
     "hex": "#cdcdc1",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "0120468680665": {
     "lab": [
@@ -7449,7 +7449,7 @@
       1.14
     ],
     "hex": "#c2c2c0",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "0097603260873": {
     "lab": [
@@ -7557,7 +7557,7 @@
       -6.87
     ],
     "hex": "#ebeefb",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "0120519270313": {
     "lab": [
@@ -7674,7 +7674,7 @@
       15.55
     ],
     "hex": "#ccbfa3",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "0128522800015": {
     "lab": [
@@ -7863,7 +7863,7 @@
       -2.57
     ],
     "hex": "#aab9ba",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "0170604890035": {
     "lab": [
@@ -7908,7 +7908,7 @@
       -11.92
     ],
     "hex": "#b3cbde",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "0170602840012": {
     "lab": [
@@ -8025,7 +8025,7 @@
       -11.23
     ],
     "hex": "#b9cee0",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "0170484260047": {
     "lab": [
@@ -8115,7 +8115,7 @@
       0.68
     ],
     "hex": "#dddedd",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "0170611140010": {
     "lab": [
@@ -8133,7 +8133,7 @@
       -0.5
     ],
     "hex": "#c9cacb",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "0170611110020": {
     "lab": [
@@ -8214,7 +8214,7 @@
       -7.96
     ],
     "hex": "#c3d2df",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "0170611110002": {
     "lab": [
@@ -8223,7 +8223,7 @@
       -10.76
     ],
     "hex": "#bfd3e5",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "0172522800045": {
     "lab": [
@@ -8250,7 +8250,7 @@
       -9.95
     ],
     "hex": "#a8bdcc",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "796275002": {
     "lab": [
@@ -8322,7 +8322,7 @@
       0.15
     ],
     "hex": "#dbdbdb",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "796255012": {
     "lab": [
@@ -8340,7 +8340,7 @@
       -1.31
     ],
     "hex": "#dfe0e3",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "891438052": {
     "lab": [
@@ -8358,7 +8358,7 @@
       0.35
     ],
     "hex": "#d6d4d4",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "796255962": {
     "lab": [
@@ -8367,7 +8367,7 @@
       -3.7
     ],
     "hex": "#cfd5db",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "796255412": {
     "lab": [
@@ -8394,7 +8394,7 @@
       3.4
     ],
     "hex": "#d4cfca",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "891438022": {
     "lab": [
@@ -8421,7 +8421,7 @@
       0.18
     ],
     "hex": "#dbdbda",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "833070002": {
     "lab": [
@@ -8457,7 +8457,7 @@
       2.13
     ],
     "hex": "#babbb7",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "1175427002": {
     "lab": [
@@ -8484,7 +8484,7 @@
       -1.28
     ],
     "hex": "#caccce",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "906489002": {
     "lab": [
@@ -8538,7 +8538,7 @@
       1.93
     ],
     "hex": "#dfd9d7",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "715775362": {
     "lab": [
@@ -8556,7 +8556,7 @@
       -0.48
     ],
     "hex": "#dadadb",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "715775072": {
     "lab": [
@@ -8601,7 +8601,7 @@
       -21.33
     ],
     "hex": "#9ca9d0",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "715775232": {
     "lab": [
@@ -8646,7 +8646,7 @@
       -0.01
     ],
     "hex": "#d9dada",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "906832022": {
     "lab": [
@@ -8664,7 +8664,7 @@
       0.08
     ],
     "hex": "#d9d9d9",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "906832062": {
     "lab": [
@@ -8700,7 +8700,7 @@
       -0.03
     ],
     "hex": "#dadbdb",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "898963002": {
     "lab": [
@@ -8727,7 +8727,7 @@
       -1.13
     ],
     "hex": "#dedfe1",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "880822002": {
     "lab": [
@@ -8745,7 +8745,7 @@
       -0.22
     ],
     "hex": "#dbdbdb",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "880822052": {
     "lab": [
@@ -8754,7 +8754,7 @@
       -8.87
     ],
     "hex": "#b9c4d3",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "889841042": {
     "lab": [
@@ -8763,7 +8763,7 @@
       0.01
     ],
     "hex": "#dad9d9",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "889841002": {
     "lab": [
@@ -8781,7 +8781,7 @@
       -0.04
     ],
     "hex": "#d6d6d6",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "781281002": {
     "lab": [
@@ -8799,7 +8799,7 @@
       -2.62
     ],
     "hex": "#d8d9de",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "889839042": {
     "lab": [
@@ -8817,7 +8817,7 @@
       -0.02
     ],
     "hex": "#d8d8d8",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "889839022": {
     "lab": [
@@ -8826,7 +8826,7 @@
       -1.26
     ],
     "hex": "#dedde0",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "889839052": {
     "lab": [
@@ -8844,7 +8844,7 @@
       0.66
     ],
     "hex": "#d2d0cf",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "887837002": {
     "lab": [
@@ -8862,7 +8862,7 @@
       -0.67
     ],
     "hex": "#dcdcdd",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "887837052": {
     "lab": [
@@ -8880,7 +8880,7 @@
       0.59
     ],
     "hex": "#d9d9d8",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "887838002": {
     "lab": [
@@ -8898,7 +8898,7 @@
       0.08
     ],
     "hex": "#dedede",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "880828012": {
     "lab": [
@@ -8916,7 +8916,7 @@
       -1.07
     ],
     "hex": "#e2e3e5",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "726474042": {
     "lab": [
@@ -8925,7 +8925,7 @@
       10.36
     ],
     "hex": "#edb3af",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "898962002": {
     "lab": [
@@ -8943,7 +8943,7 @@
       3.17
     ],
     "hex": "#c3bcb7",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "898886012": {
     "lab": [
@@ -8952,7 +8952,7 @@
       -0.01
     ],
     "hex": "#d7d7d7",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "898886002": {
     "lab": [
@@ -8961,7 +8961,7 @@
       0.01
     ],
     "hex": "#dedede",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "862660012": {
     "lab": [
@@ -8997,7 +8997,7 @@
       -0.33
     ],
     "hex": "#d2d2d3",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "889850032": {
     "lab": [
@@ -9033,7 +9033,7 @@
       -0.25
     ],
     "hex": "#ddddde",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "773280012": {
     "lab": [
@@ -9051,7 +9051,7 @@
       -0.2
     ],
     "hex": "#d8d8d8",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "901650012": {
     "lab": [
@@ -9060,7 +9060,7 @@
       -0.1
     ],
     "hex": "#dcdcdc",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "889849012": {
     "lab": [
@@ -9069,7 +9069,7 @@
       -0.15
     ],
     "hex": "#ddddde",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "889849002": {
     "lab": [
@@ -9078,7 +9078,7 @@
       1.76
     ],
     "hex": "#d2d0cd",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "889849032": {
     "lab": [
@@ -9096,7 +9096,7 @@
       -0.06
     ],
     "hex": "#dcdcdc",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "598213002": {
     "lab": [
@@ -9123,7 +9123,7 @@
       -0.05
     ],
     "hex": "#d1d1d1",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "898807002": {
     "lab": [
@@ -9141,7 +9141,7 @@
       -0.41
     ],
     "hex": "#dededf",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "883708022": {
     "lab": [
@@ -9159,7 +9159,7 @@
       0.37
     ],
     "hex": "#d9d9d8",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "714169002": {
     "lab": [
@@ -9186,7 +9186,7 @@
       -0.24
     ],
     "hex": "#dddddd",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "898778002": {
     "lab": [
@@ -9240,7 +9240,7 @@
       0.0
     ],
     "hex": "#dedede",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "501490032": {
     "lab": [
@@ -9258,7 +9258,7 @@
       -0.9
     ],
     "hex": "#dcdddf",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "501490052": {
     "lab": [
@@ -9276,7 +9276,7 @@
       -0.15
     ],
     "hex": "#ddddde",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "907827022": {
     "lab": [
@@ -9339,7 +9339,7 @@
       -0.16
     ],
     "hex": "#dcdcdc",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "887836022": {
     "lab": [
@@ -9357,7 +9357,7 @@
       0.17
     ],
     "hex": "#d7d6d6",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "472757052": {
     "lab": [
@@ -9366,7 +9366,7 @@
       -0.06
     ],
     "hex": "#e0e0e0",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "472757212": {
     "lab": [
@@ -9375,7 +9375,7 @@
       -0.94
     ],
     "hex": "#dcdddf",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "472757042": {
     "lab": [
@@ -9393,7 +9393,7 @@
       0.0
     ],
     "hex": "#dddddd",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "472757002": {
     "lab": [
@@ -9411,7 +9411,7 @@
       -0.03
     ],
     "hex": "#d2d3d2",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "472757532": {
     "lab": [
@@ -9474,7 +9474,7 @@
       7.82
     ],
     "hex": "#d2bfb4",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "881702002": {
     "lab": [
@@ -9510,7 +9510,7 @@
       -0.09
     ],
     "hex": "#cbcacb",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "472755022": {
     "lab": [
@@ -9519,7 +9519,7 @@
       -0.28
     ],
     "hex": "#e1e1e2",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "472755012": {
     "lab": [
@@ -9528,7 +9528,7 @@
       0.1
     ],
     "hex": "#dedddd",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "898563002": {
     "lab": [
@@ -9537,7 +9537,7 @@
       0.03
     ],
     "hex": "#d4d4d4",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "800322022": {
     "lab": [
@@ -9573,7 +9573,7 @@
       0.38
     ],
     "hex": "#d5d4d4",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "889775002": {
     "lab": [
@@ -9582,7 +9582,7 @@
       0.09
     ],
     "hex": "#d6d5d5",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "889775022": {
     "lab": [
@@ -9591,7 +9591,7 @@
       1.76
     ],
     "hex": "#dedad8",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "869799032": {
     "lab": [
@@ -9600,7 +9600,7 @@
       2.04
     ],
     "hex": "#ddd9d6",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "869799022": {
     "lab": [
@@ -9609,7 +9609,7 @@
       0.0
     ],
     "hex": "#dbdbdb",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "869799002": {
     "lab": [
@@ -9618,7 +9618,7 @@
       0.08
     ],
     "hex": "#d5d5d5",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "869800012": {
     "lab": [
@@ -9627,7 +9627,7 @@
       3.05
     ],
     "hex": "#dedad5",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "869800002": {
     "lab": [
@@ -9636,7 +9636,7 @@
       -0.0
     ],
     "hex": "#dadada",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "844102012": {
     "lab": [
@@ -9663,7 +9663,7 @@
       0.0
     ],
     "hex": "#dcdcdc",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "889774042": {
     "lab": [
@@ -9672,7 +9672,7 @@
       0.92
     ],
     "hex": "#dcdbd9",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "889774012": {
     "lab": [
@@ -9681,7 +9681,7 @@
       -0.01
     ],
     "hex": "#d6d6d6",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "889774032": {
     "lab": [
@@ -9690,7 +9690,7 @@
       0.79
     ],
     "hex": "#e3dadb",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "889774002": {
     "lab": [
@@ -9708,7 +9708,7 @@
       0.0
     ],
     "hex": "#d9d9d9",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "895300002": {
     "lab": [
@@ -9717,7 +9717,7 @@
       -0.02
     ],
     "hex": "#d4d4d4",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "904458002": {
     "lab": [
@@ -9726,7 +9726,7 @@
       0.26
     ],
     "hex": "#d3d3d2",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "898564012": {
     "lab": [
@@ -9735,7 +9735,7 @@
       -0.19
     ],
     "hex": "#dedede",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "898564022": {
     "lab": [
@@ -9753,7 +9753,7 @@
       0.26
     ],
     "hex": "#d7d7d6",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "898564002": {
     "lab": [
@@ -9897,7 +9897,7 @@
       4.62
     ],
     "hex": "#b3aaa3",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "896365002": {
     "lab": [
@@ -9951,7 +9951,7 @@
       3.24
     ],
     "hex": "#b2aaa6",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "896724032": {
     "lab": [
@@ -10068,7 +10068,7 @@
       -1.19
     ],
     "hex": "#c3c2c5",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "811580042": {
     "lab": [
@@ -10140,7 +10140,7 @@
       -24.18
     ],
     "hex": "#7dadd3",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "544069002": {
     "lab": [
@@ -10158,7 +10158,7 @@
       -12.24
     ],
     "hex": "#a1bbce",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "876639012": {
     "lab": [
@@ -10221,7 +10221,7 @@
       -4.08
     ],
     "hex": "#beced2",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "876631002": {
     "lab": [
@@ -10266,7 +10266,7 @@
       -1.19
     ],
     "hex": "#aea7ab",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "912376002": {
     "lab": [
@@ -10365,7 +10365,7 @@
       -1.81
     ],
     "hex": "#b9b7bb",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "872191002": {
     "lab": [
@@ -10410,7 +10410,7 @@
       2.28
     ],
     "hex": "#c2bfbb",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "736577022": {
     "lab": [
@@ -10428,7 +10428,7 @@
       -2.07
     ],
     "hex": "#aeb0b3",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "542951072": {
     "lab": [
@@ -10446,7 +10446,7 @@
       1.61
     ],
     "hex": "#c1c1be",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "736577032": {
     "lab": [
@@ -10554,7 +10554,7 @@
       3.43
     ],
     "hex": "#bebfb8",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "874962002": {
     "lab": [
@@ -10590,7 +10590,7 @@
       -0.09
     ],
     "hex": "#c4c3c3",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "850448032": {
     "lab": [
@@ -10644,7 +10644,7 @@
       -8.09
     ],
     "hex": "#a8bac6",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "874957002": {
     "lab": [
@@ -10689,7 +10689,7 @@
       5.0
     ],
     "hex": "#beb7af",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "874951022": {
     "lab": [
@@ -10698,7 +10698,7 @@
       1.55
     ],
     "hex": "#c1bab9",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "874951012": {
     "lab": [
@@ -10707,7 +10707,7 @@
       11.68
     ],
     "hex": "#cdc0ac",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "761330002": {
     "lab": [
@@ -10716,7 +10716,7 @@
       2.37
     ],
     "hex": "#b8b0ad",
-    "canonical": "silver"
+    "canonical": "gray"
   },
   "542723032": {
     "lab": [
@@ -10752,7 +10752,7 @@
       2.85
     ],
     "hex": "#c6c4bf",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "850450032": {
     "lab": [
@@ -10788,7 +10788,7 @@
       0.7
     ],
     "hex": "#bfbfbe",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "542894022": {
     "lab": [
@@ -10824,7 +10824,7 @@
       4.06
     ],
     "hex": "#c6c2bb",
-    "canonical": "silver"
+    "canonical": "cream"
   },
   "874975012": {
     "lab": [
