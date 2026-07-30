@@ -121,7 +121,13 @@ DINOV3_CHECKPOINT_CANDIDATES = [
     DATASET_ROOT / "finetuned_dinov3_identity_v1_arcface" / "stage1_head_best",
 ]
 
-TOP_IDENTITY_CANDIDATES = 10   # SigLIP2 stage: how many identity strings to expand into DINOv3 candidates
+# SigLIP2 stage: how many identity strings to expand into DINOv3
+# candidates. Was 10; widened after the real-checkpoint Phase 4 eval
+# (docs/eval_log.md, 2026-07-30) found the identity-shortlist miss rate
+# (43-52%) is the dominant bottleneck -- DINOv3's rerank is already ~65%
+# accurate conditional on getting a fair candidate set, so giving it more
+# candidates to work with should matter more than anything else right now.
+TOP_IDENTITY_CANDIDATES = 25
 FINAL_TOP_K = 5
 AMBIGUITY_MARGIN = 0.03        # DINOv3 cosine-similarity gap under which top-1/top-2 count as "too close to call"
 # Bare category name, not a "a photo of a {category}" template -- matches
@@ -573,7 +579,11 @@ class HierarchicalRetriever:
         ranked = [(available[i], float(similarity[i])) for i in order.tolist()]
         return ranked[:final_top_k]
 
-    def retrieve(self, image_path, use_category_gate=True, top_identity_candidates=TOP_IDENTITY_CANDIDATES, final_top_k=FINAL_TOP_K):
+    def retrieve(self, image_path, use_category_gate=False, top_identity_candidates=TOP_IDENTITY_CANDIDATES, final_top_k=FINAL_TOP_K):
+        # Default flipped to off: confirmed net-negative in two independent
+        # Phase 4 runs (docs/eval_log.md, 2026-07-30) -- it excludes the
+        # true category ~30% of the time, unrecoverable, for no rerank-
+        # quality benefit (conditional R@1 is identical gated vs. ungated).
         image = load_rgb_image(image_path)
 
         siglip_embedding = embed_images_siglip(self.siglip2_model, self.siglip2_processor, [image])
@@ -687,13 +697,14 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--image", type=str, help="Path to a single query image.")
     parser.add_argument("--evaluate", action="store_true", help="Run end-to-end held-out evaluation.")
-    parser.add_argument("--no-category-gate", action="store_true", help="Disable stage-1 category gating (fallback comparison).")
+    parser.add_argument("--category-gate", action="store_true",
+                         help="Enable stage-1 category gating (off by default -- confirmed net-negative, see docs/eval_log.md 2026-07-30).")
     args = parser.parse_args()
 
     retriever = HierarchicalRetriever()
 
     if args.image:
-        result = retriever.retrieve(args.image, use_category_gate=not args.no_category_gate)
+        result = retriever.retrieve(args.image, use_category_gate=args.category_gate)
         print_result(args.image, result)
 
     if args.evaluate:

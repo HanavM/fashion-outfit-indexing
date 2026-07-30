@@ -700,3 +700,39 @@ no-tolerance methodology: primary match 39.2% → **46.4%**, primary-or-
 secondary 56.1% → **64.8%** (`docs/eval_log.md` has both rows). A real,
 measured improvement from a real fix, confirmed the same way the original
 number was measured.
+
+## Update — 2026-07-30 (later still): Phase 4's real number, both fine-tuned checkpoints
+
+User pushed the real DINOv3 checkpoint from the Modal Volume down to Colab
+Drive and reran `hierarchical_retrieval_pipeline.py --evaluate` there.
+Real result (`docs/eval_log.md`): R@1 **36.72%** without the category
+gate (31.34% with it) — a large jump from the earlier frozen-DINOv3 run's
+14.96%, confirming DINOv3 fine-tuning was the single biggest lever for
+this pipeline, as expected.
+
+The median ranks looked alarming at first (4.0 vs. 1235.0) but turned out
+to be a metric artifact, not a new problem: `evaluate()` assigns a
+sentinel rank (`catalog_size + 1`) whenever the identity shortlist misses
+the true product entirely, and the gated config's miss rate (51.51%) sits
+just over 50% — so the *median itself* lands on the sentinel. Ungated
+(43.36% miss) falls just under that threshold instead, landing on a real
+low rank. Not a bug, just how percentile aggregation behaves right at that
+crossover.
+
+**Real, useful finding from computing conditional R@1** (accuracy given
+the true product actually reached the shortlist): 64.6% with-gate vs.
+64.8% without-gate — essentially identical. This cleanly separates the two
+stages' contributions: DINOv3's rerank is genuinely excellent (~65% top-1
+whenever it gets a fair shot), and the category gate has zero effect on
+rerank quality — its only effect is on shortlist coverage, where it's
+still net-negative (51.51% vs. 43.36% miss). The identity-shortlist stage
+remains the dominant bottleneck, at essentially the same 43-52% miss-rate
+magnitude as the frozen-DINOv3 run — DINOv3 getting much better didn't
+change *how often* it gets a chance to prove it.
+
+Immediate next lever, clearly prioritized by this analysis: drop the
+category gate (confirmed net-negative in two independent runs now) and/or
+widen `TOP_IDENTITY_CANDIDATES` past 10 to directly attack the shortlist
+miss rate — not further DINOv3 work, which has limited remaining upside
+here until the shortlist actually gets it a fair set of candidates to
+choose from.
