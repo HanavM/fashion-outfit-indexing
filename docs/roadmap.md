@@ -795,3 +795,22 @@ queries, not a precise top-5 match — most useful as one signal feeding a
 re-ranker within an already-narrowed candidate set (e.g. after the
 hierarchical pipeline's category/semantic stages) rather than a
 standalone full-catalog search when fine detail precision matters.
+
+## Update — 2026-07-31: the shortlist-widening fix worked, exactly as predicted
+
+User reran `--evaluate` with `TOP_IDENTITY_CANDIDATES` 10→25. Result
+(`docs/eval_log.md`): identity-shortlist miss rate **51.51%→35.21%**
+(gated) and **43.36%→20.00%** (ungated) — more than halved. R@1
+**36.72%→47.65%** ungated, the best Phase 4 number yet. Conditional R@1
+(given the shortlist actually contains the true product) dipped slightly,
+64.8%→59.6% — expected, since DINOv3 now discriminates among 25
+candidates instead of 10, a harder per-candidate task — but the drop in
+outright misses more than compensates, net win is unambiguous.
+
+**Real bug caught from the user's own copy-paste, not hidden**: they also
+tried `--image <path> --top-k 5` and hit `error: unrecognized arguments:
+--top-k 5` — a command *I* had given them with a flag the script's CLI
+never actually defined (only `--image`/`--evaluate`/`--category-gate`
+existed). Fixed by adding the missing `--top-k` argument, wired through to
+`retrieve()`'s existing `final_top_k` parameter (which was already there,
+just not exposed on the CLI).

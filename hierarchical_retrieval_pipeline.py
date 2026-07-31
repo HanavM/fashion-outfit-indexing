@@ -699,12 +699,13 @@ if __name__ == "__main__":
     parser.add_argument("--evaluate", action="store_true", help="Run end-to-end held-out evaluation.")
     parser.add_argument("--category-gate", action="store_true",
                          help="Enable stage-1 category gating (off by default -- confirmed net-negative, see docs/eval_log.md 2026-07-30).")
+    parser.add_argument("--top-k", type=int, default=FINAL_TOP_K, help="Number of results to print for --image mode.")
     args = parser.parse_args()
 
     retriever = HierarchicalRetriever()
 
     if args.image:
-        result = retriever.retrieve(args.image, use_category_gate=args.category_gate)
+        result = retriever.retrieve(args.image, use_category_gate=args.category_gate, final_top_k=args.top_k)
         print_result(args.image, result)
 
     if args.evaluate:
