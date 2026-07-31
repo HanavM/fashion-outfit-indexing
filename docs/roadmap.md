@@ -736,3 +736,62 @@ widen `TOP_IDENTITY_CANDIDATES` past 10 to directly attack the shortlist
 miss rate — not further DINOv3 work, which has limited remaining upside
 here until the shortlist actually gets it a fair set of candidates to
 choose from.
+
+## Update — 2026-07-30 (later still): open-vocabulary free-text visual search
+
+**New question**: can a user query something never labeled at all (e.g.
+"clothes with stitching across the back") by embedding the raw text via
+SigLIP2 and ranking cached image embeddings, bypassing the whole label/
+category/identity machinery? Researched before building: yes, this is the
+standard CLIP/SigLIP zero-shot retrieval pattern. Two real risks
+researched and then *empirically tested against our own checkpoint*
+rather than left as literature-only claims:
+
+1. **Catastrophic forgetting** — published work found fine-tuning CLIP-
+   family models causes an average 16-17% zero-shot degradation. Tested
+   directly: 3 real catalog products with rare `defining_features`
+   (localized structural details), queried with hand-written paraphrases
+   never copied from training text, base model vs. v3 checkpoint, full
+   1,146-product catalog. Result: v3 *improved* 2 of 3 ranks (37→29,
+   175→104) rather than degrading — opposite of the general-literature
+   average. Plausible reason: `defining_features` was already a real
+   training target, so fine-tuning reinforced this query type instead of
+   narrowing away from it. Project-specific finding, not a general claim.
+2. **Architectural localized-grounding limitation** — confirmed real:
+   ranks of 29-104 out of ~1,150 are "in the right neighborhood," not
+   "found it." Root cause per research: SigLIP/CLIP pool the whole image
+   into one global vector, trained to reward whatever distinguishes
+   images most efficiently across a batch (category/color/silhouette),
+   not a small localized detail competing for room in the same vector.
+   Richer `defining_features` labels would help (more training pressure
+   toward packing that signal in) but have a ceiling — the real fix is
+   dense/patch-level matching (MaskCLIP-style: discard the last attention
+   layer's Q/K, turn V + the output projection into a 1x1 conv to get
+   text-aligned per-patch features, match against the *set* of patches
+   instead of one pooled vector). Real, established, training-free
+   technique — NOT implemented yet, since it means reaching into the
+   vision transformer's attention internals and needs its own validation
+   pass, more fragile than the global-embedding version below.
+
+**`free_text_visual_search.py`** — the global-embedding v1, built and
+validated end to end against the real v3 checkpoint (same queries as the
+research test above, reused rather than re-derived). Same conventions as
+the rest of the pipeline: Colab-default `DATASET_ROOT` with
+`APPAREL_DATASET_ROOT` override, checkpoint auto-detection (v3 only for
+now — v4 regressed on the metric it was measured against and hasn't been
+separately validated for this different use case, so not assumed to help
+here without testing), cached full-catalog image-embedding index
+(`retrieval_indexes/free_text_search_image_embeddings.pt`, one
+representative image per product). Deliberately separate from
+`hierarchical_retrieval_pipeline.py` — that answers "which exact product
+is this photo," this answers "which products match this free-text
+description," a different question with a different (and much simpler)
+architecture: one encoder, one cached index, no category gating or
+identity shortlisting needed.
+
+Set expectations accordingly, per the validation above: useful for
+surfacing relevant items in the top 20-50 for genuinely localized
+queries, not a precise top-5 match — most useful as one signal feeding a
+re-ranker within an already-narrowed candidate set (e.g. after the
+hierarchical pipeline's category/semantic stages) rather than a
+standalone full-catalog search when fine detail precision matters.
