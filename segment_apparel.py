@@ -88,6 +88,12 @@ CATEGORY_LABELS = {
     "Jackets": ["a jacket", "a coat"],
     "Hats": ["a hat", "a baseball cap", "a beanie"],
     "Socks": ["a sock", "a pair of socks"],
+    # Champion expansion -- reuses the same label phrasings as the
+    # equivalent existing categories above, just under Champion's own
+    # category-name strings.
+    "Hoodies and Sweatshirts": ["a hoodie", "a pullover", "a sweatshirt"],
+    "T-Shirts and Tops": ["a t-shirt", "a top"],
+    "Pants and Joggers": ["pants", "joggers", "sweatpants", "trousers"],
 }
 
 

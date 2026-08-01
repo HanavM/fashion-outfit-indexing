@@ -15,8 +15,13 @@ recently, 177 Gap men's clothing records (T-Shirts, Shorts, Pants, Sweaters
 `gap_scraper.py` — the easiest site of the pipeline (no bot protection
 anywhere, plain `requests` for the catalog), notable mainly for a
 client-side-rendering trap in the PDP accordions (see "Gap" section below).
-Written so the same pattern can be adapted to scrape other product
-categories/sites.
+Then 200 Champion men's clothing records (Hoodies and Sweatshirts,
+T-Shirts and Tops, Shorts, Pants and Joggers — 50 each, all 200 reached
+with no category shortfall) were added via `champion_scraper.py` — a
+Shopify storefront site, the easiest data source of any brand so far
+(one JSON API call returns the entire product record, no second PDP
+fetch needed for anything). Written so the same pattern can be adapted to
+scrape other product categories/sites.
 
 Working directory: `/Users/hanavmodasiya/fashion-tests`
 Environments: `.venv` (Python 3.14, pip: playwright, patchright, openai,
@@ -549,6 +554,55 @@ colorways at scrape time, so 177 were actually reachable — same
   only needed adding `"T-Shirts"` to `segment_apparel.py`'s
   `CATEGORY_LABELS` (Shorts/Pants/Sweaters were already defined from the
   PacSun expansion and reused as-is).
+
+### Champion men's clothing — Hoodies and Sweatshirts, T-Shirts and Tops, Shorts, Pants and Joggers
+
+Via `champion_scraper.py`, targeting 50 colorway variants per section (200
+requested, all 200 actually reached this time — no category came up short,
+unlike PacSun/Gap/Levi's sweaters/accessories).
+
+- **No bot protection at all, and the easiest data source of any brand in
+  this pipeline** — champion.com runs on Shopify, and Shopify's standard
+  storefront JSON API (`/collections/{handle}/products.json?limit=250&
+  page=N`, paginated until a page returns zero products) returns the
+  *entire* product record — full description, every colorway/size variant,
+  every image — in one response. No separate PDP visit needed at all for
+  anything, unlike every other brand in this pipeline (Gap/PacSun/New
+  Balance all need at least one extra fetch for description bullets or
+  detail data not present in the catalog listing).
+- **Men's-scoped collection handles aren't guessable from the nav
+  structure** — Champion's own top-level "men's clothing" URL 404'd, but
+  the 404 page still rendered the full site nav HTML, which is where the
+  real collection handles were scraped from (`mens-hoodies-sweatshirts`,
+  `mens-t-shirt-tops`, `mens-shorts`, `mens-pants`). Deliberately avoided
+  the unscoped `joggers`/`sweatpants` handles, which mix genders.
+- **Each Shopify "product" is already ONE colorway** (color is baked into
+  the title/handle, `options[0]` = Color with exactly one value on every
+  product checked) — same "one PDP-equivalent per colorway" shape as
+  PacSun/Gap, not Nike/New Balance's multi-colorway grouping. No
+  colorway-expansion step needed: one API product = one dataset record.
+  Numeric `id` is the stable `product_code`; `handle` is the slug.
+- **Images are self-describing by filename position**, printed directly in
+  the CDN URL (`..._Front1_...`, `..._Front2_...`, `..._Back1_...`,
+  `..._Back2_...`, `..._Detail_...`, `..._Full_Length_...`) — the same
+  kind of real, human-readable view-angle signal only Skechers had before
+  this. Captured via `image_urls` (raw CDN URLs, filenames intact)
+  alongside the renamed `image_N.jpg` files on disk, per lesson #5 below
+  (view signal is lost forever once files are renamed unless saved first).
+- **`body_html` is a single descriptive paragraph, not a bullet list** of
+  materials/features the way Adidas/New Balance/PacSun structure their
+  detail sections — stripped of HTML tags and entity-unescaped for
+  `details.description`. No separate materials/features arrays populated
+  for this brand; captioning still works fine from the description alone
+  (same graceful-degradation path already proven for New Balance's
+  Akamai-blocked records).
+- Product images are full-body/lifestyle model photos, suited to the same
+  SAM2+FashionCLIP cropping step as Nike/PacSun/Gap — needed adding
+  `"Hoodies and Sweatshirts"`, `"T-Shirts and Tops"`, and `"Pants and
+  Joggers"` to `segment_apparel.py`'s `CATEGORY_LABELS` (reusing the same
+  label phrasings as the closest existing categories: Hoodies and
+  Pullovers, Tops and T-Shirts, Pants and Tights respectively); `"Shorts"`
+  was already defined and reused as-is.
 
 ### Field-level concurrent-write collision (a second, narrower case dataset_utils doesn't fully cover)
 

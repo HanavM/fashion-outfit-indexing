@@ -1264,3 +1264,38 @@ sits (fusion + patch reranking are both spec-recommended and unbuilt).
 Tier 3 is not an accuracy lever on the current benchmark at all — it's
 the work required for the current benchmark to start measuring the thing
 the product actually needs to be good at.
+
+## Update — 2026-08-01: Champion added (200 records, no shortfall)
+
+User asked for wider brand/product-type coverage, staying in this
+project's streetwear aesthetic. Added Champion (champion.com) via
+`champion_scraper.py` — Hoodies and Sweatshirts, T-Shirts and Tops,
+Shorts, Pants and Joggers, 50 targeted per category, **all 200 reached
+with no category coming up short** (unlike PacSun/Gap's Sweaters, which
+hit real catalog-size caps). Full site notes in `SCRAPING_PROCESS.md`'s
+new Champion section — notably the easiest data source of any brand in
+this pipeline yet: Shopify's storefront JSON API returns the entire
+product record (description, every colorway, every image) in one call,
+no second PDP fetch needed for anything. Structured captioning
+(`caption_apparel.py --brand champion`) run to completion, 200/200.
+Garment cropping (`segment_apparel.py --brand champion`) run against the
+new records, three new `CATEGORY_LABELS` phrasings added.
+
+A separate concurrent effort was scraping Levi's into the same
+`apparel_dataset/metadata.json` at the same time — `dataset_utils.
+save_records_safe`'s merge-by-`product_code` made this safe to run
+alongside without collision (see the "Concurrent-write data loss
+incident" and "Field-level concurrent-write collision" lessons in
+`SCRAPING_PROCESS.md` for why that matters and what it does/doesn't
+cover). Catalog is now 8 brands, 1,468 total records (nike 319, gap 296,
+champion 200, skechers 180, pacsun 176, newbalance 173, adidas 90, levis
+34-and-still-growing as of this snapshot).
+
+None of this new data has been through a training run yet — SigLIP2 v3/
+v4 and the DINOv3 identity fine-tune both predate Champion (and Levi's).
+Retraining/re-embedding against the larger catalog is real future work,
+not done as part of this scraping pass — per the earlier "does exact
+retrieval need every product indexed" design discussion, new catalog
+entries only need embedding (a forward-pass job) to become searchable,
+not a full retrain, but the embedding step itself for these ~400 new
+records still hasn't been run against either encoder yet.
