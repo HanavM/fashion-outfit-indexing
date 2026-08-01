@@ -1082,3 +1082,185 @@ requirement, and the real remaining engineering work is enrollment
 plumbing (embed-and-append, periodic re-embed on checkpoint upgrades, ANN
 indexing at scale) plus a rejection/fallback path for the case a bigger
 catalog can shrink but never eliminate.
+
+## Update — 2026-08-01: full gap audit against `docs/project_spec_v1.md`, and a roadmap through backend completion
+
+User asked for a complete look at project state and a roadmap "until the
+backend stuff for this is done," specifically framed around continuing to
+improve accuracy. Re-read `docs/project_spec_v1.md` in full (930 lines,
+the original 5-phase MVP plan this whole project is scoped against) and
+audited every currently-built script against it, rather than just
+restating the Phase 1/3/4 status already tracked above. Two things came
+out of this: (1) a tier list of accuracy levers already identified but
+not yet executed (mostly already in this file/`eval_log.md`, consolidated
+here), and (2) several **structural gaps the spec calls for that have
+never been started at all** — not because they were tried and deferred,
+but because every script built so far still operates on the spec's
+easiest case (one clean catalog photo, one garment, studio lighting) and
+none of them touch the harder case the spec was actually written for
+(real outfit photos with multiple visible items, occlusion, street
+conditions).
+
+### Where this project actually sits against the spec's 5 phases
+
+- **Phase 1 (shoe retrieval benchmark)**: done. Frozen baselines for
+  SigLIP2/DINOv3 recorded, real Recall@K measured, error analysis by
+  colorway confusion done (`docs/eval_log.md`'s "same-model/different-
+  colorway" breakdowns).
+- **Phase 2 (dual-encoder shoe index)**: done for exact/near-exact
+  matching, but **narrower than spec 2.1/section 6 call for**. The spec
+  wants metadata candidates + SigLIP candidates + DINOv3 candidates +
+  OCR/logo candidates unioned, then reranked with patch-level evidence
+  (section 6). What's actually built (`hierarchical_retrieval_
+  pipeline.py`) is SigLIP2-shortlist → DINOv3-rerank-only — a *cascade*,
+  not the spec's *fusion*. DINOv3's own candidate ranking is final; there
+  is no score fusion combining both encoders' opinions on the same
+  candidate, no OCR/logo signal at all (never built), and no patch-level
+  local reranking within the final candidate set (DINOv3 is only used for
+  its pooled global embedding, same architectural ceiling problem
+  identified for SigLIP2's free-text search above — nothing here reads
+  DINOv3's patch tokens either). Real accuracy value likely sitting
+  here, unexplored.
+- **Phase 3 (real outfit images)**: **not started.** Spec 4.2 calls for
+  an item detector/segmenter (references DeepFashion2/Fashionpedia) that
+  finds and crops *every visible garment* in an outfit photo before
+  either encoder ever runs, plus catalog-to-consumer evaluation
+  (query = a real worn/street photo, gallery = catalog images — a
+  fundamentally different, harder distribution than the held-out-catalog-
+  image splits every eval number in `docs/eval_log.md` so far uses).
+  `segment_apparel.py` (SAM2 + FashionCLIP) is the closest thing built,
+  but it crops *one already-known-category garment out of a single-
+  product catalog photo* — it is not a general multi-item detector, has
+  never been run against a real outfit photo, and there is no occlusion/
+  visibility handling anywhere in the pipeline. **This is almost
+  certainly the single largest gap between "the backend as it exists
+  today" and "the backend the spec actually describes."** Every accuracy
+  number recorded so far is catalog-photo-to-catalog-photo; there is
+  currently no evidence about how this system performs on the kind of
+  photo (someone's actual outfit) the product is supposed to work on.
+- **Phase 4 (additional apparel categories)**: partially done. 6 brands,
+  multiple clothing categories beyond shoes, `structured_caption`
+  (taxonomy path + attribute facets) on 100% of records — this is real
+  progress toward spec 4.5/4.6. But the spec's attribute list (§4.5:
+  color, material, pattern, fit, length, silhouette, closure, pocket
+  type, distressing, heel type, sole type, toe shape, decorative
+  details) is broader than what's actually measured — `docs/eval_log.md`
+  only has real by-facet numbers for color/fit/closure (v4's motivation)
+  and a generic "attribute" bucket (27.20% R@1, the v3 by-label-kind
+  breakdown) — pattern, length, silhouette, pocket type, distressing,
+  heel/sole/toe shape have no dedicated measurement at all, so it's
+  unknown which of them are well-represented in the SigLIP2 embedding and
+  which aren't. Canonical label generation (§4.6 — "blue jeans", "Gap
+  blue jeans", etc. all resolving to the same item) also isn't built as
+  its own artifact; `structured_caption.positive_texts` is adjacent but
+  serves training, not query-time label generation/display.
+- **Phase 5 (composed outfit search — "this shoe with cargo jorts")**:
+  **not started.** No query parser splits a mixed image+text query into
+  per-item facets; `free_text_visual_search.py` and
+  `hierarchical_retrieval_pipeline.py` are two separate single-purpose
+  tools (text→catalog, image→catalog) with no combined entrypoint, and
+  since Phase 3's multi-item detection doesn't exist yet, there's no
+  outfit-level record to run a conjunction query against even if the
+  parser existed.
+
+### Also never built, called out explicitly in the spec, real accuracy/trust levers
+
+- **Confidence calibration + open-set rejection thresholds (spec §7)**:
+  same gap already flagged this session for exact-product retrieval
+  specifically — the spec generalizes it to *every* level (category,
+  brand, model-family, product), each with its own calibrated confidence
+  and a defined backoff chain (exact → model/colorway → brand+category →
+  attributes+category → category, spec §2.5). Right now HSC climbing
+  implements backoff at the *category* level only; brand and model-family
+  have no confidence field or backoff behavior at all — a wrong brand
+  guess is never softened to "unknown brand, still narrow by category,"
+  it just doesn't exist as a concept in the current schema.
+- **OCR/logo detection (spec §4.5 brand-evidence sources)**: never
+  built. Brand is inherited wholesale from the scraped source, never
+  independently verified against the actual image — fine for a clean
+  catalog photo (source *is* ground truth there) but this becomes a real
+  gap the moment Phase 3 (real outfit photos, unknown provenance) starts.
+- **Unseen-product enrollment eval split (spec §8.1)**: never run as its
+  own explicit test — "hold out entire identities from training, add
+  only to the gallery at eval time, confirm retrieval still works."
+  DINOv3's 56.55% test R@1 is close in spirit (it's a genuine held-out
+  split) but was never explicitly framed/reported as an enrollment-style
+  test, so there's no clean number to point to confirming the "you can
+  add new products without retraining" claim from earlier in this
+  conversation — worth a dedicated eval run given how central that claim
+  now is to the roadmap.
+
+### Roadmap, sequenced — near-term accuracy work first, structural spec gaps after
+
+**Tier 1 — cheap, data-only, already-diagnosed (do these first, days not
+weeks):**
+1. Rerun `hierarchical_retrieval_pipeline.py --evaluate` for the new HSC
+   climbing (already the top of `docs/eval_log.md`'s next-rows list —
+   unchanged, still the single next action).
+2. Push `TOP_IDENTITY_CANDIDATES` past 25, watch where shortlist-miss
+   returns diminish.
+3. Phase 1 v4 by-facet breakdown (never run) — resolves whether a less
+   aggressive v5 reweighting is worth trying.
+4. Free-text MaskCLIP dense-matching implementation (already planned in
+   the section above).
+
+**Tier 2 — real architecture upgrades to the existing single-item
+pipeline, matching spec §2.1/§6's fusion+rerank design (weeks):**
+5. **Score fusion**: combine SigLIP2's and DINOv3's opinions on the final
+   candidate set (e.g. weighted-sum or learned combination of both
+   encoders' similarity scores) instead of DINOv3-rerank-only — the spec
+   explicitly calls for fusing multiple signal sources, and this project
+   has never benchmarked cascade-only against fusion, so it's an
+   untested, plausibly real lever, not a diagnosed one yet.
+6. **Patch-level DINOv3 reranking** within the already-narrowed candidate
+   set — DINOv3 exposes patch tokens, not just a pooled vector, and the
+   spec's §4.4/§6 explicitly wants local patch comparison (panel
+   geometry, stitching, logo position) for the *final* discrimination
+   step, which is exactly where a 20-30-candidate shortlist makes the
+   added cost affordable (same shortlist-then-expensive-step shape
+   already used elsewhere in this pipeline).
+7. **Open-set rejection thresholds**, generalized beyond just exact-
+   product (already planned above) to brand and model-family confidence
+   too, implementing the full backoff chain from spec §2.5 instead of
+   only the category-level HSC backoff that exists today.
+8. **Unseen-product enrollment**, as its own explicit benchmarked claim
+   (spec §8.1) — cheap to run given DINOv3's split already approximates
+   it, valuable because "add new products without retraining" is now a
+   load-bearing claim in how this project's scaling story is described.
+
+**Tier 3 — the actual "backend not done yet" structural gap (biggest
+lift, real new capability, not just accuracy tuning):**
+9. **Multi-item outfit detection/segmentation** (spec §4.2) — the
+   precondition for everything Phase 3/5 need. Without this, every
+   accuracy number this project produces is measuring catalog-photo
+   performance, which is not the deployment condition. Concretely: adopt
+   or fine-tune a garment detector (DeepFashion2/Fashionpedia-style, per
+   the spec's own reference datasets) that finds bounding
+   boxes/masks for every visible item in a real photo, feeding
+   per-item crops into the existing SigLIP2+DINOv3 pipeline unchanged.
+   `segment_apparel.py`'s SAM2+FashionCLIP crop-selection logic is a
+   reasonable starting point for the segmentation half but was tuned
+   against single-product catalog photos, not multi-item scenes, and
+   would need real re-validation (dump candidate masks/scores against
+   real outfit photos, same methodology used to tune it the first time)
+   before trusting it in this harder setting.
+10. **Catalog-to-consumer evaluation** — once real outfit photos exist as
+    queries, this project's eval methodology needs a genuinely new split
+    (gallery = catalog images, query = real/worn photos), not a variant
+    of the held-out-catalog-image splits every number so far has used.
+    This is likely to reveal a real accuracy drop versus the catalog-only
+    numbers currently reported — expect and plan for that rather than
+    being surprised by it.
+11. **Composed outfit search** (spec Phase 5, "this shoe with cargo
+    jorts") — only buildable after #9/#10 exist, since it needs a
+    multi-item outfit record to query against. Lowest priority not
+    because it matters least to the product, but because it has a hard
+    dependency on Phase 3 landing first.
+
+**How this answers "how do we keep improving accuracy"**: Tier 1 is the
+fastest path to a better number on the metric already being tracked.
+Tier 2 is where real, currently-untested architectural upside likely
+sits (fusion + patch reranking are both spec-recommended and unbuilt).
+Tier 3 is not an accuracy lever on the current benchmark at all — it's
+the work required for the current benchmark to start measuring the thing
+the product actually needs to be good at.
