@@ -7,7 +7,7 @@
     ],
     "loafer": []
   },
-  "apparel": {
+  "tops": {
     "t-shirt": [
       "crop t-shirt",
       "graphic tee"
@@ -19,6 +19,15 @@
     "hoodie": [
       "pullover hoodie"
     ],
+    "tank top": [
+      "muscle tank top"
+    ],
+    "sweater": [
+      "jersey",
+      "polo sweater"
+    ]
+  },
+  "bottoms": {
     "shorts": [
       "biker shorts",
       "cargo shorts",
@@ -44,14 +53,9 @@
       "tights",
       "track pants",
       "trousers"
-    ],
-    "tank top": [
-      "muscle tank top"
-    ],
-    "sweater": [
-      "jersey",
-      "polo sweater"
-    ],
+    ]
+  },
+  "outerwear": {
     "jacket": [
       "bomber jacket",
       "field jacket",
@@ -60,7 +64,7 @@
       "track jacket"
     ]
   },
-  "accessory": {
+  "accessories": {
     "hat": [
       "baseball cap",
       "beanie"
