@@ -1072,6 +1072,51 @@ this generalizes rather than memorizes.
    pipeline runs first, and only falls through to similarity/free-text
    search when its own rejection threshold fires.
 
+## Update — 2026-08-01: first pass at multi-item outfit segmentation (Tier 3 gap, item #9)
+
+`segment_outfit.py` -- the first code addressing the biggest gap from
+this session's spec audit: nothing in this pipeline had ever detected
+more than one item per photo before this. Reuses `segment_apparel.py`'s
+validated SAM2 (CPU, small checkpoint, 1024px resize) + FashionCLIP
+zero-shot building blocks, but the selection logic is genuinely
+different: category is unknown up front (scored against all 13
+categories from the newly-restructured 5-group taxonomy, not one known
+target), greedy NMS suppresses SAM2's redundant/overlapping mask
+proposals for the same physical region, and at most one item is kept per
+category (multi-instance-per-category is out of scope for v1).
+
+Smoke-tested against 2 real photos already in this dataset (Champion
+catalog images that happen to show a model wearing multiple visible
+items -- the closest real proxy available locally to an actual outfit
+photo, since no dedicated multi-item outfit photo set exists yet):
+1. A red zip-up hoodie over a white tee, sweatpants visible at the
+   bottom of frame -- correctly detected the hoodie (confidence 0.935)
+   and correctly did NOT force a detection on the barely-visible pants
+   sliver (top raw candidate for that region scored 0.252, below the
+   0.4 floor -- an honest abstention on a genuinely low-evidence region,
+   not a miss to paper over).
+2. Sweatpants with sneakers barely visible at the bottom -- correctly
+   detected the pants (confidence 0.529) and correctly abstained on the
+   sneakers (too small/cropped to clear the area-fraction band).
+
+**What this smoke test does and doesn't prove**: confirms the mechanism
+works end-to-end and behaves sensibly (real detections score high, weak
+evidence gets rejected instead of forced) -- it does NOT constitute a
+benchmark. Real validation needs labeled multi-item outfit photos and
+detection metrics per spec section 8.2 (mAP, recall by visibility/
+occlusion), which don't exist in this project yet. The area-band/
+confidence thresholds are carried over verbatim from segment_apparel.py,
+tuned against single-product catalog photos, not re-tuned for this
+harder case -- both smoke tests happened to work well with the same
+numbers, but that's 2 data points, not a tuning pass. Next steps: (1)
+find or build a small labeled multi-item test set (worn/street photos,
+not catalog images) to get a real recall number instead of anecdotal
+spot checks, (2) consider raising `points_per_side` above 16 for this
+use case -- both test images had SAM2 propose only 8 raw candidate
+masks total, sparse enough that a genuinely occluded/small item might
+never get proposed as a candidate at all, independent of the confidence/
+area filtering that runs after.
+
 **Bottom line**: a catalog of everything you want to be exactly
 retrievable is unavoidable — but "everything you want retrievable" is
 your own product catalog (which this project already has, 6 brands,
