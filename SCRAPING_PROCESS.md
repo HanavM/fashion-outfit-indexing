@@ -739,3 +739,22 @@ clothing expansion — older shoe records have `category` backfilled but no
     sequentially — `dataset_utils` prevents a stale full-file overwrite, not
     a stale full-record overwrite from a snapshot taken before a sibling
     field landed on disk.
+14. **Not every script that touches `metadata.json` was actually updated
+    to use `dataset_utils` — lesson 11's fix doesn't protect a script
+    nobody remembered to migrate.** `build_hierarchy.py` (analysis/
+    canonicalization tooling, not a scraper) still did a bare
+    `METADATA_PATH.read_text()` → mutate in memory → `write_text()`
+    round trip, the exact pattern lesson 11 fixed everywhere else.
+    Running it once (2026-08-01, to regenerate the category tree) while
+    the Levi's and Champion scraper forks were actively mid-write reverted
+    the file to this script's stale read-time snapshot, dropping Levi's
+    from 50 records to 3 — the forks' own safe-merge writes self-healed it
+    within a few checkpoints (images were untouched on disk, so recovery
+    was just re-fetching the metadata), but it shouldn't have happened.
+    Fixed by switching `build_hierarchy.py` to
+    `dataset_utils.load_records()` / `save_records_safe()` like everything
+    else. **Lesson: when adding ANY new script that reads then writes
+    `apparel_dataset/metadata.json` — including one-off analysis/tooling
+    scripts, not just scrapers/captioners/segmenters — use `dataset_utils`
+    from the start. Don't assume a script is safe just because it "only
+    reads for analysis" if it also writes a derived field back.**
