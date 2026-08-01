@@ -814,3 +814,108 @@ never actually defined (only `--image`/`--evaluate`/`--category-gate`
 existed). Fixed by adding the missing `--top-k` argument, wired through to
 `retrieve()`'s existing `final_top_k` parameter (which was already there,
 just not exposed on the CLI).
+
+## Update — 2026-08-01: real HSC climbing replaces the flat category classifier
+
+**User caught a real gap, correctly**: a walked-through real Phase 4 output
+showed stage 1 committing to "sneaker" with only a 0.047 margin between
+1st/2nd place — confidently specific despite low confidence, no backoff.
+That's not hierarchical classification, it's flat top-1 classification at
+one tree level. This project had already implemented genuine HSC once
+before, in `notebooks/fashionsiglip2_hsc_finetune.ipynb` (docstringed
+"Algorithm 1 from the HSC paper") — the pipeline just wasn't using it.
+
+**What real HSC climbing does, now implemented in
+`hierarchical_retrieval_pipeline.py`**: score every LEAF of the full
+`docs/hierarchy.json` tree (group → category → fine leaf, 42 leaves under
+13 categories under 3 groups — not just the 13 categories), softmax into
+a real probability distribution (`HSC_TEMPERATURE`), sum probability mass
+up through every ancestor (`hsc_categories_under`/tree built by
+`_build_hsc_tree`), then climb from the most probable leaf toward the
+root until an ancestor's aggregated probability clears `HSC_THRESHOLD`
+(default 0.5). When the category gate is on, the climbed node's
+`allowed_categories` restrict stage 2's search — a single category if
+confidence held at leaf/category level, all categories in a group if it
+had to back off that far, no restriction if it backed off to the root.
+
+Validated with synthetic probability distributions (not just code review)
+before shipping: a confident single-leaf case stayed at the leaf; three
+sneaker-family leaves splitting probability roughly evenly correctly
+climbed to the "sneaker" category once their *summed* probability cleared
+threshold; a uniform/no-signal distribution correctly climbed all the way
+to root. Tree construction itself verified against the real
+`docs/hierarchy.json` (42/13/3 counts).
+
+`evaluate()` now also reports `hsc_climb_level_fractions` (how often
+climbing lands at leaf/category/group/root across the held-out set) in
+addition to the existing gate-exclusion and shortlist-miss rates —
+**not yet run with real data**, so it's unknown whether HSC-based gating
+actually reduces the ~30% exclusion rate the old flat gate had. That's
+the next thing to check: rerun `--evaluate` and compare against the
+2026-07-31 rows in `docs/eval_log.md` (R@1 47.65% ungated was the best
+number before this change; the gated arm's exclusion rate is the number
+to watch, since HSC's whole point is reducing it without giving up the
+narrowing benefit gating provides when confidence is real).
+
+`--image` mode's printed output changed accordingly — instead of
+"Predicted category: X (margin Y)", it now prints the full climbing path,
+the confidence at the landed node, the best single-leaf guess, and which
+categories are actually in play for stage 2.
+
+## Current status summary (2026-08-01) — for picking up in a fresh session
+
+**Phase 1 (SigLIP2)**: v3 is the current best/production checkpoint
+(category-scoped test R@1 18.83%). v4 (per-facet `LABEL_KIND_WEIGHTS`
+reweighting) regressed on this same metric (16.00%) despite the
+reweighting being well-motivated (see 2026-07-30 update above) — its
+by-facet breakdown (did color/fit/closure actually improve?) was never
+run, so v4's real tradeoff is still unresolved. Checkpoint auto-detection
+in `hierarchical_retrieval_pipeline.py` only knows v2/v3, not v4, so this
+doesn't block anything currently in use.
+
+**Phase 3 (DINOv3)**: complete. Final test R@1 56.55% (from a 25.24%
+frozen baseline), on Colab Drive.
+
+**Phase 4 (combined pipeline)**: `hierarchical_retrieval_pipeline.py`,
+best real result so far R@1 47.65% (ungated, both real fine-tuned
+checkpoints, `TOP_IDENTITY_CANDIDATES=25`). Just had real HSC climbing
+added (this update) — **not yet benchmarked**, that's the immediate next
+step. Both checkpoints need to live under one `DATASET_ROOT`; DINOv3 only
+ever lived on Colab Drive, SigLIP2 v3 was pulled down from the Modal
+Volume onto Drive alongside it (`modal volume get`, per-file if the
+recursive-folder path hits the "Not a directory" bug documented in this
+file's own history — download files individually into a pre-created
+directory instead).
+
+**Color pipeline**: `build_color_hierarchy.py` (text canonicalization,
+20 canonical colors after merging silver into gray) and
+`build_color_index.py` (pixel-level extraction, LAB/CIEDE2000) are both
+built, run against the real catalog, and validated: 46.4% primary-color
+match against the independent text signal (up from 39.2% before the
+silver/gray merge), 64.8% including secondary colors.
+`color_similarity_search.py` (take a photo, find similarly-colored
+products) works end to end, tested against a real photo.
+
+**Open-vocabulary free-text search** ("the free labeling thing" — query
+something never labeled, e.g. "stitching across the back"):
+`free_text_visual_search.py` is built and validated. Researched two real
+risks first (catastrophic forgetting from fine-tuning; CLIP/SigLIP's
+architectural weakness at fine-grained localized detail grounding), then
+tested empirically against the real v3 checkpoint
+(`research_localized_query_validation.py`) rather than trusting
+literature alone: fine-tuning *improved* target ranks (37→29, 175→104 out
+of 1,146) instead of degrading them (opposite of the general-literature
+average — plausibly because `defining_features` was already a training
+target), but confirmed genuinely localized queries only land in the
+top 20-100, not top-5 — an architectural ceiling, not a data problem.
+Richer `defining_features` labels would help somewhat (more training
+pressure toward packing that signal into the one pooled vector) but
+won't remove the ceiling; the real fix is dense/patch-level (MaskCLIP-
+style) matching, researched and validated as a real technique but **not
+implemented** — flagged as the next step if finer precision is needed,
+requires reaching into the vision transformer's attention internals.
+
+**Everything above is committed and pushed to `origin/main`.** A fresh
+session should read this file top-to-bottom (it's chronological) or just
+this summary section, then `docs/eval_log.md` for exact numbers, before
+doing anything else.

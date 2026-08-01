@@ -9,15 +9,26 @@ shortlisted. Neither encoder alone answers "which exact product is this,"
 only both stages together do -- this script is that missing "together."
 
 Three stages, in order:
-1. Category classification (canonical_taxonomy_path leaf, e.g. "sneaker",
-   "hoodie") -- SigLIP2 image embedding vs. the 13 canonical category text
-   embeddings from docs/hierarchy.json. Hard-gates the next stage's search
-   space to that category, which the roadmap's own design principle
-   supports (categories were deliberately chosen to be visually
-   non-overlapping -- see docs/roadmap.md's canonical-hierarchy section --
-   so a category misclassification should be rare enough to gate on rather
-   than just softly weight). evaluate_pipeline measures the real
-   gate-exclusion rate rather than assuming this holds.
+1. **Real HSC (Hierarchical Softmax Classification) climbing** (added
+   2026-08-01, per notebooks/fashionsiglip2_hsc_finetune.ipynb's own
+   "Algorithm 1 from the HSC paper" -- this project had already
+   implemented genuine HSC once before, this pipeline just wasn't using
+   it). SigLIP2 image embedding scored against every LEAF of the full
+   docs/hierarchy.json tree (group -> category -> fine leaf, ~42 leaves,
+   not just the 13 categories), softmaxed into a real probability
+   distribution, summed up through every ancestor, then climbed from the
+   most probable leaf toward the root until an ancestor's aggregated
+   probability clears HSC_THRESHOLD. This backs off to a broader, more-
+   confident prediction (category -> group -> no restriction at all)
+   instead of blindly committing to a specific leaf/category regardless
+   of margin, which a flat top-1 classification can't do (a real ~0.05-
+   margin leaf call was observed in production output before this
+   change -- confidently wrong specificity, not backed off). When the
+   category gate is on, this climbed node's `allowed_categories` (itself
+   if it's already a category, all categories under it if it's a group or
+   root) restricts stage 2's search space, instead of a single hard
+   category. evaluate() measures the real gate-exclusion rate and how
+   often climbing lands at each tree level, rather than assuming either.
 2. Semantic identity shortlist -- SigLIP2 image embedding vs. every
    model-level "identity" text embedding *within* the gated category (same
    identity string construction as finetune_siglip2_v3.py's
@@ -135,6 +146,24 @@ AMBIGUITY_MARGIN = 0.03        # DINOv3 cosine-similarity gap under which top-1/
 # text tower on for taxonomy nodes (raw strings like "sneaker", "hoodie"
 # under the "generic" label kind, no caption-style prefix).
 CATEGORY_PROMPT_TEMPLATE = "{category}"
+
+# Real HSC (Hierarchical Softmax Classification) climbing, per
+# notebooks/fashionsiglip2_hsc_finetune.ipynb's own "Algorithm 1 from the
+# HSC paper" cell -- this project already implemented genuine HSC once
+# before, this pipeline just wasn't using it. Score every LEAF of the full
+# docs/hierarchy.json tree (group -> category -> fine leaf, ~42 leaves,
+# not just the 13 categories), softmax into a real probability
+# distribution, sum probability mass up through every ancestor, then climb
+# from the most probable leaf toward the root until an ancestor's summed
+# probability clears HSC_THRESHOLD. This is the specificity-backoff
+# behavior a flat "always commit to the top-1 category regardless of
+# margin" classification can't do -- e.g. a genuinely low-margin leaf call
+# (~0.05, seen in real Phase 4 output) should back off to a broader,
+# more-confident ancestor instead of confidently asserting a specific
+# leaf/category it isn't actually confident about.
+HSC_ROOT_LABEL = "apparel item"
+HSC_TEMPERATURE = 0.05  # matches the notebook's own softmax temperature for the finetuned-SigLIP2 config
+HSC_THRESHOLD = 0.5     # default confidence threshold to climb to; higher = broader/safer predictions
 
 VAL_IMAGES_PER_PRODUCT = 1
 TEST_IMAGES_PER_PRODUCT = 1
@@ -273,6 +302,72 @@ with HIERARCHY_PATH.open("r", encoding="utf-8") as f:
     _hierarchy = json.load(f)
 CANONICAL_CATEGORIES = sorted({category for categories in _hierarchy.values() for category in categories})
 print(f"Canonical categories: {len(CANONICAL_CATEGORIES)}")
+
+
+# ============================================================
+# HSC tree construction (docs/hierarchy.json -> root/group/category/leaf
+# parent-child maps), per notebooks/fashionsiglip2_hsc_finetune.ipynb's
+# own HSC cell. A category with no fine leaves listed (e.g. "sweatshirt",
+# "socks") is itself a leaf -- there's nothing more specific below it.
+# ============================================================
+
+def _build_hsc_tree(hierarchy_dict, root_label):
+    parent = {root_label: None}
+    children = defaultdict(list)
+    category_of_leaf = {}
+
+    for group, categories in hierarchy_dict.items():
+        parent[group] = root_label
+        children[root_label].append(group)
+        for category, leaves in categories.items():
+            parent[category] = group
+            children[group].append(category)
+            if leaves:
+                for leaf in leaves:
+                    parent[leaf] = category
+                    children[category].append(leaf)
+                    category_of_leaf[leaf] = category
+            else:
+                category_of_leaf[category] = category
+
+    children = dict(children)
+    leaf_ids = [node for node in parent if not children.get(node)]
+    return parent, children, leaf_ids, category_of_leaf
+
+
+HSC_PARENT, HSC_CHILDREN, HSC_LEAF_IDS, HSC_CATEGORY_OF_LEAF = _build_hsc_tree(_hierarchy, HSC_ROOT_LABEL)
+HSC_GROUP_NAMES = set(_hierarchy.keys())
+print(f"HSC tree: {len(HSC_LEAF_IDS)} leaves under {len(CANONICAL_CATEGORIES)} categories under {len(HSC_GROUP_NAMES)} groups")
+
+_HSC_DESCENDANT_LEAVES_CACHE = {}
+
+
+def hsc_descendant_leaves(node):
+    if node in _HSC_DESCENDANT_LEAVES_CACHE:
+        return _HSC_DESCENDANT_LEAVES_CACHE[node]
+    if not HSC_CHILDREN.get(node):
+        result = (node,)
+    else:
+        result = tuple(leaf for child in HSC_CHILDREN[node] for leaf in hsc_descendant_leaves(child))
+    _HSC_DESCENDANT_LEAVES_CACHE[node] = result
+    return result
+
+
+def hsc_categories_under(node):
+    """Every CANONICAL_CATEGORIES-level category reachable under this node
+    (itself, if it already is one) -- what the category-gate filter
+    actually restricts to when HSC climbs to this node."""
+    return {HSC_CATEGORY_OF_LEAF[leaf] for leaf in hsc_descendant_leaves(node)}
+
+
+def hsc_node_level(node):
+    if node == HSC_ROOT_LABEL:
+        return "root"
+    if node in HSC_GROUP_NAMES:
+        return "group"
+    if node in CANONICAL_CATEGORIES:
+        return "category"
+    return "leaf"
 
 
 def make_view_split():
@@ -439,24 +534,75 @@ def _index_is_fresh(config_path, expected):
 def build_or_load_semantic_index(model, processor, siglip2_checkpoint):
     config_path = INDEX_DIR / "semantic_index_config.json"
     identities = sorted(IDENTITY_TO_PRODUCT_CODES)
-    expected = {"checkpoint": siglip2_checkpoint, "num_identities": len(identities), "num_categories": len(CANONICAL_CATEGORIES)}
+    expected = {"checkpoint": siglip2_checkpoint, "num_identities": len(identities)}
 
     if _index_is_fresh(config_path, expected):
         payload = torch.load(INDEX_DIR / "semantic_identity_embeddings.pt", map_location="cpu", weights_only=False)
-        category_payload = torch.load(INDEX_DIR / "semantic_category_embeddings.pt", map_location="cpu", weights_only=False)
         print("Semantic index: cache hit.")
-        return payload["identities"], payload["embeddings"], category_payload["categories"], category_payload["embeddings"]
+        return payload["identities"], payload["embeddings"]
 
     print("Semantic index: (re)building...")
     identity_embeddings = embed_texts_siglip(model, processor, identities)
     torch.save({"identities": identities, "embeddings": identity_embeddings}, INDEX_DIR / "semantic_identity_embeddings.pt")
 
-    category_prompts = [CATEGORY_PROMPT_TEMPLATE.format(category=c) for c in CANONICAL_CATEGORIES]
-    category_embeddings = embed_texts_siglip(model, processor, category_prompts)
-    torch.save({"categories": CANONICAL_CATEGORIES, "embeddings": category_embeddings}, INDEX_DIR / "semantic_category_embeddings.pt")
+    config_path.write_text(json.dumps(expected, indent=2), encoding="utf-8")
+    return identities, identity_embeddings
+
+
+def build_or_load_hsc_leaf_index(model, processor, siglip2_checkpoint):
+    """Text embeddings for every leaf of the full HSC tree (~42 leaves,
+    e.g. "golf sneaker", "loafer", "sweatshirt"), not just the 13
+    categories -- this is what hsc_climb scores against. Bare leaf names
+    as prompts, same CATEGORY_PROMPT_TEMPLATE convention/rationale as the
+    old flat category classifier (matches what build_training_labels
+    actually trained the text tower on for taxonomy nodes)."""
+    config_path = INDEX_DIR / "hsc_leaf_index_config.json"
+    expected = {"checkpoint": siglip2_checkpoint, "num_leaves": len(HSC_LEAF_IDS)}
+
+    if _index_is_fresh(config_path, expected):
+        payload = torch.load(INDEX_DIR / "hsc_leaf_embeddings.pt", map_location="cpu", weights_only=False)
+        print("HSC leaf index: cache hit.")
+        return payload["leaf_ids"], payload["embeddings"]
+
+    print("HSC leaf index: (re)building...")
+    leaf_prompts = [CATEGORY_PROMPT_TEMPLATE.format(category=leaf) for leaf in HSC_LEAF_IDS]
+    leaf_embeddings = embed_texts_siglip(model, processor, leaf_prompts)
+    torch.save({"leaf_ids": HSC_LEAF_IDS, "embeddings": leaf_embeddings}, INDEX_DIR / "hsc_leaf_embeddings.pt")
 
     config_path.write_text(json.dumps(expected, indent=2), encoding="utf-8")
-    return identities, identity_embeddings, CANONICAL_CATEGORIES, category_embeddings
+    return HSC_LEAF_IDS, leaf_embeddings
+
+
+def hsc_climb(leaf_probabilities, leaf_ids, threshold):
+    """Algorithm 1 from the HSC paper (this project's own earlier
+    implementation, notebooks/fashionsiglip2_hsc_finetune.ipynb): start at
+    the most probable leaf, climb toward the root while the current node's
+    aggregated probability (sum of all its descendant leaves) is below
+    threshold, stop at the first node that clears it."""
+    leaf_to_index = {leaf: i for i, leaf in enumerate(leaf_ids)}
+    node_probabilities = {}
+    for node in HSC_PARENT:
+        indices = [leaf_to_index[leaf] for leaf in hsc_descendant_leaves(node)]
+        node_probabilities[node] = float(leaf_probabilities[indices].sum())
+
+    best_leaf_index = int(torch.argmax(leaf_probabilities))
+    best_leaf = leaf_ids[best_leaf_index]
+    current_node = best_leaf
+    climbing_path = [current_node]
+
+    while node_probabilities[current_node] < threshold and HSC_PARENT[current_node] is not None:
+        current_node = HSC_PARENT[current_node]
+        climbing_path.append(current_node)
+
+    return {
+        "predicted_node": current_node,
+        "predicted_level": hsc_node_level(current_node),
+        "confidence": node_probabilities[current_node],
+        "best_leaf": best_leaf,
+        "best_leaf_probability": float(leaf_probabilities[best_leaf_index]),
+        "climbing_path": climbing_path,
+        "allowed_categories": hsc_categories_under(current_node),
+    }
 
 
 def build_or_load_identity_index(backbone, projection_head, use_projection, processor, dino_checkpoint, gallery_images_by_product):
@@ -527,7 +673,7 @@ class HierarchicalRetriever:
 
         self.gallery_images_by_product, self.test_image_by_product = make_view_split()
 
-        self.identities, self.identity_embeddings, self.categories, self.category_embeddings = build_or_load_semantic_index(
+        self.identities, self.identity_embeddings = build_or_load_semantic_index(
             self.siglip2_model, self.siglip2_processor, siglip2_checkpoint,
         )
         self.identity_category = {}
@@ -536,22 +682,24 @@ class HierarchicalRetriever:
             if codes:
                 self.identity_category[identity] = CATALOG[next(iter(codes))]["category"]
 
+        self.hsc_leaf_ids, self.hsc_leaf_embeddings = build_or_load_hsc_leaf_index(
+            self.siglip2_model, self.siglip2_processor, siglip2_checkpoint,
+        )
+
         self.gallery_product_codes, self.gallery_embeddings = build_or_load_identity_index(
             self.dino_backbone, self.dino_head, self.dino_use_projection, self.dino_processor,
             dino_checkpoint, self.gallery_images_by_product,
         )
         self.gallery_index_by_code = {code: i for i, code in enumerate(self.gallery_product_codes)}
 
-    def predict_category(self, siglip_image_embedding):
-        similarity = (siglip_image_embedding @ self.category_embeddings.T).squeeze(0)
-        ranked = torch.argsort(similarity, descending=True)
-        top_category = self.categories[ranked[0].item()]
-        margin = float(similarity[ranked[0]] - similarity[ranked[1]]) if len(ranked) > 1 else float("inf")
-        return top_category, margin
+    def hsc_predict(self, siglip_image_embedding, threshold=HSC_THRESHOLD):
+        similarity = (siglip_image_embedding @ self.hsc_leaf_embeddings.T).squeeze(0)
+        leaf_probabilities = F.softmax(similarity / HSC_TEMPERATURE, dim=0)
+        return hsc_climb(leaf_probabilities, self.hsc_leaf_ids, threshold)
 
-    def shortlist_identities(self, siglip_image_embedding, category, top_k):
-        if category is not None:
-            candidate_indices = [i for i, identity in enumerate(self.identities) if self.identity_category.get(identity) == category]
+    def shortlist_identities(self, siglip_image_embedding, allowed_categories, top_k):
+        if allowed_categories is not None:
+            candidate_indices = [i for i, identity in enumerate(self.identities) if self.identity_category.get(identity) in allowed_categories]
         else:
             candidate_indices = list(range(len(self.identities)))
         if not candidate_indices:
@@ -579,20 +727,24 @@ class HierarchicalRetriever:
         ranked = [(available[i], float(similarity[i])) for i in order.tolist()]
         return ranked[:final_top_k]
 
-    def retrieve(self, image_path, use_category_gate=False, top_identity_candidates=TOP_IDENTITY_CANDIDATES, final_top_k=FINAL_TOP_K):
-        # Default flipped to off: confirmed net-negative in two independent
-        # Phase 4 runs (docs/eval_log.md, 2026-07-30) -- it excludes the
-        # true category ~30% of the time, unrecoverable, for no rerank-
-        # quality benefit (conditional R@1 is identical gated vs. ungated).
+    def retrieve(self, image_path, use_category_gate=False, hsc_threshold=HSC_THRESHOLD, top_identity_candidates=TOP_IDENTITY_CANDIDATES, final_top_k=FINAL_TOP_K):
+        # Default flipped to off: the old flat (non-HSC) gate was confirmed
+        # net-negative in two independent Phase 4 runs (docs/eval_log.md,
+        # 2026-07-30) -- it excluded the true category ~30% of the time,
+        # unrecoverable, for no rerank-quality benefit. Real HSC climbing
+        # (2026-08-01) backs off to a broader, more-confident ancestor
+        # instead of blindly committing to a low-margin leaf, which should
+        # reduce that exclusion rate -- re-benchmark both arms once this
+        # has real eval numbers rather than assuming HSC fixes it.
         image = load_rgb_image(image_path)
 
         siglip_embedding = embed_images_siglip(self.siglip2_model, self.siglip2_processor, [image])
         dino_embedding = embed_images_dino(self.dino_backbone, self.dino_head, self.dino_use_projection, self.dino_processor, [image])
 
-        predicted_category, category_margin = self.predict_category(siglip_embedding)
-        gate_category = predicted_category if use_category_gate else None
+        hsc_result = self.hsc_predict(siglip_embedding, threshold=hsc_threshold)
+        allowed_categories = hsc_result["allowed_categories"] if use_category_gate else None
 
-        candidates = self.shortlist_identities(siglip_embedding, gate_category, top_identity_candidates)
+        candidates = self.shortlist_identities(siglip_embedding, allowed_categories, top_identity_candidates)
         ranked = self.rerank_by_identity(dino_embedding, candidates, final_top_k)
 
         results = []
@@ -611,7 +763,10 @@ class HierarchicalRetriever:
             ambiguous = same_model and close_scores
 
         return {
-            "predicted_category": predicted_category, "category_margin": category_margin,
+            "hsc_predicted_node": hsc_result["predicted_node"], "hsc_predicted_level": hsc_result["predicted_level"],
+            "hsc_confidence": hsc_result["confidence"], "hsc_climbing_path": hsc_result["climbing_path"],
+            "hsc_best_leaf": hsc_result["best_leaf"], "hsc_best_leaf_probability": hsc_result["best_leaf_probability"],
+            "allowed_categories": sorted(hsc_result["allowed_categories"]),
             "num_identity_candidates": len(candidates), "results": results,
             "same_model_different_colorway_ambiguous": ambiguous,
         }
@@ -620,26 +775,28 @@ class HierarchicalRetriever:
     # End-to-end held-out evaluation
     # --------------------------------------------------------
 
-    def evaluate(self, use_category_gate=True, top_identity_candidates=TOP_IDENTITY_CANDIDATES):
+    def evaluate(self, use_category_gate=True, hsc_threshold=HSC_THRESHOLD, top_identity_candidates=TOP_IDENTITY_CANDIDATES):
         queries = [(code, path) for code, paths in self.test_image_by_product.items() for path in paths]
-        print(f"Evaluating {len(queries):,} held-out queries (category gate: {use_category_gate})...")
+        print(f"Evaluating {len(queries):,} held-out queries (category gate: {use_category_gate}, HSC threshold: {hsc_threshold})...")
 
         ranks = []
         gate_exclusions = 0
         identity_shortlist_misses = 0
+        climb_level_counts = {"leaf": 0, "category": 0, "group": 0, "root": 0}
 
         for true_code, image_path in queries:
             image = load_rgb_image(image_path)
             siglip_embedding = embed_images_siglip(self.siglip2_model, self.siglip2_processor, [image])
             dino_embedding = embed_images_dino(self.dino_backbone, self.dino_head, self.dino_use_projection, self.dino_processor, [image])
 
-            predicted_category, _ = self.predict_category(siglip_embedding)
+            hsc_result = self.hsc_predict(siglip_embedding, threshold=hsc_threshold)
+            climb_level_counts[hsc_result["predicted_level"]] += 1
             true_category = CATALOG[true_code]["category"]
-            gate_category = predicted_category if use_category_gate else None
-            if use_category_gate and predicted_category != true_category:
+            allowed_categories = hsc_result["allowed_categories"] if use_category_gate else None
+            if use_category_gate and true_category not in allowed_categories:
                 gate_exclusions += 1
 
-            candidates = self.shortlist_identities(siglip_embedding, gate_category, top_identity_candidates)
+            candidates = self.shortlist_identities(siglip_embedding, allowed_categories, top_identity_candidates)
             if true_code not in candidates:
                 identity_shortlist_misses += 1
 
@@ -659,6 +816,7 @@ class HierarchicalRetriever:
             "num_queries": len(queries),
             "category_gate_exclusion_rate": gate_exclusions / len(queries) if use_category_gate else None,
             "identity_shortlist_miss_rate": identity_shortlist_misses / len(queries),
+            "hsc_climb_level_fractions": {level: count / len(queries) for level, count in climb_level_counts.items()},
             "recall_at_1": float(np.mean(ranks <= 1)),
             "recall_at_5": float(np.mean(ranks <= 5)),
             "recall_at_10": float(np.mean(ranks <= 10)),
@@ -671,7 +829,12 @@ class HierarchicalRetriever:
 
 def print_result(query_path, result):
     print(f"\nQuery: {query_path}")
-    print(f"Predicted category: {result['predicted_category']} (margin {result['category_margin']:.3f})")
+    path_str = " -> ".join(result["hsc_climbing_path"])
+    print(f"HSC prediction: {result['hsc_predicted_node']} ({result['hsc_predicted_level']}, "
+          f"confidence={result['hsc_confidence']:.3f})")
+    print(f"  Climbing path (best leaf -> root): {path_str}")
+    print(f"  Best single leaf guess: {result['hsc_best_leaf']} (p={result['hsc_best_leaf_probability']:.3f})")
+    print(f"  Categories in play: {result['allowed_categories']}")
     print(f"Identity candidates considered: {result['num_identity_candidates']}")
     for entry in result["results"]:
         print(f"  #{entry['rank']}  {entry['brand']} {entry['name']}  [{entry['product_code']}]  "
@@ -685,6 +848,9 @@ def print_metrics(title, metrics):
     if metrics["category_gate_exclusion_rate"] is not None:
         print(f"Category-gate exclusion rate: {metrics['category_gate_exclusion_rate'] * 100:.2f}%")
     print(f"Identity-shortlist miss rate: {metrics['identity_shortlist_miss_rate'] * 100:.2f}%")
+    levels = metrics["hsc_climb_level_fractions"]
+    print(f"HSC climb landed at: leaf {levels['leaf']*100:.1f}%, category {levels['category']*100:.1f}%, "
+          f"group {levels['group']*100:.1f}%, root (no confidence anywhere) {levels['root']*100:.1f}%")
     print(f"R@1:  {metrics['recall_at_1'] * 100:.2f}%")
     print(f"R@5:  {metrics['recall_at_5'] * 100:.2f}%")
     print(f"R@10: {metrics['recall_at_10'] * 100:.2f}%")
@@ -698,21 +864,23 @@ if __name__ == "__main__":
     parser.add_argument("--image", type=str, help="Path to a single query image.")
     parser.add_argument("--evaluate", action="store_true", help="Run end-to-end held-out evaluation.")
     parser.add_argument("--category-gate", action="store_true",
-                         help="Enable stage-1 category gating (off by default -- confirmed net-negative, see docs/eval_log.md 2026-07-30).")
+                         help="Enable HSC-based stage-1 category gating (off by default -- the old flat/non-HSC gate was confirmed net-negative, see docs/eval_log.md 2026-07-30; real HSC climbing as of 2026-08-01 hasn't been re-benchmarked yet).")
+    parser.add_argument("--hsc-threshold", type=float, default=HSC_THRESHOLD,
+                         help=f"HSC climbing confidence threshold, 0-1 (default {HSC_THRESHOLD}). Higher = broader/safer predictions.")
     parser.add_argument("--top-k", type=int, default=FINAL_TOP_K, help="Number of results to print for --image mode.")
     args = parser.parse_args()
 
     retriever = HierarchicalRetriever()
 
     if args.image:
-        result = retriever.retrieve(args.image, use_category_gate=args.category_gate, final_top_k=args.top_k)
+        result = retriever.retrieve(args.image, use_category_gate=args.category_gate, hsc_threshold=args.hsc_threshold, final_top_k=args.top_k)
         print_result(args.image, result)
 
     if args.evaluate:
-        gated_metrics = retriever.evaluate(use_category_gate=True)
-        print_metrics("End-to-end held-out eval -- WITH category gate", gated_metrics)
+        gated_metrics = retriever.evaluate(use_category_gate=True, hsc_threshold=args.hsc_threshold)
+        print_metrics("End-to-end held-out eval -- WITH HSC-based category gate", gated_metrics)
 
-        ungated_metrics = retriever.evaluate(use_category_gate=False)
+        ungated_metrics = retriever.evaluate(use_category_gate=False, hsc_threshold=args.hsc_threshold)
         print_metrics("End-to-end held-out eval -- WITHOUT category gate (fallback comparison)", ungated_metrics)
 
         with (INDEX_DIR / "pipeline_eval_metrics.json").open("w", encoding="utf-8") as f:
