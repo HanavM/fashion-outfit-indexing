@@ -195,6 +195,69 @@ def build_or_load_image_index(model, processor, checkpoint_label):
     return embeddings, kept_records
 
 
+def extract_dense_patch_projection(vision_model):
+    """MaskCLIP-style dense/patch-level readout, adapted to SigLIP2's actual
+    pooling-head architecture rather than CLIP's CLS-token last-attention-
+    layer. SigLIP2 doesn't pool via a CLS token attending to itself in the
+    last self-attention block (the case MaskCLIP's original "drop Q/K, keep
+    V + out_proj" recipe targets) -- it pools via a separate
+    SiglipMultiheadAttentionPoolingHead: a learned probe token attends to
+    every patch token via standard multi-head attention (probe=query,
+    patches=key+value), then a residual LayerNorm+MLP block. The same core
+    trick still applies, generalized to this head shape: skip the query/key
+    softmax entirely (which is what collapses every patch into one
+    attention-weighted pooled vector) and instead run every patch through
+    the same value-projection -> out_proj -> residual LayerNorm+MLP path the
+    probe's pooled output goes through. This keeps each patch's resulting
+    vector in the exact same space the text tower was aligned against
+    (nothing about the text side or the earlier vision layers changes),
+    while producing one vector *per patch* instead of one pooled vector for
+    the whole image.
+
+    Returns a function: last_hidden_state [B, N, D] -> dense_features [B, N, D]
+    (not yet normalized).
+    """
+    head = vision_model.head
+    mha = head.attention
+    embed_dim = mha.embed_dim
+    v_weight = mha.in_proj_weight[2 * embed_dim:3 * embed_dim]  # packed [q; k; v], each embed_dim rows
+    v_bias = mha.in_proj_bias[2 * embed_dim:3 * embed_dim]
+
+    def project(last_hidden_state):
+        value = F.linear(last_hidden_state, v_weight, v_bias)
+        value = mha.out_proj(value)
+        residual = value
+        value = head.layernorm(value)
+        value = residual + head.mlp(value)
+        return value
+
+    return project
+
+
+@torch.inference_mode()
+def encode_images_dense(model, processor, records):
+    """Per-patch text-aligned features for a small candidate list -- meant
+    to be called on an already-narrowed shortlist (see search_dense_rerank),
+    not the full catalog: patch-level similarity is N_patches times more
+    comparisons than the pooled-vector version, so running it catalog-wide
+    would be needlessly expensive for the same reason
+    hierarchical_retrieval_pipeline.py only runs its expensive DINOv3 rerank
+    stage against a SigLIP2-narrowed shortlist, not the whole gallery."""
+    project = extract_dense_patch_projection(model.vision_model)
+    dense_by_index = []
+    for r in records:
+        with Image.open(r["path"]) as image:
+            pil_image = ImageOps.exif_transpose(image).convert("RGB")
+        inputs = processor(images=[pil_image], return_tensors="pt")
+        inputs = {k: v.to(DEVICE) for k, v in inputs.items()}
+        with autocast_context():
+            vision_out = model.vision_model(**inputs)
+            last_hidden_state = vision_out.last_hidden_state.float()
+            patches = project(last_hidden_state).squeeze(0)
+        dense_by_index.append(F.normalize(patches, dim=-1).cpu())
+    return dense_by_index
+
+
 class FreeTextVisualSearch:
     def __init__(self):
         checkpoint = pick_checkpoint()
@@ -217,16 +280,68 @@ class FreeTextVisualSearch:
             })
         return results
 
+    def search_dense_rerank(self, query_text, top_k=15, shortlist_k=50, patch_agg="max"):
+        """Two-stage: cheap global-embedding pre-filter (existing v1 search,
+        full catalog) narrows to shortlist_k candidates, then dense
+        patch-level matching reranks just that shortlist. A localized query
+        ("stitching across the back") can now win on whichever single patch
+        matches best, instead of being diluted into one pooled vector --
+        but only within images the pooled-vector stage already thought were
+        plausible, matching the architecture note in docs/roadmap.md's
+        2026-08-01 free-text-search update: dense matching is more
+        expensive per-image (a similarity per patch, not per image), so pay
+        that cost only on a pre-narrowed shortlist, not the full catalog."""
+        text_embedding = encode_text(self.model, self.processor, [query_text])[0]
+
+        pooled_similarities = self.image_embeddings @ text_embedding
+        shortlist_order = torch.argsort(pooled_similarities, descending=True)[:shortlist_k].tolist()
+        shortlist_records = [self.records[i] for i in shortlist_order]
+
+        dense_features = encode_images_dense(self.model, self.processor, shortlist_records)
+
+        scored = []
+        for local_index, patches in enumerate(dense_features):
+            patch_similarities = patches @ text_embedding
+            if patch_agg == "max":
+                score = float(patch_similarities.max())
+            elif patch_agg == "top5_mean":
+                k = min(5, patch_similarities.shape[0])
+                score = float(torch.topk(patch_similarities, k).values.mean())
+            else:
+                raise ValueError(f"Unknown patch_agg: {patch_agg}")
+            scored.append((local_index, score))
+        scored.sort(key=lambda pair: pair[1], reverse=True)
+
+        results = []
+        for rank, (local_index, score) in enumerate(scored[:top_k], start=1):
+            record = shortlist_records[local_index]
+            results.append({
+                "rank": rank, "product_code": record["code"], "brand": record["brand"],
+                "name": record["name"], "score": score,
+            })
+        return results
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--query", type=str, required=True)
     parser.add_argument("--top-k", type=int, default=15)
+    parser.add_argument("--dense-rerank", action="store_true",
+                         help="Rerank a pooled-embedding shortlist with MaskCLIP-style dense/patch-level matching "
+                              "(slower, targets localized queries the pooled-vector search misses -- see "
+                              "docs/roadmap.md's 2026-08-01 free-text-search update).")
+    parser.add_argument("--shortlist-k", type=int, default=50,
+                         help="Candidate pool size for --dense-rerank's pooled pre-filter stage.")
+    parser.add_argument("--patch-agg", type=str, default="max", choices=["max", "top5_mean"],
+                         help="How to aggregate per-patch similarities into one dense-match score.")
     args = parser.parse_args()
 
     engine = FreeTextVisualSearch()
-    results = engine.search(args.query, top_k=args.top_k)
+    if args.dense_rerank:
+        results = engine.search_dense_rerank(args.query, top_k=args.top_k, shortlist_k=args.shortlist_k, patch_agg=args.patch_agg)
+    else:
+        results = engine.search(args.query, top_k=args.top_k)
 
-    print(f"\nQuery: '{args.query}'")
+    print(f"\nQuery: '{args.query}'" + ("  [dense rerank]" if args.dense_rerank else ""))
     for r in results:
         print(f"  #{r['rank']}  {r['brand']} {r['name']}  [{r['product_code']}]  score={r['score']:.4f}")
