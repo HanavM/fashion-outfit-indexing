@@ -919,3 +919,166 @@ requires reaching into the vision transformer's attention internals.
 session should read this file top-to-bottom (it's chronological) or just
 this summary section, then `docs/eval_log.md` for exact numbers, before
 doing anything else.
+
+## Update — 2026-08-01: free-text search roadmap, and a design question about exact-retrieval scaling
+
+### Free-text search: what's actually left
+
+`free_text_visual_search.py` (v1, global pooled embedding) is built and
+validated but has one identified, unfixed ceiling: genuinely localized
+queries ("stitching across the back") land at rank 20-100 of ~1,150, not
+top-5, because SigLIP2 pools the whole image into one vector before
+comparing to text — whatever distinguishes images most efficiently across
+a training batch (category/color/silhouette) dominates that vector, and a
+small localized detail gets diluted regardless of query phrasing. This was
+diagnosed and confirmed empirically (`research_localized_query_
+validation.py`), not assumed from literature.
+
+**Concrete next steps, in priority order:**
+
+1. **Implement MaskCLIP-style dense/patch-level matching.** Established,
+   training-free technique: in the vision tower's *last* attention layer,
+   discard the Q/K projections, and reformulate the V projection + the
+   output projection as two 1×1 convolutions. This turns the last layer
+   from "attention-pool everything into one vector" into "per-patch
+   feature map, still text-aligned because the earlier layers and the
+   text tower are untouched." A free-text query then gets matched against
+   the *set* of patch features (e.g. max- or top-k-pooled patch
+   similarity) instead of one global vector — the patch closest to
+   "stitching across the back" can win even if the rest of the image
+   pulls the pooled vector toward "generic jacket." No retraining
+   required; this only changes how the *existing* SigLIP2 v3 checkpoint's
+   forward pass is read out.
+2. **Re-run the exact same validation methodology** used to diagnose the
+   ceiling (`research_localized_query_validation.py`'s 3 real localized
+   test cases, natural paraphrases never copied from training text)
+   against the dense-matching version, so the before/after comparison is
+   apples-to-apples and the result is a real measured number, not an
+   assumed improvement.
+3. **Architecture point to decide when implementing**: dense matching is
+   more expensive per-image than one pooled vector (a similarity per
+   patch × catalog size, vs. one per image). The codebase already has a
+   working pattern for exactly this cost problem —
+   `hierarchical_retrieval_pipeline.py`'s cheap-shortlist-then-expensive-
+   rerank structure (SigLIP2 narrows to a candidate set, DINOv3 reranks
+   that set). The same shape fits here: keep v1's global-embedding search
+   as a fast full-catalog pre-filter (already built, already cached), run
+   dense/patch matching only on its top-N shortlist as a rerank stage,
+   rather than computing patch-level features against the whole catalog
+   for every query.
+4. **Untested hypothesis worth a real test, not an assumption**: v4's
+   checkpoint (per-facet reweighting, regressed on exact-label R@1) was
+   never evaluated for the free-text-query use case specifically — it's
+   plausible attribute reweighting helps a task that's fundamentally
+   about attributes/details, opposite of its effect on exact-label
+   matching. Cheap to test (same script, swap checkpoint candidate),
+   should happen before assuming v3 is the right checkpoint for this
+   feature permanently.
+5. Richer `defining_features` labels (more/more-precise localized-detail
+   text in the training captions) would apply more training pressure
+   toward packing that signal into the pooled vector — real, additive
+   help, but it doesn't remove the architectural ceiling, so it's a
+   secondary lever, not a substitute for #1.
+
+### Design question: does exact-product retrieval require indexing every product that exists?
+
+Question raised directly: since a database can't realistically contain
+every apparel product in existence, is having *some* database necessary
+for exact-product retrieval at all, and if so, how does that work at
+scale? Researched against how production visual-search systems (Pinterest
+Shop-the-Look, Google Vision Product Search, standard vector-DB visual
+search architectures) and open-set/instance-recognition literature
+actually handle this, rather than guessing.
+
+**Yes, necessary — but for a narrower reason than "the model needs to
+know every product."** Exact-product retrieval is fundamentally a
+*search* operation, not a *generation* or *fixed-class classification*
+one: the system can only return a product that exists as an entry in
+whatever index it searches against. That's true by definition, not a
+limitation of this specific pipeline — no retrieval system, however good
+the embedding model, can return an item it never indexed. So a catalog
+(the `metadata.json` + image embeddings this project already builds) is
+required for *anything the system should be able to name exactly*. This
+part is unavoidable.
+
+**What's *not* required: training the model itself on every product.**
+This is the part worth being precise about, because it's easy to conflate
+"the catalog must contain the product" with "the model must have been
+trained on the product," and this project's own Phase 3 result already
+disproves the second one. `dino_identity_finetune.py` was trained with a
+SupCon *metric-learning* objective (P×K identity-balanced batches,
+colorway-sibling hard negatives) rather than a fixed-class classifier —
+the whole point of that choice is that the resulting embedding space
+generalizes to instances the model never saw during training, the same
+way face-recognition and person re-identification systems work in
+production: train the encoder once on a representative sample of
+identities, then *enroll* new identities into the gallery via a single
+forward pass (no backprop, no retraining) whenever a new one appears.
+Adding a new product to this project's catalog is the same operation —
+embed its image(s) with the existing frozen/fine-tuned SigLIP2 + DINOv3
+checkpoints and add the vectors to the index. The 56.55% R@1 DINOv3
+number already reflects generalization to held-out identities the metric-
+learning objective never trained on directly, which is the real evidence
+this generalizes rather than memorizes.
+
+**How to actually scale the "enrollment" side, concretely:**
+
+1. **Treat index growth as an embedding job, not a training job.** New
+   product → forward pass through the existing checkpoints (cheap, GPU-
+   seconds, no gradient computation) → append embedding(s) to the index.
+   Full retraining should only happen occasionally, as a *quality*
+   upgrade to the embedding space itself (e.g. the v3→v4 SigLIP2
+   iteration already in this project), not per-product.
+2. **When the embedding space is upgraded (new checkpoint), re-embed the
+   catalog, don't retrain per-product.** Re-embedding ~1,200 products is
+   a bulk forward-pass job (minutes on a GPU), fundamentally different
+   in cost from a fine-tuning run — this project already effectively does
+   this every time `hierarchical_retrieval_pipeline.py`'s index-build
+   step reruns after a checkpoint changes.
+3. **Swap brute-force cosine similarity for an ANN index once the catalog
+   grows past a few thousand–tens of thousands of items.** This project's
+   current linear `embeddings @ query` scan is fine at ~1,200 products but
+   doesn't scale indefinitely; production visual-search systems (Pinterest,
+   Google Vision Product Search) universally sit a vector index (FAISS
+   IVF/HNSW, or a managed vector DB) in front of exactly this kind of
+   embedding lookup specifically so index growth doesn't cost linear
+   search time. This is a swap-in, not an architecture change — same
+   embeddings, different data structure to search them.
+4. **Handle the case where the true product genuinely isn't in the
+   catalog at all** (the actually-hard case a bigger catalog doesn't
+   solve, just shrinks the frequency of) — right now the pipeline always
+   returns *a* top-1, even when nothing in the catalog is a real match.
+   The open-set recognition literature's standard fix is a rejection
+   threshold rather than always committing to the nearest neighbor: e.g.
+   an absolute cosine-similarity cutoff below which the system reports
+   "no confident match" instead of a wrong top-1, or the sharper
+   nearest/second-nearest distance-ratio test (OSNN) — reject when the
+   top candidate isn't meaningfully closer than the runner-up, which
+   catches "this looks vaguely like several unrelated catalog items"
+   cases a flat threshold misses. **Not implemented anywhere in this
+   pipeline yet** — worth adding once exact-retrieval is deployed against
+   real user photos rather than only the held-out catalog split, where by
+   construction the true product is always present.
+5. **For queries that are structurally out of scope for exact match**
+   (the true item was never scraped into any of the 6 brands, or isn't a
+   product at all), the right answer isn't to push exact-match retrieval
+   harder — it's architecturally impossible for it to succeed by
+   definition. This project already has the right fallback tools for that
+   case, just not wired together as a fallback chain yet:
+   `color_similarity_search.py` and `free_text_visual_search.py` answer
+   "what's *similar*" rather than "what's the *exact* item," which is the
+   correct question to ask once exact match is known to have failed (via
+   #4's rejection signal). Worth wiring as an explicit fallback: exact
+   pipeline runs first, and only falls through to similarity/free-text
+   search when its own rejection threshold fires.
+
+**Bottom line**: a catalog of everything you want to be exactly
+retrievable is unavoidable — but "everything you want retrievable" is
+your own product catalog (which this project already has, 6 brands,
+1,234 products, growing by scraping), not "every product that exists."
+The model doesn't need per-product training to support new entries,
+metric learning is specifically the technique that avoids that
+requirement, and the real remaining engineering work is enrollment
+plumbing (embed-and-append, periodic re-embed on checkpoint upgrades, ANN
+indexing at scale) plus a rejection/fallback path for the case a bigger
+catalog can shrink but never eliminate.
