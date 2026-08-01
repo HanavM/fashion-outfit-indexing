@@ -170,6 +170,18 @@ REJECT_SIMILARITY_THRESHOLD = None
 USE_SCORE_FUSION = False
 DINO_FUSION_WEIGHT = 0.8
 SIGLIP_FUSION_WEIGHT = 0.2
+
+# Patch-level DINOv3 reranking (spec section 6). Only re-scores the
+# already-narrowed top PATCH_RERANK_CANDIDATES from the pooled DINOv3
+# rerank -- per-patch similarity is O(N_patches^2) per pair, real money
+# more expensive than one pooled-vector comparison, so it only pays for
+# itself as a final polish step over a small window, same shape as every
+# other shortlist-then-expensive-step stage in this pipeline. Off by
+# default -- unvalidated new signal, see embed_image_dino_patches's
+# docstring for the real caveat (projection_head wasn't trained on
+# patch-token inputs).
+USE_PATCH_RERANK = False
+PATCH_RERANK_CANDIDATES = 10
 # Bare category name, not a "a photo of a {category}" template -- matches
 # what finetune_siglip2_v3.py's build_training_labels actually trained the
 # text tower on for taxonomy nodes (raw strings like "sneaker", "hoodie"
@@ -501,6 +513,49 @@ def embed_images_dino(backbone, projection_head, use_projection, processor, pil_
     return torch.cat(embeddings, dim=0) if embeddings else torch.empty(0, DINOV3_PROJECTION_DIM)
 
 
+@torch.inference_mode()
+def embed_image_dino_patches(backbone, projection_head, use_projection, processor, pil_image):
+    """Per-patch identity-space features for ONE image -- for patch-level
+    reranking (spec section 6's "local patch comparison," never
+    implemented before this: DINOv3 was only ever read via its pooled
+    vector everywhere else in this pipeline, same architectural ceiling
+    already identified and fixed for SigLIP2's free-text search).
+
+    Applies the trained projection_head to every patch token individually,
+    not just the pooled/CLS feature it was actually trained on -- the same
+    kind of generalization used for SigLIP2's MaskCLIP-style dense
+    matching (free_text_visual_search.py), but a weaker assumption here:
+    that script's projection (value-proj + out-proj + residual MLP) is
+    architecturally IDENTICAL for the pooled probe and every patch inside
+    the attention-pooling head, whereas this projection_head is a generic
+    MLP trained only on pooled features, so patch-token inputs sit outside
+    its training distribution. Reasonable as an experimental extra signal,
+    not assumed correct -- ships behind --patch-rerank, unvalidated,
+    same caution as the other experimental additions this session.
+    """
+    inputs = processor(images=[pil_image], return_tensors="pt")
+    inputs = {k: v.to(DEVICE) for k, v in inputs.items()}
+    with autocast_context():
+        outputs = backbone(**inputs)
+        patch_tokens = outputs.last_hidden_state[:, 1:].float().squeeze(0)  # drop CLS/register-0 token
+        if use_projection and projection_head is not None:
+            patches = projection_head(patch_tokens)
+        else:
+            patches = F.normalize(patch_tokens, dim=-1)
+    return patches.cpu()
+
+
+def patch_similarity_score(query_patches, candidate_patches):
+    """ColBERT-style late-interaction score: for every query patch, take
+    its best-matching candidate patch, then average across query patches.
+    Asymmetric on purpose -- rewards the candidate containing a strong
+    local match for each part of the query, rather than requiring every
+    candidate patch to also matter (a candidate photo can show more of
+    the product/background than the query crop does)."""
+    similarity_matrix = query_patches @ candidate_patches.T
+    return float(similarity_matrix.max(dim=1).values.mean())
+
+
 def extract_siglip_embeddings(output):
     """transformers-version-dependent: get_text_features/get_image_features
     return a bare tensor on some versions, a wrapped output object (e.g.
@@ -779,7 +834,38 @@ class HierarchicalRetriever:
             ranked = [(available[i], float(dino_similarity[i])) for i in order.tolist()]
         return ranked[:final_top_k]
 
-    def retrieve(self, image_path, use_category_gate=False, hsc_threshold=HSC_THRESHOLD, top_identity_candidates=TOP_IDENTITY_CANDIDATES, final_top_k=FINAL_TOP_K, reject_threshold=REJECT_SIMILARITY_THRESHOLD, use_score_fusion=USE_SCORE_FUSION):
+    def patch_rerank(self, query_image, pooled_ranked, num_candidates=PATCH_RERANK_CANDIDATES):
+        """Re-scores the top num_candidates of an already pooled-DINOv3-
+        ranked list using patch-level late-interaction similarity, then
+        re-sorts just that window (anything beyond it keeps its pooled
+        order, since this is a polish step over the pooled shortlist, not
+        an independent full rerank)."""
+        window = pooled_ranked[:num_candidates]
+        rest = pooled_ranked[num_candidates:]
+        if len(window) <= 1:
+            return pooled_ranked
+
+        query_patches = embed_image_dino_patches(self.dino_backbone, self.dino_head, self.dino_use_projection, self.dino_processor, query_image)
+
+        rescored = []
+        for code, pooled_score in window:
+            candidate_paths = self.gallery_images_by_product.get(code, [])
+            if not candidate_paths:
+                rescored.append((code, pooled_score, pooled_score))
+                continue
+            try:
+                candidate_image = load_rgb_image(candidate_paths[0])
+            except Exception:
+                rescored.append((code, pooled_score, pooled_score))
+                continue
+            candidate_patches = embed_image_dino_patches(self.dino_backbone, self.dino_head, self.dino_use_projection, self.dino_processor, candidate_image)
+            patch_score = patch_similarity_score(query_patches, candidate_patches)
+            rescored.append((code, pooled_score, patch_score))
+
+        rescored.sort(key=lambda entry: entry[2], reverse=True)
+        return [(code, pooled_score) for code, pooled_score, _ in rescored] + rest
+
+    def retrieve(self, image_path, use_category_gate=False, hsc_threshold=HSC_THRESHOLD, top_identity_candidates=TOP_IDENTITY_CANDIDATES, final_top_k=FINAL_TOP_K, reject_threshold=REJECT_SIMILARITY_THRESHOLD, use_score_fusion=USE_SCORE_FUSION, use_patch_rerank=USE_PATCH_RERANK):
         # Default flipped to off: the old flat (non-HSC) gate was confirmed
         # net-negative in two independent Phase 4 runs (docs/eval_log.md,
         # 2026-07-30) -- it excluded the true category ~30% of the time,
@@ -797,7 +883,13 @@ class HierarchicalRetriever:
         allowed_categories = hsc_result["allowed_categories"] if use_category_gate else None
 
         candidates = self.shortlist_identities(siglip_embedding, allowed_categories, top_identity_candidates)
-        ranked = self.rerank_by_identity(dino_embedding, candidates, final_top_k, use_score_fusion=use_score_fusion)
+        # Pull a wider pooled-ranked window when patch reranking is on --
+        # patch_rerank needs candidates to re-sort AMONG, so truncating to
+        # final_top_k before it runs would leave it nothing to work with.
+        pooled_top_k = max(final_top_k, PATCH_RERANK_CANDIDATES) if use_patch_rerank else final_top_k
+        ranked = self.rerank_by_identity(dino_embedding, candidates, pooled_top_k, use_score_fusion=use_score_fusion)
+        if use_patch_rerank:
+            ranked = self.patch_rerank(image, ranked)[:final_top_k]
 
         results = []
         for rank, (code, score) in enumerate(ranked, start=1):
@@ -974,12 +1066,16 @@ if __name__ == "__main__":
                               "affects ranking ACROSS different identities in the shortlist -- SigLIP2's score "
                               "is identical across colorway siblings of the same identity by design, so this "
                               "can't help DINOv3 pick between those.")
+    parser.add_argument("--patch-rerank", action="store_true",
+                         help="Re-score the pooled DINOv3 shortlist with patch-level (local) similarity instead "
+                              "of only the pooled vector (spec section 6). --image mode only, unvalidated, off "
+                              "by default -- see embed_image_dino_patches's docstring for the real caveat.")
     args = parser.parse_args()
 
     retriever = HierarchicalRetriever()
 
     if args.image:
-        result = retriever.retrieve(args.image, use_category_gate=args.category_gate, hsc_threshold=args.hsc_threshold, final_top_k=args.top_k, reject_threshold=args.reject_threshold, use_score_fusion=args.score_fusion)
+        result = retriever.retrieve(args.image, use_category_gate=args.category_gate, hsc_threshold=args.hsc_threshold, final_top_k=args.top_k, reject_threshold=args.reject_threshold, use_score_fusion=args.score_fusion, use_patch_rerank=args.patch_rerank)
         print_result(args.image, result)
 
     if args.evaluate:
