@@ -154,6 +154,22 @@ AMBIGUITY_MARGIN = 0.03        # DINOv3 cosine-similarity gap under which top-1/
 # Pick a threshold from that false-reject-rate table (accept some rate you
 # consider tolerable) and pass it via --reject-threshold once you do.
 REJECT_SIMILARITY_THRESHOLD = None
+
+# Score fusion (spec sections 2.1/6: candidates should be reranked with
+# more than one signal, not DINOv3-rerank-only). Off by default, same
+# caution pattern as the category gate -- an unvalidated new arm to
+# benchmark against the real 47.65% ungated baseline (docs/eval_log.md,
+# 2026-07-31), not a silent default change. IMPORTANT limitation: the
+# SigLIP2 identity score is identical across every colorway sibling of
+# the same identity string (by design -- see finetune_siglip2_v3.py's own
+# note that SigLIP2 is deliberately not trained to distinguish
+# colorways), so fusion can only move the ranking of candidates that
+# belong to DIFFERENT identities in the shortlist. It contributes zero
+# discriminative signal between same-identity colorway siblings -- DINOv3
+# alone still has to make that call, fusion doesn't change that.
+USE_SCORE_FUSION = False
+DINO_FUSION_WEIGHT = 0.8
+SIGLIP_FUSION_WEIGHT = 0.2
 # Bare category name, not a "a photo of a {category}" template -- matches
 # what finetune_siglip2_v3.py's build_training_labels actually trained the
 # text tower on for taxonomy nodes (raw strings like "sneaker", "hoodie"
@@ -724,23 +740,46 @@ class HierarchicalRetriever:
         k = min(top_k, len(candidate_indices))
         top_local = torch.topk(similarity, k).indices.tolist()
 
-        candidate_product_codes = set()
+        # product_code -> SigLIP2 identity-level score, for optional score
+        # fusion in rerank_by_identity. Every colorway sibling of the same
+        # identity gets the SAME score here (see USE_SCORE_FUSION's module
+        # comment) -- that's inherent to what SigLIP2 was trained to
+        # distinguish, not a bug in this expansion step.
+        siglip_score_by_code = {}
         for local_index in top_local:
             global_index = candidate_indices[local_index]
-            candidate_product_codes.update(IDENTITY_TO_PRODUCT_CODES[self.identities[global_index]])
-        return candidate_product_codes
+            identity_score = float(similarity[local_index])
+            for code in IDENTITY_TO_PRODUCT_CODES[self.identities[global_index]]:
+                siglip_score_by_code[code] = identity_score
+        return siglip_score_by_code
 
-    def rerank_by_identity(self, dino_image_embedding, candidate_product_codes, final_top_k):
-        available = [code for code in candidate_product_codes if code in self.gallery_index_by_code]
+    def rerank_by_identity(self, dino_image_embedding, siglip_score_by_code, final_top_k, use_score_fusion=USE_SCORE_FUSION):
+        available = [code for code in siglip_score_by_code if code in self.gallery_index_by_code]
         if not available:
             return []
         indices = torch.tensor([self.gallery_index_by_code[code] for code in available], dtype=torch.long)
-        similarity = (dino_image_embedding @ self.gallery_embeddings[indices].T).squeeze(0)
-        order = torch.argsort(similarity, descending=True)
-        ranked = [(available[i], float(similarity[i])) for i in order.tolist()]
+        dino_similarity = (dino_image_embedding @ self.gallery_embeddings[indices].T).squeeze(0)
+
+        if use_score_fusion and len(available) > 1:
+            siglip_similarity = torch.tensor([siglip_score_by_code[code] for code in available], dtype=torch.float32)
+            # z-score normalize each signal within this candidate set before
+            # combining -- SigLIP2 and DINOv3 cosine similarities don't
+            # share a comparable scale/spread, so mixing raw values would
+            # arbitrarily over- or under-weight whichever happens to have
+            # the larger numeric range for this particular query.
+            def z_normalize(values):
+                std = values.std()
+                return (values - values.mean()) / std if std > 1e-6 else torch.zeros_like(values)
+
+            fused = DINO_FUSION_WEIGHT * z_normalize(dino_similarity) + SIGLIP_FUSION_WEIGHT * z_normalize(siglip_similarity)
+            order = torch.argsort(fused, descending=True)
+            ranked = [(available[i], float(dino_similarity[i])) for i in order.tolist()]
+        else:
+            order = torch.argsort(dino_similarity, descending=True)
+            ranked = [(available[i], float(dino_similarity[i])) for i in order.tolist()]
         return ranked[:final_top_k]
 
-    def retrieve(self, image_path, use_category_gate=False, hsc_threshold=HSC_THRESHOLD, top_identity_candidates=TOP_IDENTITY_CANDIDATES, final_top_k=FINAL_TOP_K, reject_threshold=REJECT_SIMILARITY_THRESHOLD):
+    def retrieve(self, image_path, use_category_gate=False, hsc_threshold=HSC_THRESHOLD, top_identity_candidates=TOP_IDENTITY_CANDIDATES, final_top_k=FINAL_TOP_K, reject_threshold=REJECT_SIMILARITY_THRESHOLD, use_score_fusion=USE_SCORE_FUSION):
         # Default flipped to off: the old flat (non-HSC) gate was confirmed
         # net-negative in two independent Phase 4 runs (docs/eval_log.md,
         # 2026-07-30) -- it excluded the true category ~30% of the time,
@@ -758,7 +797,7 @@ class HierarchicalRetriever:
         allowed_categories = hsc_result["allowed_categories"] if use_category_gate else None
 
         candidates = self.shortlist_identities(siglip_embedding, allowed_categories, top_identity_candidates)
-        ranked = self.rerank_by_identity(dino_embedding, candidates, final_top_k)
+        ranked = self.rerank_by_identity(dino_embedding, candidates, final_top_k, use_score_fusion=use_score_fusion)
 
         results = []
         for rank, (code, score) in enumerate(ranked, start=1):
@@ -799,9 +838,9 @@ class HierarchicalRetriever:
     # End-to-end held-out evaluation
     # --------------------------------------------------------
 
-    def evaluate(self, use_category_gate=True, hsc_threshold=HSC_THRESHOLD, top_identity_candidates=TOP_IDENTITY_CANDIDATES):
+    def evaluate(self, use_category_gate=True, hsc_threshold=HSC_THRESHOLD, top_identity_candidates=TOP_IDENTITY_CANDIDATES, use_score_fusion=USE_SCORE_FUSION):
         queries = [(code, path) for code, paths in self.test_image_by_product.items() for path in paths]
-        print(f"Evaluating {len(queries):,} held-out queries (category gate: {use_category_gate}, HSC threshold: {hsc_threshold})...")
+        print(f"Evaluating {len(queries):,} held-out queries (category gate: {use_category_gate}, HSC threshold: {hsc_threshold}, score fusion: {use_score_fusion})...")
 
         ranks = []
         gate_exclusions = 0
@@ -834,18 +873,12 @@ class HierarchicalRetriever:
             if true_code not in candidates:
                 identity_shortlist_misses += 1
 
-            available = [code for code in candidates if code in self.gallery_index_by_code]
-            if not available:
-                ranks.append(len(self.gallery_product_codes) + 1)
-                continue
-            indices = torch.tensor([self.gallery_index_by_code[code] for code in available], dtype=torch.long)
-            similarity = (dino_embedding @ self.gallery_embeddings[indices].T).squeeze(0)
-            order = torch.argsort(similarity, descending=True).tolist()
-            ranked_codes = [available[i] for i in order]
+            ranked = self.rerank_by_identity(dino_embedding, candidates, len(self.gallery_product_codes), use_score_fusion=use_score_fusion)
+            ranked_codes = [code for code, _ in ranked]
             rank = ranked_codes.index(true_code) + 1 if true_code in ranked_codes else len(self.gallery_product_codes) + 1
             ranks.append(rank)
             if rank == 1:
-                correct_top1_scores.append(float(similarity[order[0]]))
+                correct_top1_scores.append(ranked[0][1])
 
         ranks = np.asarray(ranks, dtype=float)
         correct_scores = np.asarray(correct_top1_scores, dtype=float)
@@ -934,19 +967,26 @@ if __name__ == "__main__":
                               "assert an exact product (falls back to the HSC category-level label instead). "
                               "Unset by default -- not calibrated yet. Run --evaluate first to see the "
                               "reject_threshold_sweep's false-reject-rate table, pick a threshold from there.")
+    parser.add_argument("--score-fusion", action="store_true",
+                         help="Rerank by a weighted fusion of DINOv3 + SigLIP2 identity scores instead of "
+                              "DINOv3-only (spec sections 2.1/6). Off by default -- unvalidated new arm, "
+                              "benchmark against the real 47.65% ungated baseline before trusting it. Only "
+                              "affects ranking ACROSS different identities in the shortlist -- SigLIP2's score "
+                              "is identical across colorway siblings of the same identity by design, so this "
+                              "can't help DINOv3 pick between those.")
     args = parser.parse_args()
 
     retriever = HierarchicalRetriever()
 
     if args.image:
-        result = retriever.retrieve(args.image, use_category_gate=args.category_gate, hsc_threshold=args.hsc_threshold, final_top_k=args.top_k, reject_threshold=args.reject_threshold)
+        result = retriever.retrieve(args.image, use_category_gate=args.category_gate, hsc_threshold=args.hsc_threshold, final_top_k=args.top_k, reject_threshold=args.reject_threshold, use_score_fusion=args.score_fusion)
         print_result(args.image, result)
 
     if args.evaluate:
-        gated_metrics = retriever.evaluate(use_category_gate=True, hsc_threshold=args.hsc_threshold)
+        gated_metrics = retriever.evaluate(use_category_gate=True, hsc_threshold=args.hsc_threshold, use_score_fusion=args.score_fusion)
         print_metrics("End-to-end held-out eval -- WITH HSC-based category gate", gated_metrics)
 
-        ungated_metrics = retriever.evaluate(use_category_gate=False, hsc_threshold=args.hsc_threshold)
+        ungated_metrics = retriever.evaluate(use_category_gate=False, hsc_threshold=args.hsc_threshold, use_score_fusion=args.score_fusion)
         print_metrics("End-to-end held-out eval -- WITHOUT category gate (fallback comparison)", ungated_metrics)
 
         with (INDEX_DIR / "pipeline_eval_metrics.json").open("w", encoding="utf-8") as f:
