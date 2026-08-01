@@ -141,6 +141,19 @@ DINOV3_CHECKPOINT_CANDIDATES = [
 TOP_IDENTITY_CANDIDATES = 25
 FINAL_TOP_K = 5
 AMBIGUITY_MARGIN = 0.03        # DINOv3 cosine-similarity gap under which top-1/top-2 count as "too close to call"
+
+# Open-set rejection (spec section 7: the system must be able to say
+# "unknown" instead of always forcing a top-1). None = disabled by default
+# -- deliberately NOT shipped with an assumed "calibrated" number, since
+# real calibration needs a held-out split with genuinely off-catalog
+# query images (spec section 8.1's "open-set rejection" split), which
+# this project doesn't have yet. evaluate()'s reject_threshold_sweep
+# reports the one thing that CAN be measured honestly right now without
+# that data: how often a given threshold would falsely reject a query
+# DINOv3 actually got right, using only the existing known-product split.
+# Pick a threshold from that false-reject-rate table (accept some rate you
+# consider tolerable) and pass it via --reject-threshold once you do.
+REJECT_SIMILARITY_THRESHOLD = None
 # Bare category name, not a "a photo of a {category}" template -- matches
 # what finetune_siglip2_v3.py's build_training_labels actually trained the
 # text tower on for taxonomy nodes (raw strings like "sneaker", "hoodie"
@@ -727,7 +740,7 @@ class HierarchicalRetriever:
         ranked = [(available[i], float(similarity[i])) for i in order.tolist()]
         return ranked[:final_top_k]
 
-    def retrieve(self, image_path, use_category_gate=False, hsc_threshold=HSC_THRESHOLD, top_identity_candidates=TOP_IDENTITY_CANDIDATES, final_top_k=FINAL_TOP_K):
+    def retrieve(self, image_path, use_category_gate=False, hsc_threshold=HSC_THRESHOLD, top_identity_candidates=TOP_IDENTITY_CANDIDATES, final_top_k=FINAL_TOP_K, reject_threshold=REJECT_SIMILARITY_THRESHOLD):
         # Default flipped to off: the old flat (non-HSC) gate was confirmed
         # net-negative in two independent Phase 4 runs (docs/eval_log.md,
         # 2026-07-30) -- it excluded the true category ~30% of the time,
@@ -762,6 +775,16 @@ class HierarchicalRetriever:
             close_scores = (results[0]["dino_identity_score"] - results[1]["dino_identity_score"]) < AMBIGUITY_MARGIN
             ambiguous = same_model and close_scores
 
+        # Open-set rejection (spec section 7): if the best candidate's own
+        # score doesn't clear reject_threshold, don't force an exact-product
+        # claim -- fall back to the broadest label the pipeline still has
+        # real evidence for, which is exactly what HSC climbing already
+        # computed upstream (hsc_predicted_node/allowed_categories), not a
+        # new signal. Doesn't remove `results` -- a rejected top-1 is still
+        # shown as a "closest visual match" candidate, just not asserted as
+        # an identified product.
+        rejected = reject_threshold is not None and (not results or results[0]["dino_identity_score"] < reject_threshold)
+
         return {
             "hsc_predicted_node": hsc_result["predicted_node"], "hsc_predicted_level": hsc_result["predicted_level"],
             "hsc_confidence": hsc_result["confidence"], "hsc_climbing_path": hsc_result["climbing_path"],
@@ -769,6 +792,7 @@ class HierarchicalRetriever:
             "allowed_categories": sorted(hsc_result["allowed_categories"]),
             "num_identity_candidates": len(candidates), "results": results,
             "same_model_different_colorway_ambiguous": ambiguous,
+            "rejected_open_set": rejected, "reject_threshold": reject_threshold,
         }
 
     # --------------------------------------------------------
@@ -783,6 +807,16 @@ class HierarchicalRetriever:
         gate_exclusions = 0
         identity_shortlist_misses = 0
         climb_level_counts = {"leaf": 0, "category": 0, "group": 0, "root": 0}
+        # Top-1 DINOv3 score on every query where top-1 was actually
+        # CORRECT -- used below to compute, for a range of candidate reject
+        # thresholds, what fraction of real correct answers a threshold
+        # would falsely throw away. This is a known-product-only query set
+        # (every true_code is in the catalog by construction), so it can
+        # only measure false rejections, never a true open-set
+        # accept/reject rate -- that needs queries with no true catalog
+        # match at all, which this eval doesn't have (see
+        # REJECT_SIMILARITY_THRESHOLD's module comment).
+        correct_top1_scores = []
 
         for true_code, image_path in queries:
             image = load_rgb_image(image_path)
@@ -810,8 +844,24 @@ class HierarchicalRetriever:
             ranked_codes = [available[i] for i in order]
             rank = ranked_codes.index(true_code) + 1 if true_code in ranked_codes else len(self.gallery_product_codes) + 1
             ranks.append(rank)
+            if rank == 1:
+                correct_top1_scores.append(float(similarity[order[0]]))
 
         ranks = np.asarray(ranks, dtype=float)
+        correct_scores = np.asarray(correct_top1_scores, dtype=float)
+        # Sweep candidate thresholds and report what fraction of REAL
+        # correct top-1 answers each would falsely reject -- the only
+        # thing measurable without a genuinely-unknown-product eval split
+        # (see REJECT_SIMILARITY_THRESHOLD's module comment). Percentile-
+        # based so the sweep is meaningful regardless of this checkpoint's
+        # absolute score scale.
+        reject_threshold_sweep = {}
+        if len(correct_scores) > 0:
+            for percentile in (1, 2, 5, 10, 20):
+                threshold = float(np.percentile(correct_scores, percentile))
+                false_reject_rate = float(np.mean(correct_scores < threshold))
+                reject_threshold_sweep[f"p{percentile}"] = {"threshold": threshold, "false_reject_rate": false_reject_rate}
+
         metrics = {
             "num_queries": len(queries),
             "category_gate_exclusion_rate": gate_exclusions / len(queries) if use_category_gate else None,
@@ -823,6 +873,7 @@ class HierarchicalRetriever:
             "mrr": float(np.mean(1.0 / ranks)),
             "median_rank": float(np.median(ranks)),
             "mean_rank": float(np.mean(ranks)),
+            "reject_threshold_sweep": reject_threshold_sweep,
         }
         return metrics
 
@@ -836,6 +887,11 @@ def print_result(query_path, result):
     print(f"  Best single leaf guess: {result['hsc_best_leaf']} (p={result['hsc_best_leaf_probability']:.3f})")
     print(f"  Categories in play: {result['allowed_categories']}")
     print(f"Identity candidates considered: {result['num_identity_candidates']}")
+    if result["rejected_open_set"]:
+        print(f"  ! Best match scores below reject_threshold={result['reject_threshold']:.4f} -- "
+              f"NOT asserting an exact product. Falling back to: {result['hsc_predicted_node']} "
+              f"({result['hsc_predicted_level']}-level, confidence={result['hsc_confidence']:.3f}). "
+              f"Closest visual candidates shown below are NOT a confirmed identification.")
     for entry in result["results"]:
         print(f"  #{entry['rank']}  {entry['brand']} {entry['name']}  [{entry['product_code']}]  "
               f"score={entry['dino_identity_score']:.4f}")
@@ -857,6 +913,11 @@ def print_metrics(title, metrics):
     print(f"MRR:  {metrics['mrr'] * 100:.2f}%")
     print(f"Median rank: {metrics['median_rank']:.1f}")
     print(f"Mean rank: {metrics['mean_rank']:.2f}")
+    if metrics["reject_threshold_sweep"]:
+        print("Open-set reject-threshold sweep (false-reject rate against REAL correct top-1 answers only --")
+        print("  not a true accept/reject rate, this eval set has no genuinely-unknown-product queries yet):")
+        for label, row in metrics["reject_threshold_sweep"].items():
+            print(f"    {label}: threshold={row['threshold']:.4f}  false_reject_rate={row['false_reject_rate']*100:.2f}%")
 
 
 if __name__ == "__main__":
@@ -868,12 +929,17 @@ if __name__ == "__main__":
     parser.add_argument("--hsc-threshold", type=float, default=HSC_THRESHOLD,
                          help=f"HSC climbing confidence threshold, 0-1 (default {HSC_THRESHOLD}). Higher = broader/safer predictions.")
     parser.add_argument("--top-k", type=int, default=FINAL_TOP_K, help="Number of results to print for --image mode.")
+    parser.add_argument("--reject-threshold", type=float, default=REJECT_SIMILARITY_THRESHOLD,
+                         help="Open-set rejection: DINOv3 cosine-similarity floor below which --image mode won't "
+                              "assert an exact product (falls back to the HSC category-level label instead). "
+                              "Unset by default -- not calibrated yet. Run --evaluate first to see the "
+                              "reject_threshold_sweep's false-reject-rate table, pick a threshold from there.")
     args = parser.parse_args()
 
     retriever = HierarchicalRetriever()
 
     if args.image:
-        result = retriever.retrieve(args.image, use_category_gate=args.category_gate, hsc_threshold=args.hsc_threshold, final_top_k=args.top_k)
+        result = retriever.retrieve(args.image, use_category_gate=args.category_gate, hsc_threshold=args.hsc_threshold, final_top_k=args.top_k, reject_threshold=args.reject_threshold)
         print_result(args.image, result)
 
     if args.evaluate:
