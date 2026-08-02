@@ -1418,3 +1418,100 @@ champion 200, skechers 180, levis 178, pacsun 176, newbalance 173,
 adidas 90). Structured captioning (178/178) and garment cropping both
 run to completion for the new Levi's records. Same "not yet embedded/
 evaluated" caveat as Champion above still applies to both new brands.
+
+## Update — 2026-08-02: full-pipeline performance analysis, two real fixes implemented
+
+Spawned a read-only research agent (Plan-type, no edit access) to do a
+deep, evidence-grounded diagnosis of SigLIP2, DINOv3, and the hybrid
+pipeline's current state, then evaluated its findings and implemented
+what was safe to do without new training/eval compute. Full agent report
+not reproduced here — summary of what mattered:
+
+**Confirmed via the agent's read of `docs/eval_log.md` (no new numbers,
+just synthesis)**: the identity-shortlist stage (SigLIP2 top-K
+narrowing) remains the dominant accuracy bottleneck, not DINOv3's
+rerank — DINOv3 alone is close to its own isolated-eval ceiling (~60-65%
+conditional R@1 given a shortlist hit, vs. 56.55% standalone R@1), while
+the shortlist still misses the true product outright ~20% of the time
+even at `TOP_IDENTITY_CANDIDATES=25`. A back-of-envelope bound: even a
+*hypothetically perfect* rerank caps out around 80% R@1 given the
+current 20% miss rate — real headroom, but the shortlist-miss lever is
+larger. This matches and reinforces the priority ordering already in
+this file (Tier 1 > Tier 2), it isn't a new conclusion, but it's now
+backed by an explicit quantitative argument rather than just sequencing
+by "cheaper first."
+
+**A real, previously-undocumented code bug found**: `evaluate()` never
+accepted or threaded through `use_patch_rerank` — `--evaluate
+--patch-rerank` silently ignored the flag and always scored the
+DINOv3-pooled-only ranking, meaning patch reranking could only ever be
+smoke-tested via `--image` single-query mode, never actually benchmarked.
+**Fixed**: `evaluate()` now accepts `use_patch_rerank`, applies
+`self.patch_rerank()` to the same top-window it uses in `--image` mode
+before computing each query's rank, and the CLI wires `args.patch_rerank`
+through. This doesn't change any existing (fusion-off, patch-off) eval
+numbers — it only makes `--evaluate --patch-rerank` produce a real,
+trustworthy result for the first time. Still needs an actual Colab/Modal
+run to get real numbers; not done as part of this fix.
+
+**A second real bug found and fixed, in `dino_identity_finetune.py`'s
+`IdentityBatchSampler`**: verified (not just hypothesized) that P×K
+batch construction silently sampled **with replacement** whenever a
+product had fewer than K=4 images — `chosen = [rng.choice(candidates)
+for _ in range(self.K)]` duplicates the same source image into the
+batch as a supposed second "view," differing only by stochastic
+augmentation, not a real distinct photo. Measured the real incidence
+directly against `apparel_dataset/metadata.json` (read-only, safe
+alongside the concurrently-running Levi's crop job since cropping never
+touches the `images` field): **18.05% of eligible (≥2-image) products
+have fewer than 4 images** — a real, non-trivial fraction, not an edge
+case. This technically violates this same module's own documented rule
+("K>=2 requires genuine in-batch positives, not augmented duplicates of
+a single image") for any product with 2-3 real images.
+
+**Fixed correctly, not just patched around**: checked `supcon_loss()`
+first — it groups purely by `product_code` label equality across the
+batch, with no fixed P×K shape requirement anywhere in the loss
+computation itself. That means the sampler doesn't need to force exactly
+K samples per identity at all. Changed `__iter__` to sample *without*
+replacement, `min(K, available)` per identity, instead of padding with
+duplicates. Every product ever selected into a batch is already
+guaranteed ≥2 images by `eligible_products`'s own filter, so this always
+still yields ≥2 genuine, non-duplicate positives per identity — just
+fewer than K when the real image count is short, rather than a fake
+extra copy.
+
+**Honest status of both fixes**: both are real, defensible code
+corrections, not hypothetical. Neither has been re-validated with an
+actual training/eval run yet — the DINOv3 sampler fix in particular
+requires a full retrain to know whether it measurably improves the
+56.55% R@1 checkpoint (plausible, given the fix directly targets weak
+positive-pair signal, but unproven), and the patch-rerank fix just
+unblocks a real `--evaluate --patch-rerank` run rather than producing a
+number itself. Both are compute-heavy asks (a DINOv3 retrain especially)
+appropriately held for explicit go-ahead given this project's stated
+Modal-cost sensitivity, rather than triggered automatically.
+
+**Agent's other recommendations, evaluated and deliberately NOT acted on
+yet** (compute-bound, need explicit go-ahead): sweep
+`TOP_IDENTITY_CANDIDATES` past 25 (35/50/75/100 — still the single
+highest-expected-value next experiment, per this file's existing
+prioritization, unchanged by this analysis); validate patch reranking
+via the now-fixed `--evaluate --patch-rerank` path; validate score
+fusion (agent's own math suggests smaller expected upside than patch
+reranking, since SigLIP2's shortlist score is identical across colorway
+siblings by design and so can't help DINOv3's core same-model-different-
+colorway discrimination task); a materially-less-aggressive SigLIP2 v5
+("model" kind weight ~0.36-0.38 vs. v3's 0.42/v4's 0.30) — agent's own
+extrapolation from v3/v4's real numbers suggests this is close to
+break-even and lower priority than the above, not a clear win; a
+by-facet eval pass for the currently-unmeasured facets (pattern,
+silhouette, pocket type, distressing, heel/sole/toe shape) — cheap,
+mechanical extension of `evaluate_siglip2_by_facet_modal_body.py`,
+genuinely just hasn't been run yet, no reason given not to except
+prioritization; re-embedding Champion+Levi's (378 records, currently
+0% represented in any eval number) before trusting any future sweep as
+final. Also flagged and explicitly rejected: further DINOv3 backbone
+unfreezing (stage 2 only added +0.44pt over stage 1 head-only training,
+weak evidence of remaining backbone headroom) and re-attempting v4's
+aggressive reweighting as-is (already confirmed a net loss).

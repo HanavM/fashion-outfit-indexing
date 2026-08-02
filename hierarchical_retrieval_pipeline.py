@@ -930,9 +930,9 @@ class HierarchicalRetriever:
     # End-to-end held-out evaluation
     # --------------------------------------------------------
 
-    def evaluate(self, use_category_gate=True, hsc_threshold=HSC_THRESHOLD, top_identity_candidates=TOP_IDENTITY_CANDIDATES, use_score_fusion=USE_SCORE_FUSION):
+    def evaluate(self, use_category_gate=True, hsc_threshold=HSC_THRESHOLD, top_identity_candidates=TOP_IDENTITY_CANDIDATES, use_score_fusion=USE_SCORE_FUSION, use_patch_rerank=USE_PATCH_RERANK):
         queries = [(code, path) for code, paths in self.test_image_by_product.items() for path in paths]
-        print(f"Evaluating {len(queries):,} held-out queries (category gate: {use_category_gate}, HSC threshold: {hsc_threshold}, score fusion: {use_score_fusion})...")
+        print(f"Evaluating {len(queries):,} held-out queries (category gate: {use_category_gate}, HSC threshold: {hsc_threshold}, score fusion: {use_score_fusion}, patch rerank: {use_patch_rerank})...")
 
         ranks = []
         gate_exclusions = 0
@@ -966,6 +966,14 @@ class HierarchicalRetriever:
                 identity_shortlist_misses += 1
 
             ranked = self.rerank_by_identity(dino_embedding, candidates, len(self.gallery_product_codes), use_score_fusion=use_score_fusion)
+            if use_patch_rerank:
+                # patch_rerank() only re-sorts its own top PATCH_RERANK_CANDIDATES
+                # window and leaves the rest of `ranked` untouched by design (see
+                # its own docstring) -- correct here too: this is a polish step
+                # over the pooled ranking, not an independent full rerank, so a
+                # query whose true product falls outside that window can't be
+                # rescued by it, matching --image mode's behavior exactly.
+                ranked = self.patch_rerank(image, ranked)
             ranked_codes = [code for code, _ in ranked]
             rank = ranked_codes.index(true_code) + 1 if true_code in ranked_codes else len(self.gallery_product_codes) + 1
             ranks.append(rank)
@@ -1079,10 +1087,10 @@ if __name__ == "__main__":
         print_result(args.image, result)
 
     if args.evaluate:
-        gated_metrics = retriever.evaluate(use_category_gate=True, hsc_threshold=args.hsc_threshold, use_score_fusion=args.score_fusion)
+        gated_metrics = retriever.evaluate(use_category_gate=True, hsc_threshold=args.hsc_threshold, use_score_fusion=args.score_fusion, use_patch_rerank=args.patch_rerank)
         print_metrics("End-to-end held-out eval -- WITH HSC-based category gate", gated_metrics)
 
-        ungated_metrics = retriever.evaluate(use_category_gate=False, hsc_threshold=args.hsc_threshold, use_score_fusion=args.score_fusion)
+        ungated_metrics = retriever.evaluate(use_category_gate=False, hsc_threshold=args.hsc_threshold, use_score_fusion=args.score_fusion, use_patch_rerank=args.patch_rerank)
         print_metrics("End-to-end held-out eval -- WITHOUT category gate (fallback comparison)", ungated_metrics)
 
         with (INDEX_DIR / "pipeline_eval_metrics.json").open("w", encoding="utf-8") as f:

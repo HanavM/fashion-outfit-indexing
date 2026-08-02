@@ -504,10 +504,28 @@ class IdentityBatchSampler(Sampler):
             batch_indices = []
             for p in products:
                 candidates = self.indices_by_product[p]
-                if len(candidates) >= self.K:
-                    chosen = rng.sample(candidates, self.K)
-                else:
-                    chosen = [rng.choice(candidates) for _ in range(self.K)]
+                # Sample WITHOUT replacement, up to min(K, available) --
+                # the old with-replacement fallback (rng.choice per slot)
+                # put a duplicate of the SAME source image into the batch
+                # standing in as a second "view" whenever a product had
+                # fewer than K images, which is a weaker positive-pair
+                # signal than a genuinely different photo (only stochastic
+                # augmentation differs the two copies, not real viewpoint/
+                # lighting/pose) and technically violates this module's own
+                # stated "K>=2 requires genuine in-batch positives, not
+                # augmented duplicates of a single image" rule whenever
+                # K(=4) > that product's real image count. Measured real
+                # incidence, 2026-08-02: 18.05% of eligible (>=2-image)
+                # products have <4 images. supcon_loss() below groups
+                # purely by product_code equality, not a fixed P*K batch
+                # shape, so a variable per-identity sample count here is
+                # safe -- every product in `products` is guaranteed >=2
+                # images by `eligible_products`'s own filter, so this still
+                # always yields >=2 genuine, non-duplicate positives per
+                # identity, just fewer than K when the product doesn't
+                # have K real images rather than padding with a fake one.
+                sample_size = min(self.K, len(candidates))
+                chosen = rng.sample(candidates, sample_size)
                 batch_indices.extend(chosen)
             yield batch_indices
 
