@@ -1515,3 +1515,88 @@ final. Also flagged and explicitly rejected: further DINOv3 backbone
 unfreezing (stage 2 only added +0.44pt over stage 1 head-only training,
 weak evidence of remaining backbone headroom) and re-attempting v4's
 aggressive reweighting as-is (already confirmed a net loss).
+
+## Update — 2026-08-02: composed image+text query v1 (`composed_query_search.py`) — an honest, scoped-down first pass at spec 4.8's "image + text query"
+
+Spec §4.8's worked example ("this shoe with cargo jorts") assumes an
+"outfit record" containing multiple items that co-occurred in one real
+photo — that's spec Phase 5 (composed outfit search), and it structurally
+depends on Phase 3 (multi-item outfit-photo detection with items that
+actually co-occur in one real photo), which this project doesn't have in
+usable form yet. `apparel_dataset` is single-product catalog photos (one
+garment per image) across all 9 brands. `segment_outfit.py` (2026-08-01)
+is a first-pass multi-item detector for that future data, but it's only
+been smoke-tested on 2 catalog photos, not benchmarked, and no dataset of
+real linked-item outfit photos exists to build actual "outfit records"
+from. Building genuine conjunction retrieval on top of that gap would mean
+either faking co-occurrence data or silently overclaiming — neither
+acceptable, so this round built the real, honest, buildable subset
+instead.
+
+**What got built**: `composed_query_search.py`, given (1) a query image of
+one item and (2) a text fragment describing a second, separately-desired
+item/attribute, runs TWO INDEPENDENT SEARCHES and returns both side by
+side, explicitly labeled as not-confirmed-worn-together in every output
+(`note` field, CLI printout, module docstring) — NOT a claim this solves
+Phase 5. Two pieces:
+1. **`parse_text_fragment`** — a lightweight facet parser, deliberately not
+   an NLP system: matches a fragment like "with cargo jorts" against
+   `docs/hierarchy.json`'s real taxonomy vocabulary (leaf beats category,
+   longer match beats shorter) plus a small hand-written slang/synonym
+   table ("jorts"→"denim shorts", "kicks"→"sneaker", "khaki"→"khakis",
+   etc.), then matches any leftover words against the REAL attribute
+   vocabulary actually present in the catalog's
+   `structured_caption.attributes` (color/material/pattern/fit/length/
+   silhouette/closure/pocket_type/distressing/defining_features) — built
+   from real data, not assumed. One real finding from inspecting the data
+   before writing this: `pocket_type` is empty across the entire 1,646-
+   product catalog; "cargo pockets"-style signal actually lives in the
+   free-text `defining_features.feature` field instead, so the attribute
+   vocab is built from that field too, not just the named facets.
+2. **`composed_search(image_path, text_fragment, top_k)`** — runs
+   `hierarchical_retrieval_pipeline.py`'s `HierarchicalRetriever.retrieve()`
+   on the image (`identified_item`) and, separately, queries
+   `catalog_query_search.py`'s existing canonical+semantic search using the
+   PARSED terms (not the raw slang fragment — "jorts" itself isn't a
+   substring of any real canonical label, "denim shorts" is), filtered to
+   the parsed category when one was found (`second_item_matches`). Falls
+   back to canonical-only matching if the semantic-embedding stage errors
+   out (e.g. an unusable local torch/transformers install), rather than
+   crashing the whole composed query over a fallback stage that was never
+   the primary signal.
+
+**Real test results, not assumed**: 15 hand-written text fragments against
+my own hand-judged expected category — 15/15 matched after two real fixes
+made while testing, not before: plural nouns ("loafers") weren't matching
+their singular taxonomy term ("loafer") until word-boundary matching was
+changed to allow an optional trailing "s"; "khaki pants"/"striped polo"
+needed two more synonym entries (khaki→khakis, polo→polo sweater) to reach
+the real taxonomy leaf. This is an informal check (no held-out set, one
+person's own examples), reported as such — see `docs/eval_log.md`'s
+2026-08-02 row for the full disclosure. `second_item_matches` was spot-
+checked against real catalog output too: "with cargo jorts" correctly
+surfaced a real product literally named "...Baggy Jorts...", "with khaki
+pants" and "with a bomber jacket" both returned real, correctly-
+categorized products.
+
+**What was NOT validated locally, stated plainly**: `identified_item`
+(the `hierarchical_retrieval_pipeline.py` call) was never actually run
+here — this dev machine has torch 2.0.0 (transformers needs >=2.4 for a
+working model stack) and no `HF_TOKEN` for the gated DINOv3 repo, both
+real blockers already documented elsewhere in this file for the same
+pipeline. The facet-parser and catalog-search half above ran with
+`catalog_query_search.py`'s semantic-embedding fallback unavailable too
+(same torch blocker) — every result checked during testing was a
+canonical/lexical match; the semantic fallback code path itself is
+unexercised locally, only mechanically reviewed. `composed_query_search.py`'s
+own docstring repeats this validation-status breakdown so it travels with
+the code, not just this log entry.
+
+**Honest next step**: this is a useful "two searches at once" tool, not
+outfit-conjunction retrieval. Turning it into the real thing needs Phase
+3's still-missing real outfit-photo data (multiple garments actually worn
+together in one photo, with per-item records) — `segment_outfit.py` is the
+right starting point for detection once that data exists, but the data
+itself doesn't. Until then, don't build further on the "found together"
+framing; the two-independent-searches framing is the honest ceiling for
+this feature given what's actually in the catalog today.
