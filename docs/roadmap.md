@@ -848,14 +848,51 @@ to root. Tree construction itself verified against the real
 
 `evaluate()` now also reports `hsc_climb_level_fractions` (how often
 climbing lands at leaf/category/group/root across the held-out set) in
-addition to the existing gate-exclusion and shortlist-miss rates —
-**not yet run with real data**, so it's unknown whether HSC-based gating
-actually reduces the ~30% exclusion rate the old flat gate had. That's
-the next thing to check: rerun `--evaluate` and compare against the
-2026-07-31 rows in `docs/eval_log.md` (R@1 47.65% ungated was the best
-number before this change; the gated arm's exclusion rate is the number
-to watch, since HSC's whole point is reducing it without giving up the
-narrowing benefit gating provides when confidence is real).
+addition to the existing gate-exclusion and shortlist-miss rates.
+
+## Update — 2026-08-02: real HSC eval results — the gate is still net-negative, now confirmed a third time
+
+Ran on Colab against the real checkpoints (`docs/eval_log.md` has the
+full numbers). **HSC did not fix the category-gate problem.** Gated R@1
+is 36.72% — WORSE than the old pre-HSC flat gate's 39.66%, and both are
+well below the ungated baseline's 47.56% (matches the pre-HSC 47.65%
+almost exactly, confirming HSC changes nothing about the ungated path,
+as expected since ungated mode never reads `allowed_categories`).
+
+The exclusion rate DID genuinely improve (25.55% vs. the flat gate's
+30.00%, a real -4.45pt reduction) — HSC's core premise, that backing off
+to a broader ancestor when confidence is low should exclude the true
+category less often, is validated. But `hsc_climb_level_fractions` (leaf
+0.0%, category 13.2%, group 34.9%, root 51.9%) explains why that
+improvement didn't translate to a better R@1: at the default
+`HSC_THRESHOLD=0.5`, the climb backs all the way off to the root (no
+restriction on stage 2 at all) for over half of all queries, and to a
+broad multi-category "group" restriction for another third — the tight,
+actually-useful single-category restriction only fires 13.2% of the
+time. Isolating just the non-excluded queries shows the narrowing that
+DOES land at category level is real and helps (17.15% shortlist-miss
+rate there vs. ungated's flat 20%), but that benefit only reaches 13.2%
+of queries, nowhere near enough to outweigh the cost of the 25.55% still
+excluded outright.
+
+**Conclusion, stated plainly rather than spun**: this is the third
+independent confirmation (flat gate 07-30, flat gate 07-31, HSC gate
+08-01/02) that category gating is net-negative for this pipeline as
+currently built. `retrieve()`'s gate-off-by-default (set 2026-07-30,
+before HSC even existed) was the right call and stays the right call —
+this wasn't a hedge that HSC has now vindicated, HSC just failed to beat
+it either. If gating is revisited: the immediate lever is tuning
+`HSC_THRESHOLD` down from 0.5 (lower threshold = climbs less far = stays
+at leaf/category more often) and re-testing — the current result doesn't
+rule out gating working with a better-tuned threshold, it rules out the
+DEFAULT threshold working. But it's also plausible the identity-
+shortlist stage (SigLIP2 top-25 narrowing + DINOv3 rerank) is already
+strong enough on its own that no gate, however well-calibrated, beats
+giving it the whole catalog to search — that hypothesis hasn't been
+ruled out either, and is arguably now the more likely one after three
+losses in a row. Recommend deprioritizing further gate-tuning work
+below the other Tier 1/2 items in this roadmap unless a specific reason
+to believe a lower threshold would flip the result emerges.
 
 `--image` mode's printed output changed accordingly — instead of
 "Predicted category: X (margin Y)", it now prints the full climbing path,
