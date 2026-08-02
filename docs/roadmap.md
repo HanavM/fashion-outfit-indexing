@@ -1607,3 +1607,40 @@ right starting point for detection once that data exists, but the data
 itself doesn't. Until then, don't build further on the "found together"
 framing; the two-independent-searches framing is the honest ceiling for
 this feature given what's actually in the catalog today.
+
+## Update — 2026-08-02: Carhartt WIP added (200/200, no shortfall)
+
+Another parallel scraping addition this session (alongside Levi's/
+Champion) — Carhartt WIP via `carhartt_scraper.py`: Jackets and Coats,
+Pants, Shirts, T-Shirts and Polos, 50 targeted per category, **all 200
+reached with no category coming up short**. Full site notes in
+`SCRAPING_PROCESS.md`'s new Carhartt section — the first commercetools-
+backed site in this pipeline (Next.js App Router, no `__NEXT_DATA__`
+tag at all, real category URLs only discoverable by reading actual
+rendered nav hrefs rather than guessing by analogy to other sites'
+patterns), and the first brand where the SAM2+FashionCLIP garment-
+cropping step was correctly skipped entirely — real, direct visual
+inspection of downloaded images (not assumed from the CDN/site type)
+confirmed Carhartt's product photos are already clean flat-lay shots
+with no model or background clutter, same reasoning already established
+for this project's original shoe photos.
+
+Also a real, useful validation of the `newLLMprompt.py` schema
+extension from earlier this session: Carhartt's workwear-heavy catalog
+was a good test case for the newly-added `pocket_type`/`distressing`/
+`heel_type`/`sole_type`/`toe_shape` fields, and the very first captioned
+record populated `"pocket_type": ["side welt"]` from real "side
+pockets" language in the scraped product details — confirms the LLM
+actually uses the new fields in practice, not just that they exist in
+the schema unused. Structured captioning: 200/200 records, $0.067 real
+Azure OpenAI cost.
+
+Catalog is now 10 brands (nike, gap, champion, skechers, levis, carhartt,
+pacsun, newbalance, adidas, plus whatever else landed concurrently this
+session — check `apparel_dataset/metadata.json`'s live brand counts
+rather than trusting a snapshot number here, several scrapers ran in
+parallel). Same "not yet embedded/evaluated against either encoder"
+caveat as every other brand added this session — Champion, Levi's, and
+now Carhartt all need a re-embed pass (forward-pass only, no retrain,
+per this file's earlier "enrollment" argument) before any of them show
+up in a real retrieval number.

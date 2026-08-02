@@ -27,6 +27,14 @@ at 28 by real catalog-listing coverage) were added via
 (see "Levi's" section below), and the first brand whose "Accessories"
 category is genuinely heterogeneous (belts, hats, backpacks, wallets,
 even underwear) rather than one visually consistent garment type.
+Then 200 Carhartt WIP records (Jackets and Coats, Pants, Shirts,
+T-Shirts and Polos — 50 each, all 200 reached with no category
+shortfall) were added via `carhartt_scraper.py` — the first
+commercetools-backed site in this pipeline, and the first brand whose
+product photos are ALREADY clean flat-lay shots with no model/lifestyle
+background, so the SAM2+FashionCLIP garment-cropping step (needed for
+Nike/PacSun/Gap/Champion/Levi's) was correctly skipped entirely for this
+brand, same reasoning already established for the original shoe photos.
 Written so the same pattern can be adapted to scrape other product
 categories/sites.
 
@@ -686,6 +694,81 @@ check if Accessories coverage matters, not confirmed either way).
   classifies whichever specific item is actually in a given photo instead
   of forcing one label onto a mixed bucket. `"Jeans"`, `"Jean Jackets"`,
   and `"Shirts"` also added to `CATEGORY_LABELS`.
+
+### Carhartt WIP — Jackets and Coats, Pants, Shirts, T-Shirts and Polos
+
+Via `carhartt_scraper.py`, targeting 50 colorway variants per section
+(200 requested, **all 200 reached, no category shortfall**).
+
+- **No real bot protection** — plain `playwright` (headless,
+  `--disable-blink-features=AutomationControlled`), same tier as Nike/
+  Gap. A fixed-position `[data-rac]` overlay (cookie-consent/region
+  modal) intercepts clicks on first load — removed with a one-line
+  `page.evaluate()` (`document.querySelectorAll('[data-rac]').forEach(e
+  => { if (getComputedStyle(e).position === 'fixed') e.remove(); })`),
+  no dismiss-button click needed.
+- **First commercetools-backed site in this pipeline.** Next.js App
+  Router (React Server Components) — the classic `__NEXT_DATA__` script
+  tag pattern this pipeline usually checks first is **absent entirely**
+  here; guessing category URLs by analogy to other sites' patterns
+  (`/en/men/clothing/jackets`) 404s outright. Real category listing URLs
+  only surfaced by reading actual nav `<a href>` values off the rendered
+  homepage: `/en-de/c/{category-slug}` (`men-jackets-and-coats`,
+  `men-pants`, `men-shirts`, `men-tshirts-and-polos`), paginated via
+  `?page=N`, 48 products/page. Each listing link is already a distinct
+  per-colorway PDP (`/en-de/p/{slug}-{trailing-id}`) — one PDP = one
+  colorway, no separate expansion step, same shape as PacSun/Gap (not
+  New Balance/Levi's, where one PDP inlines every colorway).
+- **Real, stable data source is a schema.org ld+json `Product` block**
+  (not `ProductGroup`) on every PDP: `name`, `image`, `sku`, `size`,
+  `material`, `color`, `brand`, `offers.price`/`priceCurrency`. No
+  `description` field in the ld+json itself.
+- **Description + feature bullets live in a native HTML `<details>`
+  element**, content present in the DOM regardless of open/collapsed
+  state (unlike Adidas/New Balance's JS-gated accordions) — `element.
+  innerText` reads it directly, no click needed. The accordion text's
+  last line is always the base image code (e.g. "I037132_3ZO_XX",
+  matching `product_code`) — junk if treated as a feature bullet, must
+  be filtered out explicitly.
+- **Image CDN is Amplience** (`cdn.media.amplience.net`), a different
+  dynamic-imaging vendor than the Scene7 (Adobe)/Shopify CDNs seen on
+  other brands. ld+json image URLs carry a small schema-markup preset
+  query string — strip it, append `?w=1600&fmt=auto&qlt=default` for
+  full-res, same "always strip existing query string first" convention
+  as Gap/Levi's zoom sizing. **Enforces hotlink protection**: a plain
+  `requests.get()` with only a User-Agent gets a 403 (confirmed via
+  direct testing, not assumed) — a `Referer` header pointing at the
+  site's own domain is required and sufficient, no cookies/session state
+  needed.
+- **`product_code` needed deriving, not reading directly** — the
+  ld+json `sku` field ("I037532_1") is style-level only, NOT
+  per-colorway unique. The real stable per-colorway identifier is the
+  filename prefix every one of a PDP's own images shares (e.g. every
+  image for one PDP shares "I037532_453_02" before the "-OF-NN"/"-ST-NN"
+  view-type suffix) — extracted via regex from the first ld+json image
+  URL, with a defensive fallback to the PDP URL's trailing numeric ID if
+  that pattern ever fails to match.
+- **Product photos are already clean flat-lay shots on a transparent/
+  plain background — no model, no lifestyle context.** Confirmed by
+  direct visual inspection of multiple real downloaded images across
+  different categories (a t-shirt and a jacket both checked), not
+  assumed from the CDN/site type. This means the SAM2+FashionCLIP
+  garment-cropping step (needed for Nike/PacSun/Gap/Champion/Levi's) was
+  correctly **skipped entirely** for this brand — same reasoning this
+  project already established for the original shoe photos ("shoe
+  photos don't have the same 'model's face/body dominates the frame'
+  problem apparel photos do"), just discovered here for a clothing brand
+  rather than assumed only to apply to footwear.
+- **Schema extension landed the same session, validated in practice**:
+  `newLLMprompt.py` had `pocket_type`/`distressing`/`heel_type`/
+  `sole_type`/`toe_shape` added to its attribute schema shortly before
+  this scrape ran (2026-08-02, closing a real gap where spec section 4.5
+  listed these attribute groups but the caption prompt never asked the
+  LLM for them). Carhartt WIP's workwear-heavy catalog was a good real
+  test: the very first captioned record populated `"pocket_type":
+  ["side welt"]` from real "side pockets" language in the scraped
+  details — confirms the new fields are being used by the LLM in
+  practice, not just present in the schema unused.
 
 ### Field-level concurrent-write collision (a second, narrower case dataset_utils doesn't fully cover)
 
