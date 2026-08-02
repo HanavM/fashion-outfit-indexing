@@ -50,15 +50,21 @@ description B," clearly labeled as such in every output.
   correctly surfaced a real product literally named "...Baggy Jorts..."
   and several other real denim-shorts products; "with khaki pants" and
   "with a bomber jacket" both returned real, correctly-categorized
-  products. All of this ran with catalog_query_search.py's semantic
-  fallback UNAVAILABLE on this machine (see below) -- every result shown
-  during testing was a canonical/lexical match, the semantic fallback path
-  itself is unexercised locally.
+  products. Original testing pass ran with an unactivated environment
+  (system python, torch 2.0.0) that made catalog_query_search.py's
+  semantic fallback look unavailable -- **corrected same day**: this
+  repo's own `.venv` (torch 2.12.1/transformers 5.12.1) works fine.
+  Re-tested with `.venv` active: a query with real canonical coverage
+  ("with a distressed denim jacket") stayed on the lexical path as
+  expected, and a genuinely novel phrasing with zero canonical match
+  ("with embroidered lettering stitched across the back panel")
+  correctly fell through to the semantic engine and returned real scored
+  results. The semantic fallback path is confirmed working locally.
 - `hierarchical_retrieval_pipeline.py`'s exact-image stage (identified_item)
-  was NOT run end to end locally. This dev machine has torch 2.0.0 (the
-  pipeline needs >=2.4 for a working transformers/torch combo) and no
+  was NOT run end to end locally. Unlike the semantic-fallback issue
+  above, this one is real and confirmed even with `.venv` active: no
   HF_TOKEN for the gated `facebook/dinov3-vitb16-pretrain-lvd1689m` repo --
-  both real, immediate blockers, not just "didn't get to it." The
+  an immediate blocker, not just "didn't get to it." The
   `identified_item` code path is a thin, mechanically-reviewed call into
   `HierarchicalRetriever.retrieve()` (the same method `--image` mode
   already uses and which the roadmap's 2026-07-29/2026-08-02 updates
@@ -322,8 +328,11 @@ def composed_search(image_path, text_fragment, top_k=10, metadata_path=None, ret
     + DINOv3 and builds/reads the catalog indexes).
     `canonical_only`: skip catalog_query_search.py's semantic-embedding
     fallback (no model weights loaded at all for the text side) -- useful
-    on a machine where the model stack isn't usable (e.g. this repo's
-    local dev environment: torch 2.0.0, transformers needs >=2.4)."""
+    on a machine where the model stack isn't usable, or just to force the
+    cheap/fast lexical-only path. (Confirmed working with this repo's own
+    `.venv` as of 2026-08-02 -- an earlier note here about torch 2.0.0
+    making this unavailable was an unactivated-environment issue, not a
+    real limitation.)"""
     from catalog_query_search import CatalogQuerySearch, METADATA_PATH as CATALOG_METADATA_PATH
 
     metadata_path = metadata_path or CATALOG_METADATA_PATH

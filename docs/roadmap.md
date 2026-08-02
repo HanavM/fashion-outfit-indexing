@@ -1581,16 +1581,23 @@ categorized products.
 
 **What was NOT validated locally, stated plainly**: `identified_item`
 (the `hierarchical_retrieval_pipeline.py` call) was never actually run
-here — this dev machine has torch 2.0.0 (transformers needs >=2.4 for a
-working model stack) and no `HF_TOKEN` for the gated DINOv3 repo, both
-real blockers already documented elsewhere in this file for the same
-pipeline. The facet-parser and catalog-search half above ran with
-`catalog_query_search.py`'s semantic-embedding fallback unavailable too
-(same torch blocker) — every result checked during testing was a
-canonical/lexical match; the semantic fallback code path itself is
-unexercised locally, only mechanically reviewed. `composed_query_search.py`'s
-own docstring repeats this validation-status breakdown so it travels with
-the code, not just this log entry.
+here — genuinely blocked, confirmed: DINOv3 is a gated HuggingFace repo
+and this environment has no `HF_TOKEN` configured. Still needs
+validation on Colab/Modal.
+
+**Correction (2026-08-02, later same day)**: the "torch 2.0.0 too old,
+semantic fallback unavailable" claim above was wrong — the agent that
+made it hadn't activated this repo's own `.venv` (torch 2.12.1/
+transformers 5.12.1, fully working, used throughout this session for
+every other local smoke test). Re-ran with `.venv` active: "with a
+distressed denim jacket" found a real canonical category match (6/6
+real Gap denim jackets, lexical path, semantic fallback not needed) and
+"with embroidered lettering stitched across the back panel" (genuinely
+novel phrasing, zero canonical category match) correctly fell through
+to the semantic engine and returned 6 real scored results. **The
+semantic-embedding fallback is confirmed working locally** — only the
+DINOv3/exact-image half remains genuinely blocked (the `HF_TOKEN` issue
+above, a real limitation, not an environment misconfiguration).
 
 **Honest next step**: this is a useful "two searches at once" tool, not
 outfit-conjunction retrieval. Turning it into the real thing needs Phase
