@@ -28,6 +28,11 @@ Use this schema:
 "length": ["string"],
 "silhouette": ["string"],
 "closure": ["string"],
+"pocket_type": ["string"],
+"distressing": ["string"],
+"heel_type": ["string"],
+"sole_type": ["string"],
+"toe_shape": ["string"],
 "defining_features": [
 {
 "feature": "string",
@@ -59,8 +64,10 @@ Example taxonomy:
 "low-top sneaker"
 ]
 
-8. Treat color, material, pattern, fit, closure, and decorative details as independent attributes, not taxonomy nodes.
+8. Treat color, material, pattern, fit, closure, pocket type, distressing, and decorative details as independent attributes, not taxonomy nodes.
 9. Put product-specific construction or recognizable details under `defining_features`.
+10. `heel_type`, `sole_type`, and `toe_shape` apply to footwear only -- omit them entirely (empty arrays) for non-footwear products, do not guess a footwear-style value for a garment.
+11. `distressing` covers visible wear/fading/rip treatment (e.g. "ripped", "faded wash", "whiskered") -- only when explicitly supported by the input, never inferred from a product name alone (e.g. a product simply named "distressed jeans" without further description should still get this field, since the name itself is explicit support -- but do not infer "distressed" from context like "vintage-inspired" alone).
 
 Examples:
 
