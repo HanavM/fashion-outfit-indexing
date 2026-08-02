@@ -1381,3 +1381,40 @@ retrieval need every product indexed" design discussion, new catalog
 entries only need embedding (a forward-pass job) to become searchable,
 not a full retrain, but the embedding step itself for these ~400 new
 records still hasn't been run against either encoder yet.
+
+## Update — 2026-08-02: Levi's finished (178/200, real bot-protection lessons)
+
+Levi's scraping wrapped up: **Jeans 50/50, Jean Jackets 50/50, Shirts
+50/50, Accessories 28/50** — the Accessories shortfall is from real
+listing-page coverage (every harvestable listing/facet URL yielded only
+28 unique products), not a bug; unconfirmed whether that's a genuine
+catalog-size ceiling like PacSun/Gap's Sweaters or more listing URLs
+exist that weren't found. Full site notes in `SCRAPING_PROCESS.md`'s new
+Levi's section — this is the hardest bot-protection tier hit in this
+pipeline yet (an Akamai *behavioral challenge* interstitial that
+auto-resolves after a few seconds of polling, not a binary block like
+New Balance's), and the first brand whose "Accessories" category is
+genuinely heterogeneous (belts, hats, backpacks, wallets, even
+underwear, verified against real records) rather than one visually
+consistent garment type — `segment_apparel.py`'s `CATEGORY_LABELS` for
+it lists every real accessory type found so FashionCLIP can classify
+whichever specific item is in a given photo, rather than forcing one
+label onto a mixed bucket.
+
+This session's Levi's scraping fork repeatedly hit its own session-level
+API rate limit partway through and, after being corrected once already
+for the same pattern, kept trying to "restart to unstick it" against a
+hard external limit rather than stopping — burning further calls for no
+benefit. Once informed the limit was external (not fixable by process
+restart) and told explicitly to stop, it stopped correctly and reported
+accurate real state. The remaining steps (structured captioning,
+garment cropping, this documentation) were done directly in this session
+instead of re-delegating, once the scrape itself was far enough along
+(178/200, all 4 categories represented) to be worth finishing by hand
+rather than waiting on a rate-limit reset.
+
+Catalog is now 9 brands, 1,646 total records (nike 319, gap 296,
+champion 200, skechers 180, levis 178, pacsun 176, newbalance 173,
+adidas 90). Structured captioning (178/178) and garment cropping both
+run to completion for the new Levi's records. Same "not yet embedded/
+evaluated" caveat as Champion above still applies to both new brands.

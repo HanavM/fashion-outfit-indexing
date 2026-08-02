@@ -20,8 +20,15 @@ T-Shirts and Tops, Shorts, Pants and Joggers — 50 each, all 200 reached
 with no category shortfall) were added via `champion_scraper.py` — a
 Shopify storefront site, the easiest data source of any brand so far
 (one JSON API call returns the entire product record, no second PDP
-fetch needed for anything). Written so the same pattern can be adapted to
-scrape other product categories/sites.
+fetch needed for anything). Most recently, 178 Levi's records (Jeans,
+Jean Jackets, Shirts, Accessories — 50 each targeted, Accessories capped
+at 28 by real catalog-listing coverage) were added via
+`levis_scraper.py` — the hardest bot-protection tier encountered so far
+(see "Levi's" section below), and the first brand whose "Accessories"
+category is genuinely heterogeneous (belts, hats, backpacks, wallets,
+even underwear) rather than one visually consistent garment type.
+Written so the same pattern can be adapted to scrape other product
+categories/sites.
 
 Working directory: `/Users/hanavmodasiya/fashion-tests`
 Environments: `.venv` (Python 3.14, pip: playwright, patchright, openai,
@@ -603,6 +610,82 @@ unlike PacSun/Gap/Levi's sweaters/accessories).
   label phrasings as the closest existing categories: Hoodies and
   Pullovers, Tops and T-Shirts, Pants and Tights respectively); `"Shorts"`
   was already defined and reused as-is.
+
+### Levi's — Jeans, Jean Jackets, Shirts, Accessories
+
+Via `levis_scraper.py`, targeting 50 colorway variants per section (200
+requested; Levi's `Accessories` section only surfaced 28 unique products
+across every listing/facet URL harvested, so 178 were actually reachable
+— possibly a real catalog-size cap like PacSun/Gap's Sweaters, possibly
+some genuinely reachable listing URLs weren't found; worth a follow-up
+check if Accessories coverage matters, not confirmed either way).
+
+- **Hardest bot protection of any brand in this pipeline so far** —
+  Akamai Bot Manager, but a harder variant than New Balance's binary
+  block: plain `requests` gets an immediate edge "Access Denied"
+  (`errors.edgesuite.net`) on every page, and even `patchright` (headed,
+  `channel="chrome"`) initially loads an interactive Akamai *behavioral
+  challenge* interstitial (`sec-if-cpt-container`, "Powered and protected
+  by Akamai") rather than a flat allow/block. Unlike New Balance,
+  patchright's traffic here looks human enough that the challenge
+  auto-resolves and the page reloads itself within ~3-9s if you just
+  wait — **poll `page.title()` in a loop until it changes away from
+  empty/"Access Denied" rather than treating the first response as
+  final**, a short fixed sleep is fragile. This challenge-wait isn't a
+  one-time session unlock either — every fresh `page.goto()` to a new PDP
+  can re-trigger it, so every page visit needs the same polling logic.
+- **Vue.js SSR app** (not Next.js/Nuxt despite `data-v-*` hydration
+  markers), with its own `window.__LSCO_INITIAL_STATE__` blob — but this
+  is a red herring, not a usable data source: it gets **deleted from
+  `window` after hydration completes** (confirmed via
+  `Object.getOwnPropertyNames(window)` no longer listing it a few seconds
+  after load).
+- **Real, stable data source is a schema.org ld+json `ProductGroup`
+  block** on every PDP, same family as New Balance/PacSun's pattern:
+  `hasVariant` is a list of per-colorway `Product` objects, each with its
+  own `sku` (stable `product_code`), `color`, `image` (full CDN URLs, no
+  query string), `offers.price`, and a `description` inherited from the
+  parent product family. One PDP visit yields every colorway inline, same
+  efficiency as Gap's `styleColors` bundling.
+- **`hasVariant` sometimes mixes bare `{"url": ...}` sibling-colorway
+  links in alongside the real per-colorway `Product` dicts**, not nested
+  under a separate key — filtering to `isinstance(v, dict)` before
+  reading `v["sku"]` is required, or every single PDP throws `'list'
+  object has no attribute 'get'`.
+- **Category listing pages cap at exactly 38 PDP links per URL,
+  regardless of category** (confirmed identical across jeans/jean-
+  jackets/shirts/accessories main pages) — no infinite-scroll or "load
+  more" trigger increases this. Getting past 38 unique products per
+  section required harvesting PDP links across multiple listing URLs for
+  the same section (fit/subcategory pages for jeans, colorgroup facet
+  pages for jean jackets/shirts, sub-department pages for accessories)
+  and deduping by PDP href.
+- **Image CDN is Scene7** (`lscoglobal.scene7.com`, same dynamic-imaging
+  family as other Adobe-Scene7-backed retailers). ld+json image URLs are
+  usually bare but sometimes already carry a Scene7 preset query string —
+  blindly appending explicit-size params produces a malformed double-`?`
+  URL that 403s. Always strip any existing query string first
+  (`url.split("?")[0]`) before appending size params, same convention as
+  Gap's zoom-variant sizing. No CDN-embedded view/angle codes found
+  (unlike Skechers/Adidas) — images are just sequentially ordered.
+- **"Composition & Care" bullet text is lazy-rendered below the fold** —
+  absent from `page.content()` until the page is scrolled, even though
+  it's not behind an accordion click (no JS-gated click needed, unlike
+  Adidas/New Balance — just scroll-into-view). No separate
+  `enrich_levis_details.py` stage needed once scrolled.
+- **First brand whose "Accessories" category is genuinely heterogeneous**
+  (verified against real scraped records, not assumed): backpacks, hats,
+  belts, wallets, bandanas, even underwear, all under one category
+  string — unlike every other category in this pipeline, which maps to
+  one visually consistent garment silhouette. `segment_apparel.py`'s
+  `CATEGORY_LABELS["Accessories"]` lists every real accessory type found
+  (`"a hat"`, `"a belt"`, `"a backpack"`, `"a bag"`, `"a wallet"`,
+  `"a bandana"`, `"underwear"`) rather than one or two phrasings — its
+  crop-selection logic only requires the top-scoring label to be ANY
+  phrasing in the category's list, not one fixed label, so this correctly
+  classifies whichever specific item is actually in a given photo instead
+  of forcing one label onto a mixed bucket. `"Jeans"`, `"Jean Jackets"`,
+  and `"Shirts"` also added to `CATEGORY_LABELS`.
 
 ### Field-level concurrent-write collision (a second, narrower case dataset_utils doesn't fully cover)
 

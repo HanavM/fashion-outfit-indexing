@@ -94,6 +94,20 @@ CATEGORY_LABELS = {
     "Hoodies and Sweatshirts": ["a hoodie", "a pullover", "a sweatshirt"],
     "T-Shirts and Tops": ["a t-shirt", "a top"],
     "Pants and Joggers": ["pants", "joggers", "sweatpants", "trousers"],
+    # Levi's expansion.
+    "Jeans": ["jeans", "pants"],
+    "Jean Jackets": ["a denim jacket", "a jacket"],
+    "Shirts": ["a shirt", "a button-down shirt", "a top"],
+    # "Accessories" is genuinely heterogeneous at the Levi's category
+    # level (backpacks, hats, belts, wallets, bandanas, even underwear --
+    # verified against real scraped records, not assumed) -- unlike every
+    # other category here, best_crop_for_category doesn't need the top
+    # match to be one SPECIFIC phrasing, just any phrasing in this list,
+    # so listing every real accessory type found lets FashionCLIP
+    # classify whichever specific item is actually in a given photo
+    # rather than forcing one label onto a mixed bucket.
+    "Accessories": ["a hat", "a cap", "a belt", "a backpack", "a bag", "a wallet",
+                     "a bandana", "underwear"],
 }
 
 
