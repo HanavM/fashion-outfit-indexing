@@ -1076,21 +1076,28 @@ if __name__ == "__main__":
                               "can't help DINOv3 pick between those.")
     parser.add_argument("--patch-rerank", action="store_true",
                          help="Re-score the pooled DINOv3 shortlist with patch-level (local) similarity instead "
-                              "of only the pooled vector (spec section 6). --image mode only, unvalidated, off "
-                              "by default -- see embed_image_dino_patches's docstring for the real caveat.")
+                              "of only the pooled vector (spec section 6). Now wired through --evaluate too "
+                              "(2026-08-02 fix -- previously silently ignored there), still unvalidated with a "
+                              "real number -- see embed_image_dino_patches's docstring for the real caveat.")
+    parser.add_argument("--top-identity-candidates", type=int, default=TOP_IDENTITY_CANDIDATES,
+                         help=f"SigLIP2 identity-shortlist size fed to DINOv3's rerank (default {TOP_IDENTITY_CANDIDATES}). "
+                              "The single most validated lever in this project's history (10->25 drove the "
+                              "36.72%->47.65% jump, docs/eval_log.md 2026-07-31) -- sweeping past 25 (e.g. 35/50/75/100) "
+                              "is the top-priority untested experiment per docs/roadmap.md's 2026-08-02 analysis. "
+                              "Exposed as a flag so this can be swept without editing the module constant each time.")
     args = parser.parse_args()
 
     retriever = HierarchicalRetriever()
 
     if args.image:
-        result = retriever.retrieve(args.image, use_category_gate=args.category_gate, hsc_threshold=args.hsc_threshold, final_top_k=args.top_k, reject_threshold=args.reject_threshold, use_score_fusion=args.score_fusion, use_patch_rerank=args.patch_rerank)
+        result = retriever.retrieve(args.image, use_category_gate=args.category_gate, hsc_threshold=args.hsc_threshold, final_top_k=args.top_k, reject_threshold=args.reject_threshold, use_score_fusion=args.score_fusion, use_patch_rerank=args.patch_rerank, top_identity_candidates=args.top_identity_candidates)
         print_result(args.image, result)
 
     if args.evaluate:
-        gated_metrics = retriever.evaluate(use_category_gate=True, hsc_threshold=args.hsc_threshold, use_score_fusion=args.score_fusion, use_patch_rerank=args.patch_rerank)
+        gated_metrics = retriever.evaluate(use_category_gate=True, hsc_threshold=args.hsc_threshold, use_score_fusion=args.score_fusion, use_patch_rerank=args.patch_rerank, top_identity_candidates=args.top_identity_candidates)
         print_metrics("End-to-end held-out eval -- WITH HSC-based category gate", gated_metrics)
 
-        ungated_metrics = retriever.evaluate(use_category_gate=False, hsc_threshold=args.hsc_threshold, use_score_fusion=args.score_fusion, use_patch_rerank=args.patch_rerank)
+        ungated_metrics = retriever.evaluate(use_category_gate=False, hsc_threshold=args.hsc_threshold, use_score_fusion=args.score_fusion, use_patch_rerank=args.patch_rerank, top_identity_candidates=args.top_identity_candidates)
         print_metrics("End-to-end held-out eval -- WITHOUT category gate (fallback comparison)", ungated_metrics)
 
         with (INDEX_DIR / "pipeline_eval_metrics.json").open("w", encoding="utf-8") as f:
