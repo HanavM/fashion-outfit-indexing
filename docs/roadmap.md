@@ -1947,3 +1947,49 @@ conclusion — gating is clearly net-negative in both the old and new
 numbers — but worth knowing this diagnostic isn't perfectly stable
 across code versions, only the headline R@1/miss-rate numbers should be
 treated as load-bearing for now.
+
+## Update — 2026-08-03: `--patch-rerank` confirmed severely harmful, not just unvalidated
+
+Real Colab run against the real checkpoints: `--evaluate --patch-rerank
+--top-identity-candidates 50`. This is the first real-number validation
+of patch-level DINOv3 reranking (built 2026-08-01, flagged from the
+start as carrying a real architectural risk — see
+`embed_image_dino_patches`'s own docstring — but never actually tested
+until now).
+
+**Result: severe, one-sided regression, not a mixed signal.** R@1
+dropped from 50.76% (K=50, no patch-rerank) to 20.59% — a **-30.17pt**
+collapse. R@5 dropped similarly (78.99%→55.71%). But **R@10 stayed
+exactly identical (85.46% both times)** — that's the real diagnosis,
+not noise: `patch_rerank()` only ever re-sorts the top
+`PATCH_RERANK_CANDIDATES` (10) pooled candidates, never changing which
+items belong to that set. So a true product already in the pooled
+top-10 stays in the top-10 regardless of the flag (hence R@10
+unaffected) — but patch-rerank is scrambling the *order* within that
+window badly enough to push correct #1 answers down to #5-10.
+
+This confirms the architectural concern flagged in the code when this
+feature was built: DINOv3's `projection_head` was only ever trained on
+*pooled* features, never on individual patch tokens. Applying it to raw
+patch tokens (what patch reranking does) puts them far outside its
+training distribution — the resulting per-patch "embeddings" are closer
+to noise than real signal, and using noise to reorder an already-good
+pooled ranking actively destroys it.
+
+**Verdict, stated plainly**: `--patch-rerank` is not "needs more
+validation" anymore — it's confirmed, severely harmful, do not use.
+Updated `USE_PATCH_RERANK`'s module comment, `embed_image_dino_
+patches`'s docstring, and the `--patch-rerank` CLI help text to state
+this directly rather than the softer "unvalidated" language from
+before this result existed. The flag stays in the codebase (kept off
+by default, as it already was) for research/debugging purposes only —
+if this is ever revisited, it needs a fundamentally different approach
+(e.g. a projection head actually trained on patch-token inputs, not the
+existing pooled-only one) rather than a parameter tweak.
+
+Meanwhile, a partial `--score-fusion --top-identity-candidates 50` run
+came back gated-only (34.62% R@1, down from the no-fusion K=50 gated
+number of 40.08% — a real -5.46pt drop) before the ungated arm (the
+number that actually matters, per this file's own established
+convention) got cut off mid-run. Not enough to draw a real conclusion
+yet — needs a full rerun.

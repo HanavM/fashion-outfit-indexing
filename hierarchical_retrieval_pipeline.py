@@ -189,10 +189,20 @@ SIGLIP_FUSION_WEIGHT = 0.2
 # rerank -- per-patch similarity is O(N_patches^2) per pair, real money
 # more expensive than one pooled-vector comparison, so it only pays for
 # itself as a final polish step over a small window, same shape as every
-# other shortlist-then-expensive-step stage in this pipeline. Off by
-# default -- unvalidated new signal, see embed_image_dino_patches's
-# docstring for the real caveat (projection_head wasn't trained on
-# patch-token inputs).
+# other shortlist-then-expensive-step stage in this pipeline.
+#
+# **CONFIRMED SEVERELY HARMFUL, real checkpoint, 2026-08-03 (see
+# docs/eval_log.md) -- do not enable.** Not "unvalidated" anymore: a
+# real Colab run at K=50 showed R@1 50.76%->20.59% (-30.17pt) with this
+# flag on, while R@10 stayed EXACTLY identical (85.46% both times) --
+# patch_rerank() only re-sorts the top PATCH_RERANK_CANDIDATES pooled
+# items without changing set membership, so the true product stays in
+# the top-10 either way, but gets scrambled from rank 1 down to rank
+# 5-10 within that window. Root cause: DINOv3's projection_head was
+# only ever trained on pooled features, never individual patch tokens
+# (see embed_image_dino_patches's docstring) -- applying it to raw
+# patch tokens produces near-noise per-patch embeddings that actively
+# destroy an already-good pooled ranking when used to reorder it.
 USE_PATCH_RERANK = False
 PATCH_RERANK_CANDIDATES = 10
 # Bare category name, not a "a photo of a {category}" template -- matches
@@ -542,9 +552,16 @@ def embed_image_dino_patches(backbone, projection_head, use_projection, processo
     architecturally IDENTICAL for the pooled probe and every patch inside
     the attention-pooling head, whereas this projection_head is a generic
     MLP trained only on pooled features, so patch-token inputs sit outside
-    its training distribution. Reasonable as an experimental extra signal,
-    not assumed correct -- ships behind --patch-rerank, unvalidated,
-    same caution as the other experimental additions this session.
+    its training distribution.
+
+    **This concern is now CONFIRMED, not hypothetical, 2026-08-03**: real
+    Colab run against the real checkpoints, --patch-rerank at K=50, R@1
+    50.76%->20.59% (-30.17pt) while R@10 stayed EXACTLY unchanged
+    (85.46% both times) -- proof the out-of-distribution patch
+    embeddings are closer to noise than signal, scrambling an already-
+    correct top-1 down to rank 5-10 without even being bad enough to
+    push it out of the top 10 entirely. See docs/eval_log.md's 2026-08-03
+    row for the full numbers. Do not enable --patch-rerank.
     """
     inputs = processor(images=[pil_image], return_tensors="pt")
     inputs = {k: v.to(DEVICE) for k, v in inputs.items()}
@@ -1159,10 +1176,9 @@ if __name__ == "__main__":
                               "is identical across colorway siblings of the same identity by design, so this "
                               "can't help DINOv3 pick between those.")
     parser.add_argument("--patch-rerank", action="store_true",
-                         help="Re-score the pooled DINOv3 shortlist with patch-level (local) similarity instead "
-                              "of only the pooled vector (spec section 6). Now wired through --evaluate too "
-                              "(2026-08-02 fix -- previously silently ignored there), still unvalidated with a "
-                              "real number -- see embed_image_dino_patches's docstring for the real caveat.")
+                         help="CONFIRMED SEVERELY HARMFUL, real checkpoint, 2026-08-03 -- R@1 50.76%%->20.59%% "
+                              "at K=50 (docs/eval_log.md). Kept as a flag for research/debugging only, "
+                              "do not enable for any real use. See USE_PATCH_RERANK's module comment for why.")
     parser.add_argument("--top-identity-candidates", type=int, default=TOP_IDENTITY_CANDIDATES,
                          help=f"SigLIP2 identity-shortlist size fed to DINOv3's rerank (default {TOP_IDENTITY_CANDIDATES}). "
                               "The single most validated lever in this project's history (10->25 drove the "
