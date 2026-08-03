@@ -35,8 +35,13 @@ product photos are ALREADY clean flat-lay shots with no model/lifestyle
 background, so the SAM2+FashionCLIP garment-cropping step (needed for
 Nike/PacSun/Gap/Champion/Levi's) was correctly skipped entirely for this
 brand, same reasoning already established for the original shoe photos.
-Written so the same pattern can be adapted to scrape other product
-categories/sites.
+Then 175 Stüssy records (Tees, Pants, Headwear — 50 each, Hoodies capped
+at 25 by real catalog size) were added via `stussy_scraper.py` — the
+second Shopify-storefront site in this pipeline (after Champion), same
+easiest bot-protection tier, and the second brand (after Carhartt) whose
+product photos are already clean flat-lay shots, so garment cropping was
+again correctly skipped. Written so the same pattern can be adapted to
+scrape other product categories/sites.
 
 Working directory: `/Users/hanavmodasiya/fashion-tests`
 Environments: `.venv` (Python 3.14, pip: playwright, patchright, openai,
@@ -769,6 +774,47 @@ Via `carhartt_scraper.py`, targeting 50 colorway variants per section
   ["side welt"]` from real "side pockets" language in the scraped
   details — confirms the new fields are being used by the LLM in
   practice, not just present in the schema unused.
+
+### Stüssy — Tees, Pants, Headwear, Hoodies
+
+Via `stussy_scraper.py`, targeting 50 colorway variants per section (200
+requested; Stüssy's `hoodies` collection only had 25 products total at
+scrape time, confirmed via a `products.json?limit=250` count check before
+scraping even started — a real, known-in-advance catalog-size cap, not a
+scraping failure, so 175 were reachable).
+
+- **No bot protection encountered** — plain `requests` works for the
+  entire catalog + product detail fetch, same easiest tier as Champion/
+  Gap/Skechers.
+- **Second Shopify-storefront site in this pipeline** (after Champion),
+  same `https://www.stussy.com/collections/{handle}/products.json?
+  limit=250&page=N` pattern, paginated until a page returns zero
+  products. Each Shopify "product" here is already ONE colorway
+  (`options[0]` = Color with exactly one value) — same "one API product
+  = one dataset record" shape as Champion, no colorway-expansion step
+  needed. Full product detail (description bullets, all images, size/
+  price/SKU data) is inline in the same response, no separate PDP visit.
+- **Real collection handles found via the site's own sitemap**, not
+  guessed — initial guesses like `mens-tees` 404'd/returned empty.
+  `sitemap.xml` → `sitemap_collections_1.xml?from=...&to=...` (the
+  `from`/`to` query params are required, a bare fetch 400s) lists every
+  real collection handle. Handles used: `tees`, `hoodies`, `pants`,
+  `headwear`.
+- **`body_html` is a real bullet list** (`<ul><li>...`), unlike
+  Champion's single free-text paragraph — stripped of HTML tags for
+  `details.description` with the same `strip_html()` helper regardless.
+- **Third brand (after shoes, Carhartt) whose product photos are already
+  clean flat-lay shots**, verified by direct visual inspection across
+  Tees/Pants/Headwear (not assumed from one category) — garment cropping
+  correctly skipped entirely, same judgment call and reasoning as
+  Carhartt.
+- Structured captioning: 175/175 records, $0.0555 real Azure OpenAI
+  cost. Spot-checked output populates `pocket_type`/`closure`/
+  `defining_features` meaningfully from real scraped bullet text (e.g.
+  a basic tee's `closure: ["crewneck"]`, `defining_features` correctly
+  citing "basic logo screenprint" with its real chest/back location) —
+  consistent with the newLLMprompt.py schema extension already validated
+  working on Carhartt's records.
 
 ### Field-level concurrent-write collision (a second, narrower case dataset_utils doesn't fully cover)
 

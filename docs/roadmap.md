@@ -1745,3 +1745,30 @@ for `identified_item` still needs validation on Colab/Modal. Status
 moved from "never run, unknown if it even works" to "runs correctly,
 mechanism confirmed, accuracy still unmeasured" -- a real, if partial,
 step forward, not the full validation this feature still needs.
+
+## Update — 2026-08-02: Stüssy added (175/200, second brand with clean flat-lay photos)
+
+Continued growing catalog/product-type coverage per the user's ongoing
+"spawn more scrapers" direction. Added Stüssy (stussy.com) via
+`stussy_scraper.py` -- Tees, Pants, Headwear, 50 each, Hoodies capped at
+25 by real catalog size (only 25 hoodie products existed at all, confirmed
+via a `products.json` count check before scraping even started, not
+discovered as a shortfall mid-run). Second Shopify-storefront site in
+this pipeline (after Champion) -- no bot protection, same
+`products.json?limit=250&page=N` pagination, one API product per
+colorway. Full site notes in `SCRAPING_PROCESS.md`'s new Stüssy section.
+
+Structured captioning: 175/175 records, $0.0555 real Azure OpenAI cost.
+Garment cropping correctly skipped -- verified by direct visual
+inspection across Tees/Pants/Headwear (all 3 non-catalog-capped
+categories, not assumed from a single spot check) that Stüssy's product
+photos are already clean flat-lay shots with no model/background, same
+judgment call already established for Carhartt.
+
+Catalog is now 11 brands (nike, gap, champion, carhartt, stussy,
+skechers, levis, pacsun, newbalance, adidas, plus whatever else lands
+concurrently -- check `apparel_dataset/metadata.json`'s live brand
+counts rather than trusting a snapshot here). Same "not yet embedded/
+evaluated against either encoder" caveat as every other brand added
+this session -- Champion, Levi's, Carhartt, and now Stüssy all need a
+re-embed pass before any of them show up in a real retrieval number.
