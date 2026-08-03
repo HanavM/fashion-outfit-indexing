@@ -108,6 +108,12 @@ CATEGORY_LABELS = {
     # rather than forcing one label onto a mixed bucket.
     "Accessories": ["a hat", "a cap", "a belt", "a backpack", "a bag", "a wallet",
                      "a bandana", "underwear"],
+    # Vans expansion -- "Hoodies and Jackets" bundles both garment types
+    # under one category name (site's own grouping, not a scraper
+    # miscategorization), so it needs both label families combined,
+    # same reasoning as "Accessories" above: best_crop_for_category only
+    # needs the top match to be ANY phrasing in the list.
+    "Hoodies and Jackets": ["a hoodie", "a pullover", "a sweatshirt", "a jacket", "a coat"],
 }
 
 

@@ -1786,3 +1786,48 @@ counts rather than trusting a snapshot here). Same "not yet embedded/
 evaluated against either encoder" caveat as every other brand added
 this session -- Champion, Levi's, Carhartt, and now Stüssy all need a
 re-embed pass before any of them show up in a real retrieval number.
+
+## Update — 2026-08-02: Vans added (200/200, footwear coverage finally grew)
+
+Every apparel-only brand added this session (Champion, Levi's, Carhartt,
+Stüssy) left footwear coverage stuck at the original 4 shoe brands
+(Nike, Adidas, New Balance, Skechers). Added Vans (vans.com) via
+`vans_scraper.py`, biased toward shoes specifically (100 shoes + 50
+Hoodies and Jackets + 50 Shirts, not an even 4-way split) to actually
+close that gap. **All 200/200 reached, no shortfall.**
+
+VF Corp brand, Nuxt.js storefront, Akamai bot protection (softer than
+Levi's -- `patchright` gets through with no visible interactive
+challenge). Real category paths found via the commerce sitemap, not
+guessed. Data source: schema.org ld+json in two shapes -- category
+listing pages give name/url/price/full image array with zero PDP visits
+needed (48/page, real `?page=N` pagination), PDP pages give the
+description + real server-rendered feature bullets (`product-details-
+bulletin`, no click needed) plus confirm the "one PDP per colorway"
+pattern (matches PacSun, not New Balance). Images live on a
+Cloudinary-style CDN -- full 2000x2500 images constructed directly from
+the listing page's own low-res thumbnail URLs by rewriting the
+transform segment, no extra PDP round-trip needed just for images. Full
+site notes in `SCRAPING_PROCESS.md`'s new Vans section.
+
+**First brand this session whose photos are genuinely mixed** flat-lay
+and on-model, confirmed by direct image inspection across categories --
+Carhartt and Stüssy were uniformly flat-lay (cropping correctly
+skipped for both), Vans is not. Garment cropping (`segment_apparel.py
+--brand vans`) run for real on the two clothing categories as a result
+-- needed one new `CATEGORY_LABELS["Hoodies and Jackets"]` entry
+(Vans's own category bundles hoodies and jackets together). Shoes
+correctly excluded from cropping automatically (never in
+`CATEGORY_LABELS` at all, same convention as the original 4 shoe
+brands) -- no code path even attempts to crop shoe photos.
+
+Structured captioning: 200/200 records, $0.0696 real Azure OpenAI cost,
+0/200 empty descriptions. Garment cropping was still running in the
+background when this entry was written (self-checkpointing into
+`metadata.json`, same pattern established for Levi's crop job earlier
+this session) -- check `cropped_images` coverage on Vans's clothing
+records before assuming it's finished.
+
+Catalog is now 12 brands, ~2,221 total records. Same "not yet embedded/
+evaluated against either encoder" caveat as every other brand added
+this session.

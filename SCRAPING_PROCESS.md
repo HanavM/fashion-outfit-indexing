@@ -40,7 +40,15 @@ at 25 by real catalog size) were added via `stussy_scraper.py` — the
 second Shopify-storefront site in this pipeline (after Champion), same
 easiest bot-protection tier, and the second brand (after Carhartt) whose
 product photos are already clean flat-lay shots, so garment cropping was
-again correctly skipped. Written so the same pattern can be adapted to
+again correctly skipped. Most recently, 200 Vans records (Shoes, Hoodies
+and Jackets, Shirts — 100/50/50, no shortfall) were added via
+`vans_scraper.py`, specifically to grow footwear coverage past the
+original 4 shoe brands — a VF Corp/Nuxt.js site with Akamai bot
+protection (softer than Levi's, no visible interactive challenge) and
+the first brand this session whose product photos are genuinely mixed
+flat-lay/on-model rather than uniformly one or the other, so garment
+cropping was run for real on the clothing categories (not skipped, and
+not applied to shoes). Written so the same pattern can be adapted to
 scrape other product categories/sites.
 
 Working directory: `/Users/hanavmodasiya/fashion-tests`
@@ -815,6 +823,75 @@ scraping failure, so 175 were reachable).
   citing "basic logo screenprint" with its real chest/back location) —
   consistent with the newLLMprompt.py schema extension already validated
   working on Carhartt's records.
+
+### Vans — Shoes, Hoodies and Jackets, Shirts
+
+Via `vans_scraper.py`, biased toward footwear (target 100 shoes + 50 each
+of two clothing categories, ~200 total) since every apparel-only brand
+added earlier this session left footwear coverage stuck at the original 4
+shoe brands (Nike, Adidas, New Balance, Skechers) — Vans's real value is
+shoe diversity, not more clothing. **All 200/200 reached, no shortfall**:
+Shoes 100/100, Hoodies and Jackets 50/50, Shirts 50/50.
+
+- **Real bot protection**: Akamai Bot Manager, same edge "Access Denied"
+  (`errors.edgesuite.net`) signature as Levi's/New Balance on plain
+  `requests`. Softer than Levi's though — plain `patchright` (headed,
+  `channel="chrome"`) gets through cleanly with no visible interactive
+  challenge screen at all, unlike Levi's behavioral-challenge
+  interstitial. Closer to New Balance's "binary block, patchright passes"
+  tier.
+- **VF Corp brand, Nuxt.js storefront** — real, stable data source is
+  schema.org ld+json, in two different shapes depending on page type:
+  category listing pages (`/en-us/c/...`) carry a `CollectionPage` node
+  with `mainEntity.itemListElement` (48 products/page, real `?page=N`
+  pagination confirmed — different products per page, not a silent
+  no-op), each item already including name/url/category/price/full image
+  array with NO PDP visit needed for those fields. Product pages
+  (`/en-us/p/...`) carry a `ProductGroup` node whose `hasVariant` is SIZE
+  variants of one fixed colorway (color constant across every entry) —
+  same "one PDP per colorway" pattern as PacSun, not New Balance's
+  "one PDP has every colorway." `productGroupID` (e.g. `VN000D9RWVD`) is
+  the stable `product_code`, same code embedded in the listing page's own
+  image filenames and the PDP URL slug — no cross-referencing needed.
+- **Real category paths found via the commerce sitemap**
+  (`vans.com/sitemap.xml` → `sitemaps/commerce/commerce-en-us.xml`), not
+  guessed — initial guesses (`/en-us/mens-shoes`) 404'd *inside the Nuxt
+  app itself* (confirmed via `__NUXT_DATA__`'s own `statusCode: 404`
+  field), a genuine in-app 404, not a bot block, and a different failure
+  mode than every prior brand's URL-guessing misses (those all just
+  returned zero results, not a real error page).
+- **Product-detail bullets are server-rendered, no click needed**:
+  `data-test-id="product-details-bulletin"` on the PDP, a plain
+  `<ul><li>` list readable directly from `page.content()` — real feature/
+  construction text (e.g. "Foxing tape inspired by original 90's Osnaburg
+  reinforced outsoles"), not marketing filler. 30/200 records have empty
+  bullets (some products genuinely lack this section) — same graceful
+  degradation as every prior brand's `details.get("features", [])`.
+- **Images are on a Cloudinary-style dynamic-imaging CDN**
+  (`assets.vans.com/images/t_img/...`). The listing page's own embedded
+  image URLs are low-res thumbnails (`t_Thumbnail` transform); real
+  full-res (2000x2500, confirmed by downloading and checking actual
+  pixel dimensions, not assumed from the URL alone) images are available
+  by rewriting the transform segment to
+  `t_img/c_fill,g_center,f_auto,h_2500,w_2000/` while keeping the same
+  `{SKU}-{VIEW}` image-id fragment (`-HERO`, `-ALT1..4`) already present
+  in the listing page's own data — no separate PDP visit needed just to
+  discover image URLs.
+- **First brand this session whose product photos are genuinely mixed**
+  — NOT uniformly flat-lay like Carhartt/Stüssy, confirmed by directly
+  inspecting real images across both clothing categories (some
+  graphic tees ARE clean flat-lays, but hoodies/jackets and some shirts
+  are real on-model lifestyle photos). Garment cropping (`segment_
+  apparel.py --brand vans`) run for real here, unlike the last two brand
+  additions — needed a new `CATEGORY_LABELS["Hoodies and Jackets"]`
+  entry combining both hoodie and jacket phrasings (Vans's own category
+  bundles both garment types under one name), reusing `"Shirts"`'s
+  existing phrasing from the Levi's expansion. Shoes correctly excluded
+  from cropping automatically (not in `CATEGORY_LABELS` at all, matching
+  the original 4 shoe brands' convention) — no code path even attempts
+  to crop shoe photos.
+- Structured captioning: 200/200 records, $0.0696 real Azure OpenAI
+  cost.
 
 ### Field-level concurrent-write collision (a second, narrower case dataset_utils doesn't fully cover)
 
