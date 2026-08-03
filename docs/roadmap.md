@@ -1687,16 +1687,30 @@ text — full numbers in `docs/eval_log.md`): one improved substantially
 (+26 ranks), one got WORSE (-14 ranks), and one couldn't even be
 attempted because the pooled pre-filter's rank (109) fell outside the
 dense-rerank shortlist window (`shortlist_k=50`) — a real, structural
-limitation of the shortlist-then-rerank design, not just noise. At n=3
-this isn't enough evidence to trust `--dense-rerank` as a default
-improvement; it's genuinely mixed, and the one regression matters as
-much as the one big win. **Next step, not yet done**: a larger,
-systematic test using the same held-out methodology as the main
-pipeline eval (not hand-picked cases) before drawing a real conclusion
-either way. The catalog used for this test was also only 777 products
-(the subset with real image files in this local dev environment — Gap/
-Champion/Levi's/Carhartt/Stussy only, not the full catalog), a further
-reason this is a smoke test, not a benchmark.
+limitation of the shortlist-then-rerank design, not just noise.
+
+**Expanded to 10 cases same day, and the conclusion held up as genuinely
+mixed, not just an n=3 fluke**: 7 more real localized queries added,
+same methodology. **Final tally: 4 improved, 4 worse, 1 unchanged, 1
+unrescuable.** Essentially a coin flip. One case is a real warning sign
+rather than noise: "a hat with visible stitching along the curved brim"
+was already ranked **#1** by the pooled vector alone, and dense-rerank
+made it WORSE (28th/50) — it can actively damage an already-correct
+result, not just fail to help a wrong one. **Verdict: do not enable
+`--dense-rerank` by default as currently implemented** — this isn't
+"needs a bigger sample to confirm the win," the larger sample confirmed
+there isn't a clear win to find at this configuration. If revisited, a
+concrete, evidence-grounded next idea: only trigger dense-rerank when
+the pooled rank is already poor (e.g. > 5-10), since the pattern across
+both rounds is that it tends to hurt queries the pooled vector already
+ranked well and help ones it ranked poorly — unconditionally reranking
+every query's top-50 regardless of how good the pooled result already
+was is where the net-negative cases come from. The catalog used for
+both rounds was also only the subset with real local image files in
+this dev environment (777→872 products as Stüssy was added mid-session,
+not the full ~2,021-record catalog), a further reason this remains a
+smoke test, not a formal benchmark — but the conclusion (mixed, not a
+default-on win) is real and actionable as-is.
 
 Also used the newly-working checkpoint access to directly compare
 `catalog_query_search.py` (canonical-first + semantic fallback) against

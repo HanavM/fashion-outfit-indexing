@@ -35,12 +35,52 @@ TEST_CASES = [
     {
         "product_code": "8583199555776",
         "query": "a crewneck sweatshirt with a tonal logo script at the back of the neckline",
-        "note": "new -- real defining_feature 'tonal Champion script' @ 'back neckline'",
+        "note": "real defining_feature 'tonal Champion script' @ 'back neckline'",
     },
     {
         "product_code": "163650272",
         "query": "a trucker jacket lined with fuzzy sherpa material on the inside",
-        "note": "new -- real defining_feature 'fuzzy sherpa lining' @ 'interior'",
+        "note": "real defining_feature 'fuzzy sherpa lining' @ 'interior'",
+    },
+    # Expanded 2026-08-02 -- the first 3-case run was explicitly flagged
+    # as too thin to draw a real conclusion from (docs/eval_log.md). 7
+    # more real cases added, same methodology (genuine paraphrase, real
+    # defining_features entries, spatially localized locations only --
+    # excludes generic front/chest placements every product has).
+    {
+        "product_code": "904454002",
+        "query": "a jacket with a mesh vent panel on the back",
+        "note": "real defining_feature 'breathable mesh vent' @ 'back'",
+    },
+    {
+        "product_code": "845264002",
+        "query": "a hat with visible stitching along the curved brim",
+        "note": "real defining_feature 'stitching at curved brim' @ 'brim'",
+    },
+    {
+        "product_code": "900853002",
+        "query": "a jacket with a two-tone dotted print all over",
+        "note": "real defining_feature 'two-tone dotted pattern' @ 'allover'",
+    },
+    {
+        "product_code": "8299539562688",
+        "query": "a hooded sweatshirt with ribbed panels along the sides",
+        "note": "real defining_feature 'ribbed side paneling' @ 'sides'",
+    },
+    {
+        "product_code": "8583200997568",
+        "query": "a sleeveless hoodie with an adjustable drawstring hood",
+        "note": "real defining_feature 'adjustable drawcord hood' @ 'hood'",
+    },
+    {
+        "product_code": "8583216627904",
+        "query": "a hoodie with a small logo patch on the wrist",
+        "note": "real defining_feature 'C logo patch' @ 'wrist'",
+    },
+    {
+        "product_code": "005FM0033",
+        "query": "a polo shirt with a distinctive racking design on the collar",
+        "note": "real defining_feature 'racking design on the collar' @ 'collar'",
     },
 ]
 
@@ -49,6 +89,8 @@ def run():
     engine = FreeTextVisualSearch()
     total_products = len(engine.records)
     print(f"\nCatalog size for this index: {total_products} products\n")
+
+    improved, worse, unchanged, unrescuable = 0, 0, 0, 0
 
     for case in TEST_CASES:
         target = case["product_code"]
@@ -73,7 +115,21 @@ def run():
             delta = pooled_rank - dense_rank
             verdict = "IMPROVED" if delta > 0 else ("WORSE" if delta < 0 else "unchanged")
             print(f"    Delta: {delta:+d} ranks ({verdict})")
+            if delta > 0:
+                improved += 1
+            elif delta < 0:
+                worse += 1
+            else:
+                unchanged += 1
+        else:
+            unrescuable += 1
         print()
+
+    print("=" * 60)
+    print(f"SUMMARY across {len(TEST_CASES)} cases: {improved} improved, {worse} worse, "
+          f"{unchanged} unchanged, {unrescuable} unrescuable (outside the pooled top-{dense_shortlist_k})")
+    print("Still an informal, hand-picked sample, not a rigorous held-out benchmark --")
+    print("but a real, honest directional read given the sample size available locally.")
 
 
 if __name__ == "__main__":

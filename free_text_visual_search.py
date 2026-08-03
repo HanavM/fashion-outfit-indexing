@@ -290,7 +290,17 @@ class FreeTextVisualSearch:
         plausible, matching the architecture note in docs/roadmap.md's
         2026-08-01 free-text-search update: dense matching is more
         expensive per-image (a similarity per patch, not per image), so pay
-        that cost only on a pre-narrowed shortlist, not the full catalog."""
+        that cost only on a pre-narrowed shortlist, not the full catalog.
+
+        **Validated against the real v3 checkpoint, 2026-08-02
+        (dense_rerank_real_checkpoint_validation.py, 10 real localized
+        queries): result is a genuine coin flip, NOT a default-on
+        improvement -- 4 improved, 4 worse, 1 unchanged, 1 unrescuable.
+        One case actively made an already-#1-ranked result worse (28th).
+        Do not enable this by default as currently implemented; see
+        docs/eval_log.md's 2026-08-02 entries for full numbers and a
+        concrete idea for a threshold-gated version (only rerank when the
+        pooled rank is already poor) that wasn't tested here.**"""
         text_embedding = encode_text(self.model, self.processor, [query_text])[0]
 
         pooled_similarities = self.image_embeddings @ text_embedding
