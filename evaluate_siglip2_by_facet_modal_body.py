@@ -62,8 +62,21 @@ USE_AMP = DEVICE == "cuda"
 
 LABEL_KINDS = (
     "color", "material", "fit", "pattern", "closure", "silhouette", "length",
+    "pocket_type", "distressing", "heel_type", "sole_type", "toe_shape",
     "defining_features", "attribute_caption",
 )
+# The 5 new facets above (pocket_type/distressing/heel_type/sole_type/
+# toe_shape) were added to newLLMprompt.py's schema 2026-08-02, after v3
+# was trained -- adding them here is diagnostic only (does the ALREADY-
+# TRAINED v3 checkpoint have any zero-shot signal on facets it was never
+# an explicit training target for, similar to what free_text_visual_
+# search.py already showed for novel phrasings generally), not a claim
+# they were trained on. **Will report "no test images had a 'X' label"
+# and skip entirely until the existing-record backfill runs** (checked
+# 2026-08-02: 0/762 shoe records have these fields populated yet, they
+# only exist on records captioned after the schema change) -- this
+# section only becomes meaningful after `caption_apparel.py --force` is
+# run on the pre-existing catalog, not automatically.
 
 
 def normalize_text(text):
@@ -126,7 +139,8 @@ def build_training_labels(product):
     # one deviation from finetune_siglip2_v3.py's build_training_labels,
     # purpose-built for this per-facet breakdown. Text construction is
     # otherwise identical, so this doesn't change what the model sees.
-    for facet in ("color", "material", "fit", "pattern", "closure", "silhouette", "length"):
+    for facet in ("color", "material", "fit", "pattern", "closure", "silhouette", "length",
+                  "pocket_type", "distressing", "heel_type", "sole_type", "toe_shape"):
         for value in attributes.get(facet, []) or []:
             add(f"{value} {leaf_category}", facet)
 

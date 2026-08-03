@@ -74,8 +74,12 @@ USE_AMP = DEVICE == "cuda"
 
 LABEL_KINDS = (
     "color", "material", "fit", "pattern", "closure", "silhouette", "length",
+    "pocket_type", "distressing", "heel_type", "sole_type", "toe_shape",
     "defining_features", "attribute_caption",
 )
+# See evaluate_siglip2_by_facet_modal_body.py's matching comment -- same
+# caveat applies here: these 5 new facets will report "no test images"
+# and skip entirely until the pre-existing-record caption backfill runs.
 
 
 def normalize_text(text):
@@ -138,7 +142,8 @@ def build_training_labels(product):
     # one deviation from finetune_siglip2_v3.py's build_training_labels,
     # purpose-built for this per-facet breakdown. Text construction is
     # otherwise identical, so this doesn't change what the model sees.
-    for facet in ("color", "material", "fit", "pattern", "closure", "silhouette", "length"):
+    for facet in ("color", "material", "fit", "pattern", "closure", "silhouette", "length",
+                  "pocket_type", "distressing", "heel_type", "sole_type", "toe_shape"):
         for value in attributes.get(facet, []) or []:
             add(f"{value} {leaf_category}", facet)
 
