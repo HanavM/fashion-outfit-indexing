@@ -2112,3 +2112,52 @@ matter.
 Python 3.14's argparse validates and older Pythons silently tolerated.
 Escaped to `%%`. Confirmed pre-existing against `git show HEAD`, not
 introduced by this change.
+
+## Update — 2026-08-03: incremental enrollment — adding a brand no longer re-encodes the whole catalog
+
+Second build of this session, after the open-set split. The trigger was a
+concrete discrepancy: `apparel_dataset/retrieval_indexes/` covered **872
+products** while the catalog had grown to **2,387 records / 1,272
+products with resolvable images**. The cause wasn't neglect — it was
+`build_or_load_identity_index`'s cache fingerprint, which lumped
+`num_products` in with the genuinely invalidating fields. Adding a single
+brand changed the product count, which invalidated the entire index, which
+forced a full re-encode of every product in the catalog. So the index only
+ever got rebuilt when someone was willing to pay for a full rebuild, and
+in practice that meant it fell 400+ products behind.
+
+**The fix**: split the fingerprint. `core` (checkpoint, use_projection,
+split seed/sizes, open-set params) changes what an embedding *means*, so
+any change to it still invalidates everything. `num_products` doesn't —
+adding a brand leaves every existing product's vector perfectly valid.
+Cached vectors are now reused per product, and only new or changed
+products get encoded.
+
+"Changed" is tracked with a new `gallery_signature` in the saved payload:
+the exact image paths backing each product's embedding. A product whose
+images changed (recrop, rescrape, different split) gets re-embedded even
+though its code didn't change — a code-only check would silently keep a
+stale vector. Payloads written before this feature have no signature, so
+they reuse nothing and rebuild fully rather than trusting vectors whose
+backing images can't be verified.
+
+**This is also the "enrollment" claim made real.** `docs/roadmap.md`'s
+2026-08-01 scaling argument (and spec §8.1) says new products can be added
+without retraining — embed with the unchanged encoder, append to the
+gallery. That was an argument about metric learning; it is now something
+the code actually does on every run.
+
+**Validated with a deterministic fake embedder** (no GPU needed — the
+vector is a pure function of the image path, so a correct incremental
+index must be bit-identical to a from-scratch one), 7 cases, all passing:
+initial build encodes everything; an unchanged rebuild encodes **0**;
+adding 5 products encodes 10 images, not 30; changing one product's images
+re-encodes only that product (verified its vector changed AND an untouched
+neighbor's did not); changing the checkpoint still forces a full rebuild;
+removing products shrinks the index with 0 re-encodes. The decisive check:
+**the incrementally-built index is bit-identical (codes and embeddings) to
+a from-scratch build of the same state.**
+
+Practical effect: catching the local index up from 872 to 1,272 products
+now costs ~400 products' worth of encoding instead of 1,272, and the next
+brand costs only itself.

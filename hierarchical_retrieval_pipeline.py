@@ -803,22 +803,77 @@ def build_or_load_identity_index(backbone, projection_head, use_projection, proc
     # only if the count happened to match -- and worse, a cached OPEN-SET
     # index (missing identities) could be silently reused by a subsequent
     # normal run, quietly deflating every headline number with no warning.
-    expected = {
-        "checkpoint": dino_checkpoint, "use_projection": use_projection, "num_products": len(product_codes),
+    #
+    # INCREMENTAL ENROLLMENT (2026-08-03): these invalidating fields are
+    # split out from num_products deliberately. Everything in `core`
+    # changes what an embedding MEANS, so any change to it invalidates
+    # every cached vector. num_products does not -- adding a brand leaves
+    # every existing product's embedding perfectly valid. Keeping the two
+    # in one fingerprint is what forced a full re-encode of the entire
+    # catalog every time a single new brand landed, which is why the local
+    # index sat at 872 products while the catalog grew past 2,300.
+    #
+    # This is also the exact mechanism behind this project's "you can add
+    # new products without retraining" claim (docs/roadmap.md's enrollment
+    # argument, spec section 8.1): embed the new items with the unchanged
+    # encoder and append them to the gallery. Making it real here means
+    # the claim is now something the code actually does, not just an
+    # argument about metric learning.
+    core = {
+        "checkpoint": dino_checkpoint, "use_projection": use_projection,
         "split_seed": SPLIT_SEED, "test_images_per_product": TEST_IMAGES_PER_PRODUCT,
         "val_images_per_product": VAL_IMAGES_PER_PRODUCT,
         "open_set_holdout_fraction": open_set_holdout_fraction,
         "open_set_split_seed": OPEN_SET_SPLIT_SEED if open_set_holdout_fraction else None,
     }
+    expected = {**core, "num_products": len(product_codes)}
 
-    if _index_is_fresh(config_path, expected):
-        payload = torch.load(INDEX_DIR / "identity_embeddings.pt", map_location="cpu", weights_only=False)
-        print("Identity index: cache hit.")
-        return payload["product_codes"], payload["embeddings"]
+    # Which exact images back each product's embedding. Compared per
+    # product on load so a product whose gallery images CHANGED (recrop,
+    # rescrape, different split) gets re-embedded even though its code is
+    # unchanged -- a code-only check would silently keep a stale vector.
+    # Sliced [:2] to match exactly what actually gets embedded below.
+    signature = {code: list(gallery_images_by_product[code][:2]) for code in product_codes}
 
-    print("Identity index: (re)building (this re-encodes up to 2 gallery images per product)...")
+    reusable = {}
+    if config_path.is_file():
+        try:
+            cached_config = json.loads(config_path.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError):
+            cached_config = {}
+        if all(cached_config.get(key) == value for key, value in core.items()):
+            try:
+                payload = torch.load(INDEX_DIR / "identity_embeddings.pt", map_location="cpu", weights_only=False)
+                cached_signature = payload.get("gallery_signature") or {}
+                cached_embeddings = payload["embeddings"]
+                for position, code in enumerate(payload["product_codes"]):
+                    # No signature at all = an index written before this
+                    # feature existed. Reuse nothing rather than trust a
+                    # vector whose backing images can't be verified.
+                    if code in signature and cached_signature.get(code) == signature[code]:
+                        reusable[code] = cached_embeddings[position]
+            except (OSError, KeyError, RuntimeError) as error:
+                print(f"Identity index: cached embeddings unusable ({error}) -- rebuilding from scratch.")
+                reusable = {}
+
+    if len(reusable) == len(product_codes):
+        print(f"Identity index: cache hit ({len(product_codes):,} products).")
+        product_embeddings = torch.stack([reusable[code] for code in product_codes])
+        # Rewrite the config so num_products reflects reality even when
+        # every vector came from cache (e.g. products were REMOVED).
+        config_path.write_text(json.dumps(expected, indent=2), encoding="utf-8")
+        torch.save({"product_codes": product_codes, "embeddings": product_embeddings, "gallery_signature": signature},
+                   INDEX_DIR / "identity_embeddings.pt")
+        return product_codes, product_embeddings
+
+    to_embed = [code for code in product_codes if code not in reusable]
+    if reusable:
+        print(f"Identity index: ENROLLING {len(to_embed):,} new/changed products, reusing {len(reusable):,} cached embeddings "
+              f"(no re-encode of the existing catalog).")
+    else:
+        print("Identity index: (re)building (this re-encodes up to 2 gallery images per product)...")
     flat_paths, owners = [], []
-    for code in product_codes:
+    for code in to_embed:
         for path in gallery_images_by_product[code][:2]:
             flat_paths.append(path)
             owners.append(code)
@@ -849,15 +904,27 @@ def build_or_load_identity_index(backbone, projection_head, use_projection, proc
     embeddings_by_product = defaultdict(list)
     for embedding, code in zip(all_embeddings, valid_owners):
         embeddings_by_product[code].append(embedding)
-    # Drop any product whose every gallery image failed to load (should be
-    # rare given the catalog-build verify() pass, but a product left with
-    # zero embeddings would otherwise crash the stack() below).
-    product_codes = [code for code in product_codes if embeddings_by_product.get(code)]
-    product_embeddings = torch.stack([
-        F.normalize(torch.stack(embeddings_by_product[code]).mean(dim=0), dim=-1) for code in product_codes
-    ])
+    newly_embedded = {
+        code: F.normalize(torch.stack(vectors).mean(dim=0), dim=-1)
+        for code, vectors in embeddings_by_product.items()
+    }
 
-    torch.save({"product_codes": product_codes, "embeddings": product_embeddings}, INDEX_DIR / "identity_embeddings.pt")
+    # Merge cached + newly-enrolled, preserving the sorted product_codes
+    # order. Drop any product with no embedding from either source -- i.e.
+    # one whose every gallery image failed to load (rare given the
+    # catalog-build verify() pass, but a product left with zero vectors
+    # would otherwise crash the stack() below).
+    merged = {**reusable, **newly_embedded}
+    product_codes = [code for code in product_codes if code in merged]
+    product_embeddings = torch.stack([merged[code] for code in product_codes])
+    # Signature is rewritten from the surviving codes only, so a product
+    # dropped for unreadable images doesn't leave a signature entry that
+    # would make a later run think it's cached.
+    surviving_signature = {code: signature[code] for code in product_codes}
+
+    expected["num_products"] = len(product_codes)
+    torch.save({"product_codes": product_codes, "embeddings": product_embeddings, "gallery_signature": surviving_signature},
+               INDEX_DIR / "identity_embeddings.pt")
     config_path.write_text(json.dumps(expected, indent=2), encoding="utf-8")
     return product_codes, product_embeddings
 
