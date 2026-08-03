@@ -190126,7 +190126,15 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/levis/essential-pocket-garment-dye-t-shirt/005H00041/image_0_cropped.jpg",
+      "apparel_dataset/levis/essential-pocket-garment-dye-t-shirt/005H00041/image_1_cropped.jpg",
+      "apparel_dataset/levis/essential-pocket-garment-dye-t-shirt/005H00041/image_2_cropped.jpg",
+      "apparel_dataset/levis/essential-pocket-garment-dye-t-shirt/005H00041/image_3_cropped.jpg",
+      "apparel_dataset/levis/essential-pocket-garment-dye-t-shirt/005H00041/image_4_cropped.jpg",
+      "apparel_dataset/levis/essential-pocket-garment-dye-t-shirt/005H00041/image_5.jpg"
+    ]
   },
   {
     "brand": "levis",
@@ -190202,7 +190210,13 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/levis/essential-pocket-t-shirt/005H00042/image_0_cropped.jpg",
+      "apparel_dataset/levis/essential-pocket-t-shirt/005H00042/image_1_cropped.jpg",
+      "apparel_dataset/levis/essential-pocket-t-shirt/005H00042/image_2_cropped.jpg",
+      "apparel_dataset/levis/essential-pocket-t-shirt/005H00042/image_3_cropped.jpg"
+    ]
   },
   {
     "brand": "levis",
@@ -190272,7 +190286,15 @@
         ],
         "defining_features": []
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/levis/essential-t-shirt/005GZ0001/image_0_cropped.jpg",
+      "apparel_dataset/levis/essential-t-shirt/005GZ0001/image_1_cropped.jpg",
+      "apparel_dataset/levis/essential-t-shirt/005GZ0001/image_2_cropped.jpg",
+      "apparel_dataset/levis/essential-t-shirt/005GZ0001/image_3_cropped.jpg",
+      "apparel_dataset/levis/essential-t-shirt/005GZ0001/image_4_cropped.jpg",
+      "apparel_dataset/levis/essential-t-shirt/005GZ0001/image_5.jpg"
+    ]
   },
   {
     "brand": "levis",
@@ -190353,7 +190375,15 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/levis/classic-boxy-polo/005FR0011/image_0_cropped.jpg",
+      "apparel_dataset/levis/classic-boxy-polo/005FR0011/image_1_cropped.jpg",
+      "apparel_dataset/levis/classic-boxy-polo/005FR0011/image_2_cropped.jpg",
+      "apparel_dataset/levis/classic-boxy-polo/005FR0011/image_3_cropped.jpg",
+      "apparel_dataset/levis/classic-boxy-polo/005FR0011/image_4_cropped.jpg",
+      "apparel_dataset/levis/classic-boxy-polo/005FR0011/image_5_cropped.jpg"
+    ]
   },
   {
     "brand": "levis",
@@ -190421,7 +190451,15 @@
         ],
         "defining_features": []
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/levis/housemark-polo/358830005/image_0_cropped.jpg",
+      "apparel_dataset/levis/housemark-polo/358830005/image_1_cropped.jpg",
+      "apparel_dataset/levis/housemark-polo/358830005/image_2_cropped.jpg",
+      "apparel_dataset/levis/housemark-polo/358830005/image_3_cropped.jpg",
+      "apparel_dataset/levis/housemark-polo/358830005/image_4_cropped.jpg",
+      "apparel_dataset/levis/housemark-polo/358830005/image_5.jpg"
+    ]
   },
   {
     "brand": "levis",
@@ -190505,7 +190543,14 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/levis/levis-logo-classic-standard-t-shirt/177830137/image_0_cropped.jpg",
+      "apparel_dataset/levis/levis-logo-classic-standard-t-shirt/177830137/image_1_cropped.jpg",
+      "apparel_dataset/levis/levis-logo-classic-standard-t-shirt/177830137/image_2_cropped.jpg",
+      "apparel_dataset/levis/levis-logo-classic-standard-t-shirt/177830137/image_3_cropped.jpg",
+      "apparel_dataset/levis/levis-logo-classic-standard-t-shirt/177830137/image_4_cropped.jpg"
+    ]
   },
   {
     "brand": "levis",
@@ -190586,7 +190631,13 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/levis/levis-original-garment-dye-t-shirt/005GX0011/image_0_cropped.jpg",
+      "apparel_dataset/levis/levis-original-garment-dye-t-shirt/005GX0011/image_1_cropped.jpg",
+      "apparel_dataset/levis/levis-original-garment-dye-t-shirt/005GX0011/image_2_cropped.jpg",
+      "apparel_dataset/levis/levis-original-garment-dye-t-shirt/005GX0011/image_3_cropped.jpg"
+    ]
   },
   {
     "brand": "levis",
@@ -190684,7 +190735,15 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/levis/levis-original-polo/005FM0002/image_0_cropped.jpg",
+      "apparel_dataset/levis/levis-original-polo/005FM0002/image_1_cropped.jpg",
+      "apparel_dataset/levis/levis-original-polo/005FM0002/image_2_cropped.jpg",
+      "apparel_dataset/levis/levis-original-polo/005FM0002/image_3_cropped.jpg",
+      "apparel_dataset/levis/levis-original-polo/005FM0002/image_4_cropped.jpg",
+      "apparel_dataset/levis/levis-original-polo/005FM0002/image_5.jpg"
+    ]
   },
   {
     "brand": "levis",
@@ -190760,7 +190819,15 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/levis/levis-original-t-shirt/005GX0000/image_0_cropped.jpg",
+      "apparel_dataset/levis/levis-original-t-shirt/005GX0000/image_1_cropped.jpg",
+      "apparel_dataset/levis/levis-original-t-shirt/005GX0000/image_2_cropped.jpg",
+      "apparel_dataset/levis/levis-original-t-shirt/005GX0000/image_3_cropped.jpg",
+      "apparel_dataset/levis/levis-original-t-shirt/005GX0000/image_4_cropped.jpg",
+      "apparel_dataset/levis/levis-original-t-shirt/005GX0000/image_5.jpg"
+    ]
   },
   {
     "brand": "levis",
@@ -190844,7 +190911,15 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/levis/relaxed-short-sleeve-worker-shirt/003O10010/image_0_cropped.jpg",
+      "apparel_dataset/levis/relaxed-short-sleeve-worker-shirt/003O10010/image_1_cropped.jpg",
+      "apparel_dataset/levis/relaxed-short-sleeve-worker-shirt/003O10010/image_2_cropped.jpg",
+      "apparel_dataset/levis/relaxed-short-sleeve-worker-shirt/003O10010/image_3_cropped.jpg",
+      "apparel_dataset/levis/relaxed-short-sleeve-worker-shirt/003O10010/image_4_cropped.jpg",
+      "apparel_dataset/levis/relaxed-short-sleeve-worker-shirt/003O10010/image_5_cropped.jpg"
+    ]
   },
   {
     "brand": "levis",
@@ -190928,7 +191003,15 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/levis/standard-classic-graphic-t-shirt/224911953/image_0_cropped.jpg",
+      "apparel_dataset/levis/standard-classic-graphic-t-shirt/224911953/image_1_cropped.jpg",
+      "apparel_dataset/levis/standard-classic-graphic-t-shirt/224911953/image_2_cropped.jpg",
+      "apparel_dataset/levis/standard-classic-graphic-t-shirt/224911953/image_3_cropped.jpg",
+      "apparel_dataset/levis/standard-classic-graphic-t-shirt/224911953/image_4_cropped.jpg",
+      "apparel_dataset/levis/standard-classic-graphic-t-shirt/224911953/image_5_cropped.jpg"
+    ]
   },
   {
     "brand": "levis",
@@ -191014,7 +191097,15 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/levis/short-sleeve-sweater/007TB0001/image_0_cropped.jpg",
+      "apparel_dataset/levis/short-sleeve-sweater/007TB0001/image_1_cropped.jpg",
+      "apparel_dataset/levis/short-sleeve-sweater/007TB0001/image_2_cropped.jpg",
+      "apparel_dataset/levis/short-sleeve-sweater/007TB0001/image_3_cropped.jpg",
+      "apparel_dataset/levis/short-sleeve-sweater/007TB0001/image_4_cropped.jpg",
+      "apparel_dataset/levis/short-sleeve-sweater/007TB0001/image_5.jpg"
+    ]
   },
   {
     "brand": "levis",
@@ -191085,7 +191176,15 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/levis/relaxed-vintage-graphic-t-shirt/873730455/image_0_cropped.jpg",
+      "apparel_dataset/levis/relaxed-vintage-graphic-t-shirt/873730455/image_1_cropped.jpg",
+      "apparel_dataset/levis/relaxed-vintage-graphic-t-shirt/873730455/image_2_cropped.jpg",
+      "apparel_dataset/levis/relaxed-vintage-graphic-t-shirt/873730455/image_3_cropped.jpg",
+      "apparel_dataset/levis/relaxed-vintage-graphic-t-shirt/873730455/image_4_cropped.jpg",
+      "apparel_dataset/levis/relaxed-vintage-graphic-t-shirt/873730455/image_5_cropped.jpg"
+    ]
   },
   {
     "brand": "levis",
@@ -191167,7 +191266,13 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/levis/levis-logo-graphic-t-shirt-tall/567620026/image_0_cropped.jpg",
+      "apparel_dataset/levis/levis-logo-graphic-t-shirt-tall/567620026/image_1_cropped.jpg",
+      "apparel_dataset/levis/levis-logo-graphic-t-shirt-tall/567620026/image_2_cropped.jpg",
+      "apparel_dataset/levis/levis-logo-graphic-t-shirt-tall/567620026/image_3.jpg"
+    ]
   },
   {
     "brand": "levis",
@@ -191250,7 +191355,16 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/levis/authentic-button-down-shirt/A72100023/image_0.jpg",
+      "apparel_dataset/levis/authentic-button-down-shirt/A72100023/image_1_cropped.jpg",
+      "apparel_dataset/levis/authentic-button-down-shirt/A72100023/image_2_cropped.jpg",
+      "apparel_dataset/levis/authentic-button-down-shirt/A72100023/image_3_cropped.jpg",
+      "apparel_dataset/levis/authentic-button-down-shirt/A72100023/image_4_cropped.jpg",
+      "apparel_dataset/levis/authentic-button-down-shirt/A72100023/image_5.jpg",
+      "apparel_dataset/levis/authentic-button-down-shirt/A72100023/image_6_cropped.jpg"
+    ]
   },
   {
     "brand": "levis",
@@ -191334,7 +191448,15 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/levis/authentic-button-down-shirt/A72100050/image_0_cropped.jpg",
+      "apparel_dataset/levis/authentic-button-down-shirt/A72100050/image_1_cropped.jpg",
+      "apparel_dataset/levis/authentic-button-down-shirt/A72100050/image_2_cropped.jpg",
+      "apparel_dataset/levis/authentic-button-down-shirt/A72100050/image_3_cropped.jpg",
+      "apparel_dataset/levis/authentic-button-down-shirt/A72100050/image_4_cropped.jpg",
+      "apparel_dataset/levis/authentic-button-down-shirt/A72100050/image_5_cropped.jpg"
+    ]
   },
   {
     "brand": "levis",
@@ -191418,7 +191540,15 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/levis/authentic-button-down-short-sleeve-shirt/A91610007/image_0_cropped.jpg",
+      "apparel_dataset/levis/authentic-button-down-short-sleeve-shirt/A91610007/image_1_cropped.jpg",
+      "apparel_dataset/levis/authentic-button-down-short-sleeve-shirt/A91610007/image_2_cropped.jpg",
+      "apparel_dataset/levis/authentic-button-down-short-sleeve-shirt/A91610007/image_3_cropped.jpg",
+      "apparel_dataset/levis/authentic-button-down-short-sleeve-shirt/A91610007/image_4_cropped.jpg",
+      "apparel_dataset/levis/authentic-button-down-short-sleeve-shirt/A91610007/image_5_cropped.jpg"
+    ]
   },
   {
     "brand": "levis",
@@ -191495,7 +191625,16 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/levis/authentic-red-tab-vintage-t-shirt/A06370058/image_0_cropped.jpg",
+      "apparel_dataset/levis/authentic-red-tab-vintage-t-shirt/A06370058/image_1_cropped.jpg",
+      "apparel_dataset/levis/authentic-red-tab-vintage-t-shirt/A06370058/image_2_cropped.jpg",
+      "apparel_dataset/levis/authentic-red-tab-vintage-t-shirt/A06370058/image_3_cropped.jpg",
+      "apparel_dataset/levis/authentic-red-tab-vintage-t-shirt/A06370058/image_4_cropped.jpg",
+      "apparel_dataset/levis/authentic-red-tab-vintage-t-shirt/A06370058/image_5_cropped.jpg",
+      "apparel_dataset/levis/authentic-red-tab-vintage-t-shirt/A06370058/image_6_cropped.jpg"
+    ]
   },
   {
     "brand": "levis",
@@ -191574,7 +191713,15 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/levis/boxy-short-sleeve-t-shirt/0049F0036/image_0_cropped.jpg",
+      "apparel_dataset/levis/boxy-short-sleeve-t-shirt/0049F0036/image_1_cropped.jpg",
+      "apparel_dataset/levis/boxy-short-sleeve-t-shirt/0049F0036/image_2_cropped.jpg",
+      "apparel_dataset/levis/boxy-short-sleeve-t-shirt/0049F0036/image_3_cropped.jpg",
+      "apparel_dataset/levis/boxy-short-sleeve-t-shirt/0049F0036/image_4_cropped.jpg",
+      "apparel_dataset/levis/boxy-short-sleeve-t-shirt/0049F0036/image_5.jpg"
+    ]
   },
   {
     "brand": "levis",
@@ -191643,7 +191790,15 @@
         ],
         "defining_features": []
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/levis/essential-t-shirt/005GZ0002/image_0_cropped.jpg",
+      "apparel_dataset/levis/essential-t-shirt/005GZ0002/image_1_cropped.jpg",
+      "apparel_dataset/levis/essential-t-shirt/005GZ0002/image_2_cropped.jpg",
+      "apparel_dataset/levis/essential-t-shirt/005GZ0002/image_3_cropped.jpg",
+      "apparel_dataset/levis/essential-t-shirt/005GZ0002/image_4_cropped.jpg",
+      "apparel_dataset/levis/essential-t-shirt/005GZ0002/image_5_cropped.jpg"
+    ]
   },
   {
     "brand": "levis",
@@ -191729,7 +191884,15 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/levis/levis-original-t-shirt/005GX0015/image_0_cropped.jpg",
+      "apparel_dataset/levis/levis-original-t-shirt/005GX0015/image_1_cropped.jpg",
+      "apparel_dataset/levis/levis-original-t-shirt/005GX0015/image_2_cropped.jpg",
+      "apparel_dataset/levis/levis-original-t-shirt/005GX0015/image_3_cropped.jpg",
+      "apparel_dataset/levis/levis-original-t-shirt/005GX0015/image_4_cropped.jpg",
+      "apparel_dataset/levis/levis-original-t-shirt/005GX0015/image_5.jpg"
+    ]
   },
   {
     "brand": "levis",
@@ -191808,7 +191971,15 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/levis/workwear-pocket-short-sleeve-t-shirt/008AB0004/image_0_cropped.jpg",
+      "apparel_dataset/levis/workwear-pocket-short-sleeve-t-shirt/008AB0004/image_1_cropped.jpg",
+      "apparel_dataset/levis/workwear-pocket-short-sleeve-t-shirt/008AB0004/image_2_cropped.jpg",
+      "apparel_dataset/levis/workwear-pocket-short-sleeve-t-shirt/008AB0004/image_3_cropped.jpg",
+      "apparel_dataset/levis/workwear-pocket-short-sleeve-t-shirt/008AB0004/image_4_cropped.jpg",
+      "apparel_dataset/levis/workwear-pocket-short-sleeve-t-shirt/008AB0004/image_5.jpg"
+    ]
   },
   {
     "brand": "levis",
@@ -191879,7 +192050,13 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/levis/housemark-polo-big/869980002/image_0_cropped.jpg",
+      "apparel_dataset/levis/housemark-polo-big/869980002/image_1_cropped.jpg",
+      "apparel_dataset/levis/housemark-polo-big/869980002/image_2_cropped.jpg",
+      "apparel_dataset/levis/housemark-polo-big/869980002/image_3_cropped.jpg"
+    ]
   },
   {
     "brand": "levis",
@@ -191961,7 +192138,13 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/levis/original-housemark-t-shirt-big/173850006/image_0_cropped.jpg",
+      "apparel_dataset/levis/original-housemark-t-shirt-big/173850006/image_1_cropped.jpg",
+      "apparel_dataset/levis/original-housemark-t-shirt-big/173850006/image_2_cropped.jpg",
+      "apparel_dataset/levis/original-housemark-t-shirt-big/173850006/image_3_cropped.jpg"
+    ]
   },
   {
     "brand": "levis",
@@ -192045,7 +192228,15 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/levis/authentic-button-down-short-sleeve-shirt/A91610037/image_0_cropped.jpg",
+      "apparel_dataset/levis/authentic-button-down-short-sleeve-shirt/A91610037/image_1_cropped.jpg",
+      "apparel_dataset/levis/authentic-button-down-short-sleeve-shirt/A91610037/image_2_cropped.jpg",
+      "apparel_dataset/levis/authentic-button-down-short-sleeve-shirt/A91610037/image_3_cropped.jpg",
+      "apparel_dataset/levis/authentic-button-down-short-sleeve-shirt/A91610037/image_4_cropped.jpg",
+      "apparel_dataset/levis/authentic-button-down-short-sleeve-shirt/A91610037/image_5_cropped.jpg"
+    ]
   },
   {
     "brand": "levis",
@@ -192137,7 +192328,16 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/levis/levis-l-pack-large-backpack/D75720002/image_0.jpg",
+      "apparel_dataset/levis/levis-l-pack-large-backpack/D75720002/image_1_cropped.jpg",
+      "apparel_dataset/levis/levis-l-pack-large-backpack/D75720002/image_2_cropped.jpg",
+      "apparel_dataset/levis/levis-l-pack-large-backpack/D75720002/image_3_cropped.jpg",
+      "apparel_dataset/levis/levis-l-pack-large-backpack/D75720002/image_4_cropped.jpg",
+      "apparel_dataset/levis/levis-l-pack-large-backpack/D75720002/image_5.jpg",
+      "apparel_dataset/levis/levis-l-pack-large-backpack/D75720002/image_6_cropped.jpg"
+    ]
   },
   {
     "brand": "levis",
@@ -192207,7 +192407,14 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/levis/batwing-bucket-hat/D66130009/image_0_cropped.jpg",
+      "apparel_dataset/levis/batwing-bucket-hat/D66130009/image_1_cropped.jpg",
+      "apparel_dataset/levis/batwing-bucket-hat/D66130009/image_2_cropped.jpg",
+      "apparel_dataset/levis/batwing-bucket-hat/D66130009/image_3_cropped.jpg",
+      "apparel_dataset/levis/batwing-bucket-hat/D66130009/image_4_cropped.jpg"
+    ]
   },
   {
     "brand": "levis",
@@ -192274,7 +192481,13 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/levis/potrero-double-prong-belt/005D30000/image_0_cropped.jpg",
+      "apparel_dataset/levis/potrero-double-prong-belt/005D30000/image_1_cropped.jpg",
+      "apparel_dataset/levis/potrero-double-prong-belt/005D30000/image_2_cropped.jpg",
+      "apparel_dataset/levis/potrero-double-prong-belt/005D30000/image_3_cropped.jpg"
+    ]
   },
   {
     "brand": "levis",
@@ -192348,7 +192561,14 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/levis/monogram-hat/004BS0007/image_0_cropped.jpg",
+      "apparel_dataset/levis/monogram-hat/004BS0007/image_1_cropped.jpg",
+      "apparel_dataset/levis/monogram-hat/004BS0007/image_2_cropped.jpg",
+      "apparel_dataset/levis/monogram-hat/004BS0007/image_3_cropped.jpg",
+      "apparel_dataset/levis/monogram-hat/004BS0007/image_4_cropped.jpg"
+    ]
   },
   {
     "brand": "levis",
@@ -192410,7 +192630,11 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/levis/heritage-belt/D77250002/image_0.jpg",
+      "apparel_dataset/levis/heritage-belt/D77250002/image_2_cropped.jpg"
+    ]
   },
   {
     "brand": "levis",
@@ -192489,7 +192713,13 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/levis/housemark-flexfit-cap/D77230002/image_0_cropped.jpg",
+      "apparel_dataset/levis/housemark-flexfit-cap/D77230002/image_1_cropped.jpg",
+      "apparel_dataset/levis/housemark-flexfit-cap/D77230002/image_2.jpg",
+      "apparel_dataset/levis/housemark-flexfit-cap/D77230002/image_3_cropped.jpg"
+    ]
   },
   {
     "brand": "levis",
@@ -192541,7 +192771,13 @@
           "leather"
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/levis/leather-card-case/005H10000/image_0_cropped.jpg",
+      "apparel_dataset/levis/leather-card-case/005H10000/image_1_cropped.jpg",
+      "apparel_dataset/levis/leather-card-case/005H10000/image_2_cropped.jpg",
+      "apparel_dataset/levis/leather-card-case/005H10000/image_3_cropped.jpg"
+    ]
   },
   {
     "brand": "levis",
@@ -192629,7 +192865,14 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/levis/mission-bay-backpack/004C30004/image_0_cropped.jpg",
+      "apparel_dataset/levis/mission-bay-backpack/004C30004/image_1_cropped.jpg",
+      "apparel_dataset/levis/mission-bay-backpack/004C30004/image_2_cropped.jpg",
+      "apparel_dataset/levis/mission-bay-backpack/004C30004/image_3.jpg",
+      "apparel_dataset/levis/mission-bay-backpack/004C30004/image_4_cropped.jpg"
+    ]
   },
   {
     "brand": "levis",
@@ -192682,7 +192925,11 @@
         ],
         "defining_features": []
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/levis/paisley-bandana/771380631/image_0_cropped.jpg",
+      "apparel_dataset/levis/paisley-bandana/771380631/image_1_cropped.jpg"
+    ]
   },
   {
     "brand": "levis",
@@ -192763,7 +193010,12 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/levis/solid-basic-boxer-briefs-3-pack/0046L0036/image_0_cropped.jpg",
+      "apparel_dataset/levis/solid-basic-boxer-briefs-3-pack/0046L0036/image_1.jpg",
+      "apparel_dataset/levis/solid-basic-boxer-briefs-3-pack/0046L0036/image_2_cropped.jpg"
+    ]
   },
   {
     "brand": "levis",
@@ -192827,7 +193079,13 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/levis/arlo-wide-prong-belt/007YT0001/image_0_cropped.jpg",
+      "apparel_dataset/levis/arlo-wide-prong-belt/007YT0001/image_1.jpg",
+      "apparel_dataset/levis/arlo-wide-prong-belt/007YT0001/image_2_cropped.jpg",
+      "apparel_dataset/levis/arlo-wide-prong-belt/007YT0001/image_3_cropped.jpg"
+    ]
   },
   {
     "brand": "levis",
@@ -192891,7 +193149,13 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/levis/finn-feather-edge-belt/007YU0001/image_0_cropped.jpg",
+      "apparel_dataset/levis/finn-feather-edge-belt/007YU0001/image_1.jpg",
+      "apparel_dataset/levis/finn-feather-edge-belt/007YU0001/image_2_cropped.jpg",
+      "apparel_dataset/levis/finn-feather-edge-belt/007YU0001/image_3_cropped.jpg"
+    ]
   },
   {
     "brand": "levis",
@@ -192949,7 +193213,13 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/levis/mason-center-bar-belt/007YW0001/image_0_cropped.jpg",
+      "apparel_dataset/levis/mason-center-bar-belt/007YW0001/image_1.jpg",
+      "apparel_dataset/levis/mason-center-bar-belt/007YW0001/image_2_cropped.jpg",
+      "apparel_dataset/levis/mason-center-bar-belt/007YW0001/image_3_cropped.jpg"
+    ]
   },
   {
     "brand": "levis",
@@ -193031,7 +193301,14 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/levis/mission-bay-crossbody-pouch/005CU0002/image_0_cropped.jpg",
+      "apparel_dataset/levis/mission-bay-crossbody-pouch/005CU0002/image_1.jpg",
+      "apparel_dataset/levis/mission-bay-crossbody-pouch/005CU0002/image_2_cropped.jpg",
+      "apparel_dataset/levis/mission-bay-crossbody-pouch/005CU0002/image_3.jpg",
+      "apparel_dataset/levis/mission-bay-crossbody-pouch/005CU0002/image_4.jpg"
+    ]
   },
   {
     "brand": "levis",
@@ -193108,7 +193385,14 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/levis/presidio-trucker-cap/007YQ0004/image_0_cropped.jpg",
+      "apparel_dataset/levis/presidio-trucker-cap/007YQ0004/image_1.jpg",
+      "apparel_dataset/levis/presidio-trucker-cap/007YQ0004/image_2_cropped.jpg",
+      "apparel_dataset/levis/presidio-trucker-cap/007YQ0004/image_3_cropped.jpg",
+      "apparel_dataset/levis/presidio-trucker-cap/007YQ0004/image_4_cropped.jpg"
+    ]
   },
   {
     "brand": "levis",
@@ -193169,7 +193453,13 @@
         "closure": [],
         "defining_features": []
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/levis/satin-bandana/005G00001/image_0_cropped.jpg",
+      "apparel_dataset/levis/satin-bandana/005G00001/image_1_cropped.jpg",
+      "apparel_dataset/levis/satin-bandana/005G00001/image_2_cropped.jpg",
+      "apparel_dataset/levis/satin-bandana/005G00001/image_3_cropped.jpg"
+    ]
   },
   {
     "brand": "levis",
@@ -193230,7 +193520,13 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/levis/flynn-core-belt/005DA0000/image_0_cropped.jpg",
+      "apparel_dataset/levis/flynn-core-belt/005DA0000/image_1.jpg",
+      "apparel_dataset/levis/flynn-core-belt/005DA0000/image_2_cropped.jpg",
+      "apparel_dataset/levis/flynn-core-belt/005DA0000/image_3_cropped.jpg"
+    ]
   },
   {
     "brand": "levis",
@@ -193300,7 +193596,13 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/levis/web-belt/005DF0001/image_0_cropped.jpg",
+      "apparel_dataset/levis/web-belt/005DF0001/image_1.jpg",
+      "apparel_dataset/levis/web-belt/005DF0001/image_2.jpg",
+      "apparel_dataset/levis/web-belt/005DF0001/image_3_cropped.jpg"
+    ]
   },
   {
     "brand": "levis",
@@ -193365,7 +193667,12 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/levis/leather-braid-belt/D79260003/image_0.jpg",
+      "apparel_dataset/levis/leather-braid-belt/D79260003/image_1.jpg",
+      "apparel_dataset/levis/leather-braid-belt/D79260003/image_2_cropped.jpg"
+    ]
   },
   {
     "brand": "levis",
@@ -193433,7 +193740,11 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/levis/tumbled-icon-belt/D55740002/image_0.jpg",
+      "apparel_dataset/levis/tumbled-icon-belt/D55740002/image_1_cropped.jpg"
+    ]
   },
   {
     "brand": "levis",
@@ -193499,7 +193810,13 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/levis/web-belt/005DF0002/image_0_cropped.jpg",
+      "apparel_dataset/levis/web-belt/005DF0002/image_1.jpg",
+      "apparel_dataset/levis/web-belt/005DF0002/image_2.jpg",
+      "apparel_dataset/levis/web-belt/005DF0002/image_3_cropped.jpg"
+    ]
   },
   {
     "brand": "levis",
@@ -193566,7 +193883,11 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/levis/backpatch-beanie/000J40004/image_0_cropped.jpg",
+      "apparel_dataset/levis/backpatch-beanie/000J40004/image_1_cropped.jpg"
+    ]
   },
   {
     "brand": "levis",
@@ -193640,7 +193961,14 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/levis/monogram-hat/004BS0010/image_0_cropped.jpg",
+      "apparel_dataset/levis/monogram-hat/004BS0010/image_1_cropped.jpg",
+      "apparel_dataset/levis/monogram-hat/004BS0010/image_2_cropped.jpg",
+      "apparel_dataset/levis/monogram-hat/004BS0010/image_3_cropped.jpg",
+      "apparel_dataset/levis/monogram-hat/004BS0010/image_4_cropped.jpg"
+    ]
   },
   {
     "brand": "levis",
@@ -193699,7 +194027,11 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/levis/slouchy-beanie/771380888/image_0_cropped.jpg",
+      "apparel_dataset/levis/slouchy-beanie/771380888/image_1_cropped.jpg"
+    ]
   },
   {
     "brand": "levis",
@@ -193745,7 +194077,14 @@
         "cap"
       ],
       "attributes": {}
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/levis/club-logo-cap/008Q00002/image_0_cropped.jpg",
+      "apparel_dataset/levis/club-logo-cap/008Q00002/image_1_cropped.jpg",
+      "apparel_dataset/levis/club-logo-cap/008Q00002/image_2.jpg",
+      "apparel_dataset/levis/club-logo-cap/008Q00002/image_3_cropped.jpg",
+      "apparel_dataset/levis/club-logo-cap/008Q00002/image_4_cropped.jpg"
+    ]
   },
   {
     "brand": "levis",
@@ -193804,7 +194143,12 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/levis/levis-logo-regular-cut-socks-3-pack/0047Y0212/image_0.jpg",
+      "apparel_dataset/levis/levis-logo-regular-cut-socks-3-pack/0047Y0212/image_1_cropped.jpg",
+      "apparel_dataset/levis/levis-logo-regular-cut-socks-3-pack/0047Y0212/image_2.jpg"
+    ]
   },
   {
     "brand": "levis",
@@ -193873,7 +194217,12 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/levis/backpatch-beanie/000J40003/image_0_cropped.jpg",
+      "apparel_dataset/levis/backpatch-beanie/000J40003/image_1_cropped.jpg",
+      "apparel_dataset/levis/backpatch-beanie/000J40003/image_2_cropped.jpg"
+    ]
   },
   {
     "brand": "levis",
@@ -193948,7 +194297,12 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/levis/camo-boxer-brief-3-pack/0046L0181/image_0.jpg",
+      "apparel_dataset/levis/camo-boxer-brief-3-pack/0046L0181/image_1_cropped.jpg",
+      "apparel_dataset/levis/camo-boxer-brief-3-pack/0046L0181/image_2_cropped.jpg"
+    ]
   },
   {
     "brand": "carhartt",
