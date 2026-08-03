@@ -1728,3 +1728,20 @@ corruption bug) script to move the DINOv3 checkpoint from Colab Drive
 onto the Modal Volume, so both encoders become reachable from Modal (and
 via `modal volume get` locally) without needing Colab for future
 eval/validation runs, once run.
+
+**Same session, later**: added `HF_TOKEN` to this repo's `.env` (the
+user provided one) and wired `hierarchical_retrieval_pipeline.py` to
+auto-load it -- this resolved the other real blocker flagged in
+`composed_query_search.py`'s validation-status notes (the gated DINOv3
+repo). Ran `identified_item` end to end locally for the first time ever
+as a result: correctly returned the query photo's own product back
+against the frozen (not fine-tuned -- no such checkpoint exists in this
+dev environment, only on Colab Drive) DINOv3 model. **This confirms the
+code path works, not that it's accurate** -- the query image was almost
+certainly already in the gallery it searched (no held-out split applied
+for this ad-hoc smoke test), so "found itself" is a mechanism check, not
+a discrimination-accuracy result. Real fine-tuned-checkpoint accuracy
+for `identified_item` still needs validation on Colab/Modal. Status
+moved from "never run, unknown if it even works" to "runs correctly,
+mechanism confirmed, accuracy still unmeasured" -- a real, if partial,
+step forward, not the full validation this feature still needs.

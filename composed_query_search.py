@@ -60,18 +60,25 @@ description B," clearly labeled as such in every output.
   ("with embroidered lettering stitched across the back panel")
   correctly fell through to the semantic engine and returned real scored
   results. The semantic fallback path is confirmed working locally.
-- `hierarchical_retrieval_pipeline.py`'s exact-image stage (identified_item)
-  was NOT run end to end locally. Unlike the semantic-fallback issue
-  above, this one is real and confirmed even with `.venv` active: no
-  HF_TOKEN for the gated `facebook/dinov3-vitb16-pretrain-lvd1689m` repo --
-  an immediate blocker, not just "didn't get to it." The
-  `identified_item` code path is a thin, mechanically-reviewed call into
-  `HierarchicalRetriever.retrieve()` (the same method `--image` mode
-  already uses and which the roadmap's 2026-07-29/2026-08-02 updates
-  document as validated elsewhere), but THIS script's own call to it has
-  only been reviewed, not executed. Run it wherever the real checkpoints
-  and a working torch/HF_TOKEN setup are reachable (Colab/Modal) before
-  trusting `identified_item` output from this script.
+- **Update, 2026-08-02, later same day**: `identified_item` now HAS been
+  run end to end locally, for the first time -- the HF_TOKEN blocker
+  above is resolved (added to this repo's `.env`, auto-loaded by
+  `hierarchical_retrieval_pipeline.py`). Ran `--image <real product
+  photo> --text "with white sneakers"`: `identified_item` correctly
+  returned the query photo's own product back, and `second_item_matches`
+  correctly surfaced real white sneakers for the parsed "sneaker"
+  category. **Important caveat this result does NOT resolve**: no
+  fine-tuned DINOv3 checkpoint exists in this dev environment (only
+  reachable from Colab Drive) -- this ran against the FROZEN base
+  DINOv3 model, and the query image was almost certainly already inside
+  the gallery it searched (no held-out split applied for this ad-hoc
+  smoke test), so "found itself" is a real confirmation the CODE PATH
+  works end to end without crashing, not a discrimination-accuracy
+  result. The real fine-tuned-checkpoint accuracy of `identified_item`
+  still needs validation on Colab/Modal wherever the real DINOv3
+  checkpoint is reachable -- what changed today is "never ran, unknown
+  if it even works" becoming "runs correctly, mechanism confirmed,
+  accuracy still unmeasured."
 
 Usage:
     python3 composed_query_search.py --image path/to/query.jpg --text "with cargo jorts" --top-k 10
