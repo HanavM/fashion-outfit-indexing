@@ -962,10 +962,49 @@ class HierarchicalRetriever:
         # REJECT_SIMILARITY_THRESHOLD's module comment).
         correct_top1_scores = []
 
-        for true_code, image_path in queries:
-            image = load_rgb_image(image_path)
-            siglip_embedding = embed_images_siglip(self.siglip2_model, self.siglip2_processor, [image])
-            dino_embedding = embed_images_dino(self.dino_backbone, self.dino_head, self.dino_use_projection, self.dino_processor, [image])
+        # Batch-embed every query image ONCE upfront (in chunks, not all
+        # 1,190+ full-res images loaded into memory simultaneously -- see
+        # below), instead of the old per-query loop calling
+        # embed_images_siglip/embed_images_dino with a single-image list
+        # each time (effectively batch_size=1 for 1,190+ individual model
+        # forward passes per encoder per eval call -- confirmed as the
+        # real bottleneck behind Colab runs reported taking 4+ hours,
+        # 2026-08-02: GPU forward passes are far more efficient batched
+        # than issued one at a time, and this cost was being paid twice
+        # per --evaluate call (gated + ungated) times however many
+        # --top-identity-candidates values get swept). The per-query
+        # control flow below (hsc_predict/shortlist_identities/
+        # rerank_by_identity) is unchanged -- those methods assume a
+        # single [1, D] embedding row (see hsc_predict's `.squeeze(0)`),
+        # so this only batches the actual expensive step (model.forward())
+        # and still loops per-query for the cheap downstream logic, rather
+        # than risking a behavior change by trying to vectorize HSC
+        # climbing/shortlisting/reranking themselves.
+        #
+        # Images are loaded and embedded CHUNK BY CHUNK, not all at once --
+        # 1,190+ full-resolution product photos held in memory
+        # simultaneously (not yet resized/tensorized) risks real memory
+        # pressure on a constrained instance (e.g. Colab). Raw images are
+        # discarded after each chunk is embedded; only the embeddings
+        # (tiny -- a few MB total for the whole query set) are kept.
+        # patch_rerank (off by default) needs the raw image back later --
+        # reloaded from disk on demand in the loop below rather than kept
+        # in memory the whole time, a cheap disk read next to the model
+        # forward passes this fix is actually targeting.
+        EVAL_EMBED_CHUNK_SIZE = 32
+        siglip_chunks, dino_chunks = [], []
+        for start in range(0, len(queries), EVAL_EMBED_CHUNK_SIZE):
+            chunk_paths = [path for _, path in queries[start:start + EVAL_EMBED_CHUNK_SIZE]]
+            chunk_images = [load_rgb_image(path) for path in chunk_paths]
+            siglip_chunks.append(embed_images_siglip(self.siglip2_model, self.siglip2_processor, chunk_images))
+            dino_chunks.append(embed_images_dino(self.dino_backbone, self.dino_head, self.dino_use_projection, self.dino_processor, chunk_images))
+        all_siglip_embeddings = torch.cat(siglip_chunks, dim=0)
+        all_dino_embeddings = torch.cat(dino_chunks, dim=0)
+
+        for query_index, (true_code, image_path) in enumerate(queries):
+            siglip_embedding = all_siglip_embeddings[query_index:query_index + 1]
+            dino_embedding = all_dino_embeddings[query_index:query_index + 1]
+            image = load_rgb_image(image_path) if use_patch_rerank else None
 
             hsc_result = self.hsc_predict(siglip_embedding, threshold=hsc_threshold)
             climb_level_counts[hsc_result["predicted_level"]] += 1
