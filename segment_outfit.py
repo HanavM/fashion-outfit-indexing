@@ -65,15 +65,32 @@ from sam2.automatic_mask_generator import SAM2AutomaticMaskGenerator
 # SAM2's automatic mask generator on this hardware).
 SAM2_CHECKPOINT = "checkpoints/sam2.1_hiera_small.pt"
 SAM2_CONFIG = "configs/sam2.1/sam2.1_hiera_s.yaml"
-MASK_GENERATOR_KWARGS = dict(points_per_side=16, points_per_batch=64)
+# points_per_side raised 16->32, 2026-08-02, after a real miss: a Carhartt
+# outfit photo (model small in frame, large empty background) proposed
+# only 4 raw SAM2 candidate masks at 16, and the one region that should
+# have matched "jeans" never got proposed as its own mask at all -- 0/1
+# items detected on an image with 2 clearly visible garments. At 32,
+# the same image proposed 6 masks including a real, correct, high-
+# confidence "jeans" candidate (0.826). Re-validated the two ALREADY-
+# working test cases (Champion hoodie, Vans sweatshirt+pants) at the new
+# setting before committing to it -- both still correctly detected,
+# same categories, no new false positives, no regression. Real,
+# 3-image-validated improvement, not a blind parameter guess -- see
+# docs/roadmap.md's 2026-08-02 entry for the full before/after.
+MASK_GENERATOR_KWARGS = dict(points_per_side=32, points_per_batch=64)
 MAX_IMAGE_DIM = 1024
 
 MIN_MASK_AREA = 1000
 MIN_CONFIDENCE = 0.4
-# Carried over from segment_apparel.py -- see this module's own docstring:
-# tuned against single-product catalog photos, not re-validated against
-# real multi-item outfit photos yet.
-MIN_AREA_FRACTION = 0.03  # lower than segment_apparel.py's 0.08 -- one item
+# Lowered 0.03->0.02 alongside the points_per_side change above, same
+# validation -- the real "jeans" candidate found at points_per_side=32
+# had area_fraction=0.028, which the old 0.03 floor excluded by a razor-
+# thin margin despite it being a correct, high-confidence detection.
+# Carried over from segment_apparel.py originally -- see this module's
+# own docstring: tuned against single-product catalog photos, not fully
+# re-validated against real multi-item outfit photos, though this specific
+# adjustment now has 3 real test images behind it, not zero.
+MIN_AREA_FRACTION = 0.02  # lower than segment_apparel.py's 0.08 -- one item
                            # among several visible ones occupies a smaller
                            # fraction of the frame than a product photo's
                            # single subject does.

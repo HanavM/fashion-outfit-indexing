@@ -1869,3 +1869,42 @@ pattern (a fresh, focused, read-only agent explicitly told what caliber
 of bug to look for and given the list of what's already been caught)
 has now found 3/3 real issues on first pass — worth repeating whenever
 a comparable volume of new code lands in one session.
+
+## Update — 2026-08-02/03: segment_outfit.py's flagged next-step acted on and validated
+
+Picked up the exact hypothesis flagged in this file's earlier
+`segment_outfit.py` entry ("consider raising `points_per_side` above 16
+... sparse enough that a genuinely occluded/small item might never get
+proposed as a candidate at all") with real new test data, since more
+real multi-item photos are now available (Vans/Carhartt product photos
+that happen to show a model wearing multiple visible garments).
+
+**Real miss found**: a Carhartt photo (navy shirt + light denim jeans,
+both clearly visible, model small in frame with a large empty
+background) detected **0 items** at the original settings
+(`points_per_side=16`, `MIN_AREA_FRACTION=0.03`). Debugged properly —
+dumped raw SAM2 candidates rather than guessing — and found only 4 raw
+masks proposed total; the dominant one (88% of frame) was correctly
+excluded as "the whole photo," but nothing else cleared
+`MIN_CONFIDENCE`.
+
+**Fix tested before committing, not applied blind**: `points_per_side`
+16→32 found a genuinely correct "jeans" candidate at 0.826 confidence
+— but its `area_fraction` (0.028) fell just under the 0.03 floor by a
+razor-thin margin. Lowered `MIN_AREA_FRACTION` to 0.02 alongside the
+point-density increase; re-ran the real `detect_outfit_items()`
+function (not just the raw SAM2 dump) and confirmed the jeans are now
+correctly detected. **Regression-checked against the two
+already-working test cases** (Champion hoodie, Vans sweatshirt+pants)
+at the new settings before committing — both still detect correctly,
+same categories, no new false positives.
+
+**Net result across 3 real test images: 4/4 correct detections, 0 false
+positives** (up from 3/4 — the Carhartt jeans miss is now a hit). Both
+constants updated in `segment_outfit.py` with this reasoning inline.
+**Still not a complete fix**: the Carhartt shirt itself was never
+detected in any tested configuration — that garment's region never
+produced a good candidate mask at either point density, a real
+remaining gap. And this is still 3 hand-picked real images, not the
+labeled multi-item benchmark this file's own prior entry already
+flagged as the real next step — that's still not done.
