@@ -83,6 +83,19 @@ from PIL import Image, ImageOps
 from tqdm.auto import tqdm
 from transformers import AutoImageProcessor, AutoModel, AutoProcessor
 
+# Loads HF_TOKEN (and anything else in .env, gitignored) from the repo root
+# so os.environ.get("HF_TOKEN") below actually finds something locally --
+# previously only caption_apparel.py/caption_shoes.py called this, so
+# HF_TOKEN in .env was invisible to this script and everything that
+# imports from it (composed_query_search.py, unseen_product_enrollment_
+# eval.py) unless exported manually in the shell first. No-op on Colab/
+# Modal, where HF_TOKEN is normally set directly in the environment.
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
+
 # facebook/dinov3-vitb16-pretrain-lvd1689m is a gated HF repo -- same
 # HF_TOKEN convention as dino_identity_finetune.py / run_dinov3_baseline.py.
 # Missed on this script's first Modal run (401 GatedRepoError) since none
