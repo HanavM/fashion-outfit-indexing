@@ -1671,3 +1671,60 @@ caption text mid-eval-run risks a confusing inconsistency (candidate
 texts shifting under a run that's already in progress), not because the
 backfill itself is risky. Run once the current Colab session's runs are
 confirmed finished.
+
+## Update — 2026-08-02: dense-rerank real-checkpoint validation — mixed result, not a clear win
+
+Pulled the real v3 SigLIP2 checkpoint from the Modal Volume onto this
+local dev environment directly (`modal volume get`, a data-transfer
+operation, not GPU compute — no Modal billing) and used it to finally
+test `free_text_visual_search.py --dense-rerank` (the MaskCLIP-style
+patch-level fix for the localized-query ceiling, built 2026-08-01,
+flagged since then as unvalidated against real data).
+
+**Result, honestly: not a clear win.** 3 real localized queries (real
+`defining_features` entries, genuine paraphrases, not verbatim training
+text — full numbers in `docs/eval_log.md`): one improved substantially
+(+26 ranks), one got WORSE (-14 ranks), and one couldn't even be
+attempted because the pooled pre-filter's rank (109) fell outside the
+dense-rerank shortlist window (`shortlist_k=50`) — a real, structural
+limitation of the shortlist-then-rerank design, not just noise. At n=3
+this isn't enough evidence to trust `--dense-rerank` as a default
+improvement; it's genuinely mixed, and the one regression matters as
+much as the one big win. **Next step, not yet done**: a larger,
+systematic test using the same held-out methodology as the main
+pipeline eval (not hand-picked cases) before drawing a real conclusion
+either way. The catalog used for this test was also only 777 products
+(the subset with real image files in this local dev environment — Gap/
+Champion/Levi's/Carhartt/Stussy only, not the full catalog), a further
+reason this is a smoke test, not a benchmark.
+
+Also used the newly-working checkpoint access to directly compare
+`catalog_query_search.py` (canonical-first + semantic fallback) against
+pure semantic search (`free_text_visual_search.py` alone) on "a red
+hoodie with an embroidered logo" — canonical matching returned 0/8
+category-wrong results, pure semantic returned 2/8 wrong (a pair of
+jeans and shorts crept in by rank 6 and 8). Flagged one real confound in
+that specific comparison, not glossed over: canonical matching could
+reach Nike products (text-only, no image needed) that the semantic
+engine's index structurally couldn't include, since Nike has zero local
+image files in this dev environment — not a fair reflection of the
+algorithms on a machine where all brands' images actually exist (e.g.
+Colab). Controlling for that (comparing only brands both engines could
+see), canonical matching was still more precise, which tracks: an exact
+match on real product text is stronger evidence than a similarity score
+that degrades gracefully into near-misses.
+
+**Also fixed, unrelated but found while investigating the >4-hour Colab
+eval runtime the user reported**: `evaluate()` was embedding all 1,190+
+held-out query images ONE AT A TIME (both encoders, twice per
+`--evaluate` call) instead of batching -- confirmed as a real, large
+inefficiency, fixed to batch-embed upfront in chunks of 32 before the
+existing per-query control-flow logic runs unchanged. Not yet measured
+for real wall-clock speedup on actual Colab/T4 hardware.
+
+Also pushed `push_dinov3_to_modal.py` -- a safe, per-file (not
+recursive, avoiding this project's own documented `modal volume put -r`
+corruption bug) script to move the DINOv3 checkpoint from Colab Drive
+onto the Modal Volume, so both encoders become reachable from Modal (and
+via `modal volume get` locally) without needing Colab for future
+eval/validation runs, once run.
