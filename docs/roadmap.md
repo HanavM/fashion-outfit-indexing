@@ -1831,3 +1831,41 @@ records before assuming it's finished.
 Catalog is now 12 brands, ~2,221 total records. Same "not yet embedded/
 evaluated against either encoder" caveat as every other brand added
 this session.
+
+## Update — 2026-08-02: dedicated correctness-review agent found 3 real bugs, all fixed
+
+Spawned a fresh, read-only review agent specifically to hunt for bugs of
+the same caliber as the 3 already found and fixed earlier this session
+(the `evaluate()` patch-rerank gap, the P×K duplicate-sampling issue,
+the brand-case mismatch) — reviewing every new file added today plus
+the diffs on every modified one. Found 3 real issues, all verified
+against the actual code (not taken on faith) and fixed:
+
+1. **Ambiguity flag broke under `--score-fusion`/`--patch-rerank`**:
+   the same-model/different-colorway check assumed `results` stays
+   sorted by `dino_identity_score`, which stopped holding once either
+   new rerank arm changed the actual ranking basis (both always return
+   the raw pooled DINO score in the tuple, never the fused/patch score
+   that determined sort order). A bare subtraction could go negative,
+   unconditionally tripping the ambiguity flag — fixed with `abs()`.
+2. **DINOv3 identity-index cache fingerprint missing split params**:
+   tracked checkpoint + product count, not `SPLIT_SEED`/
+   `TEST_IMAGES_PER_PRODUCT`/`VAL_IMAGES_PER_PRODUCT` — editing any of
+   those to try a different split would leave count unchanged, silently
+   serving a stale cache built from the wrong split. Extended the same
+   caching care already given to `--top-identity-candidates`.
+3. **`composed_query_search.py`'s attribute vocabulary missing 3 of 5
+   new schema fields**: `heel_type`/`sole_type`/`toe_shape` were added
+   to `newLLMprompt.py` and both by-facet eval scripts the same day, but
+   this file (written slightly after) only picked up 2 of 5 — a query
+   like "with a chunky rubber sole" would silently never match.
+
+None of these were reachable via any default configuration (fusion and
+patch-rerank are both off by default; the cache bug needs editing a
+module constant, not a CLI flag), so no existing eval number is
+affected — but all three were real, would have produced silently wrong
+output the moment someone exercised the affected path. This review
+pattern (a fresh, focused, read-only agent explicitly told what caliber
+of bug to look for and given the list of what's already been caught)
+has now found 3/3 real issues on first pass — worth repeating whenever
+a comparable volume of new code lands in one session.
