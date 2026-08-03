@@ -705,7 +705,22 @@ def hsc_climb(leaf_probabilities, leaf_ids, threshold):
 def build_or_load_identity_index(backbone, projection_head, use_projection, processor, dino_checkpoint, gallery_images_by_product):
     config_path = INDEX_DIR / "identity_index_config.json"
     product_codes = sorted(gallery_images_by_product)
-    expected = {"checkpoint": dino_checkpoint, "use_projection": use_projection, "num_products": len(product_codes)}
+    # SPLIT_SEED/TEST_IMAGES_PER_PRODUCT/VAL_IMAGES_PER_PRODUCT included
+    # even though they're module constants, not CLI flags today -- found
+    # via code review, 2026-08-02: gallery_images_by_product's actual
+    # CONTENTS (which images end up in the gallery vs. held out) depend on
+    # all three, but the old fingerprint only tracked product COUNT, which
+    # stays ~constant if any of these were ever edited to try a different
+    # split -- the stale cache would silently look "fresh" and every
+    # downstream eval/retrieve call would score against gallery embeddings
+    # built from a different held-out split than the one actually in use,
+    # with no warning. Matches the same caching-invalidation care already
+    # taken for --top-identity-candidates (a real CLI flag, unlike these).
+    expected = {
+        "checkpoint": dino_checkpoint, "use_projection": use_projection, "num_products": len(product_codes),
+        "split_seed": SPLIT_SEED, "test_images_per_product": TEST_IMAGES_PER_PRODUCT,
+        "val_images_per_product": VAL_IMAGES_PER_PRODUCT,
+    }
 
     if _index_is_fresh(config_path, expected):
         payload = torch.load(INDEX_DIR / "identity_embeddings.pt", map_location="cpu", weights_only=False)
@@ -916,7 +931,24 @@ class HierarchicalRetriever:
         ambiguous = False
         if len(results) >= 2:
             same_model = results[0]["model_identity"] == results[1]["model_identity"]
-            close_scores = (results[0]["dino_identity_score"] - results[1]["dino_identity_score"]) < AMBIGUITY_MARGIN
+            # abs(), not a bare subtraction: `results` is sorted by whatever
+            # score actually determined the ranking (fused score under
+            # --score-fusion, patch score under --patch-rerank), but
+            # `dino_identity_score` always holds the raw pooled DINOv3
+            # score regardless of which method ranked it -- so results[0]
+            # can legitimately have a LOWER dino_identity_score than
+            # results[1] once either flag reorders the top-2 relative to
+            # pooled-DINO order. A bare subtraction then goes negative,
+            # which is unconditionally < AMBIGUITY_MARGIN, so the
+            # ambiguity flag fired spuriously on nearly every query where
+            # fusion/patch-rerank actually changed anything -- found via
+            # code review, 2026-08-02, verified against both callers'
+            # actual tuple contents (rerank_by_identity/patch_rerank both
+            # only ever return the pooled DINO score, never the score that
+            # sorted them). abs() is correct either way: "how far apart
+            # are these two results' own DINOv3 confidence" is meaningful
+            # regardless of which method chose them as the top 2.
+            close_scores = abs(results[0]["dino_identity_score"] - results[1]["dino_identity_score"]) < AMBIGUITY_MARGIN
             ambiguous = same_model and close_scores
 
         # Open-set rejection (spec section 7): if the best candidate's own

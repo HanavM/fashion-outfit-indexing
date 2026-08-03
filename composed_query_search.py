@@ -167,6 +167,14 @@ def _build_category_vocab(hierarchy):
 ATTRIBUTE_FIELDS = [
     "color", "material", "pattern", "fit", "length", "silhouette",
     "closure", "pocket_type", "distressing",
+    # heel_type/sole_type/toe_shape were missing here despite being added
+    # to newLLMprompt.py's schema the same day this file was written
+    # (commit eb4fcb0) and to both by-facet eval scripts (commit 02a5a9a)
+    # -- found via code review, 2026-08-02. Without these, a query like
+    # "with a chunky rubber sole" or "with a round toe" silently never
+    # matched as an attribute keyword, even once footwear records have
+    # these fields populated -- no crash, just a quiet vocabulary gap.
+    "heel_type", "sole_type", "toe_shape",
 ]
 
 
