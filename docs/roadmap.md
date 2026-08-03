@@ -1908,3 +1908,42 @@ produced a good candidate mask at either point density, a real
 remaining gap. And this is still 3 hand-picked real images, not the
 labeled multi-item benchmark this file's own prior entry already
 flagged as the real next step — that's still not done.
+
+## Update — 2026-08-02/03: `--top-identity-candidates` sweep — new best result, real returns not yet diminishing
+
+Real Colab run against both fine-tuned checkpoints, sweeping
+`--top-identity-candidates` through 35/50/75 (full numbers in
+`docs/eval_log.md`). **New best real number: 53.53% R@1 ungated at
+K=75**, up from 47.65% at K=25 — a real, substantial ~6pt gain. The
+identity-shortlist miss rate — the dominant bottleneck since it was
+first diagnosed — dropped from 20.00% (K=25) to 4.87% (K=75), nearly
+solved at this setting. Median rank hit 1.0 for the first time: more
+than half of held-out queries now get the exact right product as the
+literal #1 result.
+
+**The predicted diminishing-returns pattern hasn't shown up yet.**
+Marginal R@1 gain per additional candidate held roughly steady across
+the whole sweep (~0.11-0.14pt/candidate at every step from 25→35→50→75)
+rather than tapering off. Recommend continuing the sweep past 75 (try
+100, 150) — there's no evidence yet of where the real ceiling is, only
+that it's higher than previously assumed.
+
+**Category gating confirmed net-negative a 4th/5th/6th time**, and the
+gap is *widening* with K, not narrowing (gated trails ungated by ~10pt
+at K=35, ~13pt at K=75) — further evidence ungated should stay the
+permanent default rather than being revisited once K grows.
+
+**One artifact flagged honestly, not silently ignored**: the HSC
+climb-level diagnostic (`category 13.2%, group 11.0%, root 75.8%`) is
+identical across all 3 new K values (expected, HSC doesn't depend on
+K) but doesn't match the 2026-08-01 HSC eval's numbers (`group 34.9%,
+root 51.9%`) despite that also being a K=25 run at the same threshold.
+Best explanation, not confirmed with certainty: the `evaluate()`
+batching fix (2026-08-02, this same session) changed the floating-point
+computation path (batched matmul vs. one-image-at-a-time), and HSC's
+threshold-based climbing (0.5) is sensitive to exactly this kind of
+small numerical shift near a decision boundary. Doesn't change the core
+conclusion — gating is clearly net-negative in both the old and new
+numbers — but worth knowing this diagnostic isn't perfectly stable
+across code versions, only the headline R@1/miss-rate numbers should be
+treated as load-bearing for now.
