@@ -1149,3 +1149,96 @@ clothing expansion — older shoe records have `category` backfilled but no
     scripts, not just scrapers/captioners/segmenters — use `dataset_utils`
     from the start. Don't assume a script is safe just because it "only
     reads for analysis" if it also writes a derived field back.**
+
+## Real-outfit scraping (`outfit_dataset/`) — a SEPARATE dataset, added 2026-08-03
+
+Everything above scrapes **product** photos: one garment, studio lighting,
+known category, ground-truth brand from the source. This section covers a
+fundamentally different target added 2026-08-03: **photos of real people
+wearing real outfits** (influencers, street style, community posts) — the
+actual deployment condition the whole system is meant to work on, and the
+spec's Phase 3 (`docs/project_spec_v1.md` §4.2, catalog-to-consumer).
+
+### Hard rule: never write these into `apparel_dataset/`
+
+`apparel_dataset/metadata.json` is the **retrieval gallery**. Every eval
+number this project has ever produced assumes every record in it is a
+clean, single-product, known-identity catalog entry. Dropping unlabeled
+consumer photos in there would silently pollute the gallery — the DINOv3
+identity index would build embeddings for "products" that aren't products,
+and every R@K number would break with no error and no warning. Outfit data
+lives in its own tree with its own metadata file:
+
+```
+outfit_dataset/{source}/{source_id}/image_N.jpg
+outfit_dataset/metadata.json
+```
+
+### These images are deliberately UNLABELED
+
+Decided explicitly by the user, 2026-08-03: do **not** try to label which
+garments appear in these photos, and do not attempt product linkage.
+Customer-review photos on product pages were considered first and rejected
+for this purpose — they'd give free ground-truth product linkage, but
+they're not what the product needs to show; genuine influencer/worn
+outfits are. The labeling will come later from this project's own pipeline
+(`segment_outfit.py` → SigLIP2/DINOv3), run unsupervised, with **no ground
+truth about whether the labels are right**. That's accepted and understood.
+
+Consequence for scrapers: a scraper's job is images + provenance, nothing
+more. Any garment/category/product field must stay absent — not guessed,
+not filled with a placeholder. Model-derived fields get written later, by
+separate scripts, into their own namespaced keys, so it's always
+unambiguous which fields are scraped fact and which are model output.
+
+### `outfit_dataset/metadata.json` record schema
+
+```json
+{
+  "source": "reddit | lookbook | pexels | ...",
+  "source_id": "stable per-source unique id (e.g. reddit post id)",
+  "post_url": "...",
+  "author": "handle/username, for attribution",
+  "title": "post title / caption as published",
+  "section": "subreddit, site category, or search term used",
+  "created_utc": 1234567890,
+  "source_tags": ["only tags the SOURCE provided -- never model-derived"],
+  "image_count": 2,
+  "images": ["outfit_dataset/reddit/abc123/image_0.jpg"],
+  "image_urls": ["https://i.redd.it/..."],
+  "scraped_at": "2026-08-03T00:00:00Z",
+  "phash": ["perceptual hash per image, for dedup"]
+}
+```
+
+### Conventions specific to this target
+
+1. **Dedup with perceptual hashing, not URL equality.** Reposts are
+   endemic on community sources — the same outfit photo reappears under
+   different post ids, different hosts, and resized. URL/id dedup will not
+   catch it. Hash every image on download (`imagehash.phash` or
+   equivalent), skip near-duplicates within a small Hamming distance.
+2. **Scrape broadly now, filter later.** A useful photo shows a person
+   wearing multiple visible garments. Verifying that needs a person
+   detector, which is exactly the pipeline being built — so don't gate
+   scraping on it. Pull widely, keep provenance, filter in a later pass.
+3. **Keep provenance complete enough to delete from.** Store post URL and
+   author on every record. If a takedown or license question ever comes up,
+   the record must be traceable back to its source without re-scraping.
+4. **Respect robots.txt and rate limits, and identify the client.** Same
+   discipline as the brand scrapers, and more important here: these are
+   community sites and individuals' own photos, not corporate catalogs.
+5. **Same idempotency/checkpointing rules as every other scraper here** —
+   checkpoint `metadata.json` every 10-20 records, never `rm` it to reset
+   state, verify `json.load()` after any crash (see "Lessons learned").
+
+### Standing note: these are photos of real people
+
+The brand scrapers collect corporate product photography. This target
+collects individuals' own images. Using them as internal training/eval
+data is one thing; **publicly displaying them in a product surface is a
+different question with real licensing and consent implications**, and the
+per-source license terms vary (Reddit's user agreement, Lookbook's terms,
+Pexels/Unsplash's explicitly permissive licenses are all different). Worth
+resolving deliberately before any of this is shown to end users. Flagged
+here once so it's on the record and not rediscovered late.
