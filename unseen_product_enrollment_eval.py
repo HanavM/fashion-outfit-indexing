@@ -4,6 +4,23 @@ needed" (spec section 8.1's "unseen-product enrollment" split: "entire
 identities are excluded from training and added to the gallery only at
 evaluation").
 
+**Status, 2026-08-02**: a real bug was found and fixed on first use --
+CATALOG stores brand strings through display_brand() (title-cased,
+e.g. "Gap"), but this script's brand filters used metadata.json's raw
+lowercase convention, an exact-match lookup that silently found 0
+products for every brand. Fixed with case-insensitive matching. A
+smoke-test rerun after the fix (real numbers, no crash) confirms the
+mechanism works -- but that specific run used the FROZEN, never-fine-
+tuned base DINOv3 model (no fine-tuned checkpoint exists in this dev
+environment, only on Colab Drive), which makes its numeric result
+uninformative for the real question: with zero training on ANY brand,
+there is no real "trained on" vs "never trained on" distinction to
+measure, so any R@1 gap that run produced reflects incidental
+differences between the brand groups (photo style, product diversity),
+not enrollment generalization. The real test still needs this script
+run against the actual fine-tuned checkpoint (Colab/Modal) -- see
+docs/eval_log.md's 2026-08-02 entry for the full story.
+
 **Why this needed its own script, not just rerunning dino_identity_
 finetune.py's existing eval**: checked `make_view_split()` in
 dino_identity_finetune.py directly -- it splits by held-out IMAGE
@@ -134,13 +151,23 @@ if __name__ == "__main__":
                          help="A brand the checkpoint WAS trained on, size-matched, for comparison.")
     args = parser.parse_args()
 
-    unseen_brands = set(b.strip() for b in args.unseen_brands.split(","))
+    # Case-insensitive matching: CATALOG stores brand strings through
+    # hierarchical_retrieval_pipeline.py's display_brand() (title-cased,
+    # e.g. "Gap"/"Carhartt"/"Stussy"), but metadata.json's own raw
+    # `brand` field (and this script's own --unseen-brands/--control-brand
+    # CLI convention, matching every other brand-filter flag in this
+    # project) is lowercase (e.g. "gap"). A naive exact-match lookup
+    # against CATALOG's capitalized keys silently found 0 products for
+    # every brand on first use of this script -- caught by dumping the
+    # actual product counts, not assumed correct.
+    unseen_brands = set(b.strip().lower() for b in args.unseen_brands.split(","))
+    control_brand = args.control_brand.strip().lower()
     products_by_brand = defaultdict(list)
     for code, entry in CATALOG.items():
-        products_by_brand[entry["brand"]].append(code)
+        products_by_brand[entry["brand"].lower()].append(code)
 
     unseen_codes = [c for brand in unseen_brands for c in products_by_brand.get(brand, [])]
-    control_pool = products_by_brand.get(args.control_brand, [])
+    control_pool = products_by_brand.get(control_brand, [])
 
     rng = random.Random(SEED)
     control_codes = rng.sample(control_pool, min(len(unseen_codes), len(control_pool))) if control_pool else []
