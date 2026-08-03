@@ -1644,3 +1644,30 @@ caveat as every other brand added this session — Champion, Levi's, and
 now Carhartt all need a re-embed pass (forward-pass only, no retrain,
 per this file's earlier "enrollment" argument) before any of them show
 up in a real retrieval number.
+
+## Update — 2026-08-02: footwear-specific schema fields need a backfill pass (queued, not run)
+
+Checked directly, not assumed: of the 762 already-captioned shoe records
+(nike/adidas/skechers/newbalance), **0 have `heel_type`, `sole_type`, or
+`toe_shape` populated** — the three footwear-specific fields added to
+`newLLMprompt.py`'s schema earlier this session. Confirms the schema
+change works going forward (Carhartt's freshly-captioned records
+populated the new `pocket_type` field for real, per its own scraping
+report) but existing records were captioned before the schema changed
+and need an explicit `--force` re-caption pass to pick up the new
+fields — exactly the deliberately-deferred step flagged when the schema
+was first changed, now confirmed as a real, quantified gap rather than
+a theoretical one.
+
+**Deliberately not run yet**: `caption_apparel.py --brand nike --force`
+(and adidas/skechers/newbalance) would regenerate `positive_texts`/
+`taxonomy_path` too, not just add the new fields — a real Azure OpenAI
+cost (historically trivial, ~$0.0003/record, so ~$0.25-0.50 total for
+762 records) but a bigger, more disruptive write to `metadata.json`
+than the additive scraper writes this session has otherwise been doing.
+Held off specifically because the user's own Colab `--evaluate` sweep
+may still be reading this same file live as of this entry — changing
+caption text mid-eval-run risks a confusing inconsistency (candidate
+texts shifting under a run that's already in progress), not because the
+backfill itself is risky. Run once the current Colab session's runs are
+confirmed finished.
