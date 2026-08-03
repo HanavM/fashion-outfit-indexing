@@ -114,6 +114,8 @@ CATEGORY_LABELS = {
     # same reasoning as "Accessories" above: best_crop_for_category only
     # needs the top match to be ANY phrasing in the list.
     "Hoodies and Jackets": ["a hoodie", "a pullover", "a sweatshirt", "a jacket", "a coat"],
+    # Dickies expansion.
+    "Coats and Jackets": ["a jacket", "a coat"],
 }
 
 

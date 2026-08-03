@@ -48,8 +48,14 @@ protection (softer than Levi's, no visible interactive challenge) and
 the first brand this session whose product photos are genuinely mixed
 flat-lay/on-model rather than uniformly one or the other, so garment
 cropping was run for real on the clothing categories (not skipped, and
-not applied to shoes). Written so the same pattern can be adapted to
-scrape other product categories/sites.
+not applied to shoes). Most recently, 200 Dickies records (Pants,
+Shirts, Shorts, Coats and Jackets — 50 each, no shortfall) were added
+via `dickies_scraper.py` — the third Shopify-storefront site in this
+pipeline (after Champion and Stüssy), same easiest bot-protection tier,
+with real on-model lifestyle photos (verified by direct image
+inspection, not assumed), so garment cropping was run for real, same as
+Vans. Written so the same pattern can be adapted to scrape other
+product categories/sites.
 
 Working directory: `/Users/hanavmodasiya/fashion-tests`
 Environments: `.venv` (Python 3.14, pip: playwright, patchright, openai,
@@ -892,6 +898,48 @@ Shoes 100/100, Hoodies and Jackets 50/50, Shirts 50/50.
   to crop shoe photos.
 - Structured captioning: 200/200 records, $0.0696 real Azure OpenAI
   cost.
+
+### Dickies — Pants, Shirts, Shorts, Coats and Jackets
+
+Via `dickies_scraper.py`, targeting 50 colorway variants per section
+(200 requested). **All 200/200 reached, no shortfall.**
+
+- **No bot protection** — plain `requests` works for the entire catalog
+  + product detail fetch, same easiest tier as Champion/Stüssy/Gap/
+  Skechers. Third Shopify-storefront site in this pipeline (after
+  Champion and Stüssy).
+- **Real collection handles found from the homepage's own nav links**
+  (`href="/en-us/collections/..."`), not guessed: `mens-pants`,
+  `mens-shirts`, `mens-shorts`, `mens-coats-jackets`. A `products.json?
+  limit=250` count check before scraping confirmed real inventory —
+  `mens-pants`/`mens-shirts` both hit the 250-per-page cap, meaning
+  pagination was needed to reach the real, larger inventory.
+- **Standard Shopify storefront JSON API**, same pattern as Champion/
+  Stüssy: `https://www.dickies.com/en-us/collections/{handle}/
+  products.json?limit=250&page=N`, paginated until a page returns zero
+  products. **Note the `/en-us/` locale prefix** — unlike Champion/
+  Stüssy's bare `/collections/...`, Dickies's storefront is
+  locale-scoped and the `products.json` endpoint 404s without it.
+- **Each Shopify "product" is already one colorway** (`options[0]` =
+  Color with exactly one value per product) — same "one API product =
+  one dataset record" shape as Champion/Stüssy, no colorway-expansion
+  step needed. Numeric `id` is the stable `product_code`; `handle` is
+  the slug.
+- **Full product detail is inline in the same `products.json`
+  response** — no separate PDP visit needed, same as Champion/Stüssy.
+  `body_html` is a real paragraph (not a bullet list like Stüssy's),
+  stripped of HTML tags for `details.description`. Price:
+  `variants[0]['price']`, plain decimal string. Sizes/inseams are
+  separate `options` entries (Size, Inseam for pants) nested under one
+  colorway product — only product-level fields were scraped, not
+  per-size variant fields, so no special handling was needed.
+- **Real on-model lifestyle photos** — confirmed by direct image
+  inspection (not assumed), unlike Carhartt/Stüssy's uniformly flat-lay
+  photos. Garment cropping (`segment_apparel.py --brand dickies`) run
+  for real, same as Vans — needed one new `CATEGORY_LABELS["Coats and
+  Jackets"]` entry (jacket/coat phrasings, reusing the same pattern as
+  every prior jacket-family category).
+- Structured captioning: 200/200 records.
 
 ### Field-level concurrent-write collision (a second, narrower case dataset_utils doesn't fully cover)
 

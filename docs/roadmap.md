@@ -1993,3 +1993,45 @@ number of 40.08% — a real -5.46pt drop) before the ungated arm (the
 number that actually matters, per this file's own established
 convention) got cut off mid-run. Not enough to draw a real conclusion
 yet — needs a full rerun.
+
+## Update — 2026-08-03: Dickies added, catalog now 13 brands / 2,387 records
+
+`dickies_scraper.py` — Pants/Shirts/Shorts/Coats and Jackets, 50/50/50/50,
+no shortfall. Third Shopify-storefront site in this pipeline (after
+Champion and Stüssy), same easiest bot-protection tier (none). Real
+on-model lifestyle photos, confirmed by direct image inspection, so
+garment cropping was needed (same as Vans, unlike Carhartt/Stüssy's
+flat-lays) — one new `CATEGORY_LABELS["Coats and Jackets"]` entry added.
+Full site notes in `SCRAPING_PROCESS.md`'s new Dickies section.
+
+The scraping fork stalled partway through the cropping step (a session
+interruption, not a data-quality problem) — scraping and structured
+captioning were both fully complete (200/200 each) and safe before the
+stall. Finished the cropping step directly in this session rather than
+re-delegating, since the remaining work was small and well-defined.
+
+**Session continuity note, for whoever picks this up next** (written
+because the user is about to switch Claude accounts): this file,
+`docs/eval_log.md`, and `SCRAPING_PROCESS.md` are the intended full
+picture for a cold-start session — read `SCRAPING_PROCESS.md` for the
+scraping pipeline's conventions and per-brand notes, this file top to
+bottom (or its most recent "Current status summary" section if one
+exists) for architecture/decision history, and `docs/eval_log.md` for
+every real number recorded. As of this entry, everything real and
+committed is: 13-brand/2,387-record catalog; SigLIP2 v3 production
+checkpoint (18.83% category-scoped R@1, v4 confirmed not worth it);
+DINOv3 identity fine-tune (56.55% R@1 standalone); combined Phase 4
+pipeline best-known-real-number **53.53% R@1 ungated at
+`--top-identity-candidates 75`**, with clear evidence returns aren't
+diminishing yet (worth sweeping further, e.g. 100/150); category gating
+(flat or HSC) confirmed net-negative independently 4+ times, keep it
+off; `--patch-rerank` confirmed **severely harmful** (-30pt R@1), never
+enable; `--score-fusion` real-checkpoint validation is incomplete (one
+partial gated-only run, -5.46pt vs. no-fusion — needs a full rerun,
+ungated arm never completed); free-text dense-rerank confirmed a
+genuine coin-flip (4 win/4 lose/1 unchanged/1 unrescuable at n=10), not
+a default-on win. Champion/Levi's/Carhartt/Stüssy/Vans/Dickies (6 new
+brands, ~1,153 records) are scraped, captioned, and (mostly) cropped,
+but **none have been re-embedded against either encoder yet** — every
+real number above is measured against the original 6-brand/1,234-
+product catalog only.
