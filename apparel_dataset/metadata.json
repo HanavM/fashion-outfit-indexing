@@ -235636,7 +235636,12 @@
           "dress blues"
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/retro-sport-long-sleeve-t-shirt/VN000XFSLKZ/image_0_cropped.jpg",
+      "apparel_dataset/vans/retro-sport-long-sleeve-t-shirt/VN000XFSLKZ/image_1_cropped.jpg",
+      "apparel_dataset/vans/retro-sport-long-sleeve-t-shirt/VN000XFSLKZ/image_2_cropped.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -235686,7 +235691,14 @@
           "black"
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/knu-patch-pullover-hoodie/VN000WTCBLK/image_0_cropped.jpg",
+      "apparel_dataset/vans/knu-patch-pullover-hoodie/VN000WTCBLK/image_1_cropped.jpg",
+      "apparel_dataset/vans/knu-patch-pullover-hoodie/VN000WTCBLK/image_2_cropped.jpg",
+      "apparel_dataset/vans/knu-patch-pullover-hoodie/VN000WTCBLK/image_3_cropped.jpg",
+      "apparel_dataset/vans/knu-patch-pullover-hoodie/VN000WTCBLK/image_4_cropped.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -235742,7 +235754,11 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/knu-patch-pullover-hoodie/VN000WTC5TU/image_0_cropped.jpg",
+      "apparel_dataset/vans/knu-patch-pullover-hoodie/VN000WTC5TU/image_1_cropped.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -235810,7 +235826,14 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/stretch-logo-pullover-hoodie/VN00105NLKZ/image_0_cropped.jpg",
+      "apparel_dataset/vans/stretch-logo-pullover-hoodie/VN00105NLKZ/image_1_cropped.jpg",
+      "apparel_dataset/vans/stretch-logo-pullover-hoodie/VN00105NLKZ/image_2_cropped.jpg",
+      "apparel_dataset/vans/stretch-logo-pullover-hoodie/VN00105NLKZ/image_3_cropped.jpg",
+      "apparel_dataset/vans/stretch-logo-pullover-hoodie/VN00105NLKZ/image_4.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -235854,7 +235877,11 @@
           "marshmallow white"
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/simulation-pullover-hoodie/VN000WXZFS8/image_0_cropped.jpg",
+      "apparel_dataset/vans/simulation-pullover-hoodie/VN000WXZFS8/image_1_cropped.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -235932,7 +235959,14 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/vans-racing-long-sleeve-hoodie/VN000X2BBLK/image_0_cropped.jpg",
+      "apparel_dataset/vans/vans-racing-long-sleeve-hoodie/VN000X2BBLK/image_1_cropped.jpg",
+      "apparel_dataset/vans/vans-racing-long-sleeve-hoodie/VN000X2BBLK/image_2_cropped.jpg",
+      "apparel_dataset/vans/vans-racing-long-sleeve-hoodie/VN000X2BBLK/image_3_cropped.jpg",
+      "apparel_dataset/vans/vans-racing-long-sleeve-hoodie/VN000X2BBLK/image_4.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -236025,7 +236059,15 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/mcavoy-ii-zip-station-jacket/VN000W50BLK/image_0_cropped.jpg",
+      "apparel_dataset/vans/mcavoy-ii-zip-station-jacket/VN000W50BLK/image_1_cropped.jpg",
+      "apparel_dataset/vans/mcavoy-ii-zip-station-jacket/VN000W50BLK/image_2_cropped.jpg",
+      "apparel_dataset/vans/mcavoy-ii-zip-station-jacket/VN000W50BLK/image_3_cropped.jpg",
+      "apparel_dataset/vans/mcavoy-ii-zip-station-jacket/VN000W50BLK/image_4.jpg",
+      "apparel_dataset/vans/mcavoy-ii-zip-station-jacket/VN000W50BLK/image_5.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -236074,7 +236116,13 @@
           "black"
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/torrey-coaches-jacket/VN000TREBLK/image_0_cropped.jpg",
+      "apparel_dataset/vans/torrey-coaches-jacket/VN000TREBLK/image_1_cropped.jpg",
+      "apparel_dataset/vans/torrey-coaches-jacket/VN000TREBLK/image_2_cropped.jpg",
+      "apparel_dataset/vans/torrey-coaches-jacket/VN000TREBLK/image_3_cropped.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -236168,7 +236216,14 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/vans-racing-full-zip-hoodie/VN000WT2BLK/image_0_cropped.jpg",
+      "apparel_dataset/vans/vans-racing-full-zip-hoodie/VN000WT2BLK/image_1_cropped.jpg",
+      "apparel_dataset/vans/vans-racing-full-zip-hoodie/VN000WT2BLK/image_2_cropped.jpg",
+      "apparel_dataset/vans/vans-racing-full-zip-hoodie/VN000WT2BLK/image_3_cropped.jpg",
+      "apparel_dataset/vans/vans-racing-full-zip-hoodie/VN000WT2BLK/image_4_cropped.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -236249,7 +236304,14 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/retro-sport-mock-neck-full-zip/VN000U97EMV/image_0_cropped.jpg",
+      "apparel_dataset/vans/retro-sport-mock-neck-full-zip/VN000U97EMV/image_1.jpg",
+      "apparel_dataset/vans/retro-sport-mock-neck-full-zip/VN000U97EMV/image_2_cropped.jpg",
+      "apparel_dataset/vans/retro-sport-mock-neck-full-zip/VN000U97EMV/image_3_cropped.jpg",
+      "apparel_dataset/vans/retro-sport-mock-neck-full-zip/VN000U97EMV/image_4_cropped.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -236335,7 +236397,15 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/mcavoy-ii-zip-station-jacket/VN000W50GCF/image_0_cropped.jpg",
+      "apparel_dataset/vans/mcavoy-ii-zip-station-jacket/VN000W50GCF/image_1_cropped.jpg",
+      "apparel_dataset/vans/mcavoy-ii-zip-station-jacket/VN000W50GCF/image_2_cropped.jpg",
+      "apparel_dataset/vans/mcavoy-ii-zip-station-jacket/VN000W50GCF/image_3_cropped.jpg",
+      "apparel_dataset/vans/mcavoy-ii-zip-station-jacket/VN000W50GCF/image_4.jpg",
+      "apparel_dataset/vans/mcavoy-ii-zip-station-jacket/VN000W50GCF/image_5_cropped.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -236402,7 +236472,14 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/stretch-logo-zip-hoodie/VN00105JOVB/image_0_cropped.jpg",
+      "apparel_dataset/vans/stretch-logo-zip-hoodie/VN00105JOVB/image_1_cropped.jpg",
+      "apparel_dataset/vans/stretch-logo-zip-hoodie/VN00105JOVB/image_2_cropped.jpg",
+      "apparel_dataset/vans/stretch-logo-zip-hoodie/VN00105JOVB/image_3_cropped.jpg",
+      "apparel_dataset/vans/stretch-logo-zip-hoodie/VN00105JOVB/image_4.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -236487,7 +236564,14 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/retro-sport-crewneck-sweatshirt/VN000VK5RKZ/image_0_cropped.jpg",
+      "apparel_dataset/vans/retro-sport-crewneck-sweatshirt/VN000VK5RKZ/image_1_cropped.jpg",
+      "apparel_dataset/vans/retro-sport-crewneck-sweatshirt/VN000VK5RKZ/image_2_cropped.jpg",
+      "apparel_dataset/vans/retro-sport-crewneck-sweatshirt/VN000VK5RKZ/image_3_cropped.jpg",
+      "apparel_dataset/vans/retro-sport-crewneck-sweatshirt/VN000VK5RKZ/image_4.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -236565,7 +236649,11 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/retro-sport-mock-neck-full-zip/VN000U975TU/image_0_cropped.jpg",
+      "apparel_dataset/vans/retro-sport-mock-neck-full-zip/VN000U975TU/image_1_cropped.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -236645,7 +236733,14 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/retro-sport-crewneck-sweatshirt/VN000VK5H91/image_0_cropped.jpg",
+      "apparel_dataset/vans/retro-sport-crewneck-sweatshirt/VN000VK5H91/image_1_cropped.jpg",
+      "apparel_dataset/vans/retro-sport-crewneck-sweatshirt/VN000VK5H91/image_2_cropped.jpg",
+      "apparel_dataset/vans/retro-sport-crewneck-sweatshirt/VN000VK5H91/image_3_cropped.jpg",
+      "apparel_dataset/vans/retro-sport-crewneck-sweatshirt/VN000VK5H91/image_4.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -236730,7 +236825,14 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/polo-fleece-pullover/VN000XHDBLK/image_0_cropped.jpg",
+      "apparel_dataset/vans/polo-fleece-pullover/VN000XHDBLK/image_1_cropped.jpg",
+      "apparel_dataset/vans/polo-fleece-pullover/VN000XHDBLK/image_2_cropped.jpg",
+      "apparel_dataset/vans/polo-fleece-pullover/VN000XHDBLK/image_3_cropped.jpg",
+      "apparel_dataset/vans/polo-fleece-pullover/VN000XHDBLK/image_4_cropped.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -236807,7 +236909,14 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/premium-pullover-hoodie/VN000T6FFOB/image_0_cropped.jpg",
+      "apparel_dataset/vans/premium-pullover-hoodie/VN000T6FFOB/image_1_cropped.jpg",
+      "apparel_dataset/vans/premium-pullover-hoodie/VN000T6FFOB/image_2_cropped.jpg",
+      "apparel_dataset/vans/premium-pullover-hoodie/VN000T6FFOB/image_3_cropped.jpg",
+      "apparel_dataset/vans/premium-pullover-hoodie/VN000T6FFOB/image_4.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -236888,7 +236997,15 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/torrey-coaches-ripstop-jacket/VN000U399JC/image_0_cropped.jpg",
+      "apparel_dataset/vans/torrey-coaches-ripstop-jacket/VN000U399JC/image_1_cropped.jpg",
+      "apparel_dataset/vans/torrey-coaches-ripstop-jacket/VN000U399JC/image_2_cropped.jpg",
+      "apparel_dataset/vans/torrey-coaches-ripstop-jacket/VN000U399JC/image_3_cropped.jpg",
+      "apparel_dataset/vans/torrey-coaches-ripstop-jacket/VN000U399JC/image_4_cropped.jpg",
+      "apparel_dataset/vans/torrey-coaches-ripstop-jacket/VN000U399JC/image_5_cropped.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -236937,7 +237054,13 @@
           "demitasse"
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/check-5-checkerboard-denim-trucker-jacket/VN000XAG3N1/image_0_cropped.jpg",
+      "apparel_dataset/vans/check-5-checkerboard-denim-trucker-jacket/VN000XAG3N1/image_1_cropped.jpg",
+      "apparel_dataset/vans/check-5-checkerboard-denim-trucker-jacket/VN000XAG3N1/image_2.jpg",
+      "apparel_dataset/vans/check-5-checkerboard-denim-trucker-jacket/VN000XAG3N1/image_3_cropped.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -236983,7 +237106,12 @@
           "black"
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/sinister-pullover-sweatshirt/VN001370BLK/image_0_cropped.jpg",
+      "apparel_dataset/vans/sinister-pullover-sweatshirt/VN001370BLK/image_1_cropped.jpg",
+      "apparel_dataset/vans/sinister-pullover-sweatshirt/VN001370BLK/image_2_cropped.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -237061,7 +237189,14 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/stretch-logo-checkerboard-pullover-hoodie/VN000ZP4PWT/image_0_cropped.jpg",
+      "apparel_dataset/vans/stretch-logo-checkerboard-pullover-hoodie/VN000ZP4PWT/image_1.jpg",
+      "apparel_dataset/vans/stretch-logo-checkerboard-pullover-hoodie/VN000ZP4PWT/image_2_cropped.jpg",
+      "apparel_dataset/vans/stretch-logo-checkerboard-pullover-hoodie/VN000ZP4PWT/image_3_cropped.jpg",
+      "apparel_dataset/vans/stretch-logo-checkerboard-pullover-hoodie/VN000ZP4PWT/image_4_cropped.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -237145,7 +237280,14 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/stretch-logo-zip-hoodie/VN000ST6Y28/image_0_cropped.jpg",
+      "apparel_dataset/vans/stretch-logo-zip-hoodie/VN000ST6Y28/image_1_cropped.jpg",
+      "apparel_dataset/vans/stretch-logo-zip-hoodie/VN000ST6Y28/image_2_cropped.jpg",
+      "apparel_dataset/vans/stretch-logo-zip-hoodie/VN000ST6Y28/image_3_cropped.jpg",
+      "apparel_dataset/vans/stretch-logo-zip-hoodie/VN000ST6Y28/image_4_cropped.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -237236,7 +237378,15 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/torrey-hooded-coaches-jacket/VN000T6RBLK/image_0_cropped.jpg",
+      "apparel_dataset/vans/torrey-hooded-coaches-jacket/VN000T6RBLK/image_1_cropped.jpg",
+      "apparel_dataset/vans/torrey-hooded-coaches-jacket/VN000T6RBLK/image_2.jpg",
+      "apparel_dataset/vans/torrey-hooded-coaches-jacket/VN000T6RBLK/image_3_cropped.jpg",
+      "apparel_dataset/vans/torrey-hooded-coaches-jacket/VN000T6RBLK/image_4.jpg",
+      "apparel_dataset/vans/torrey-hooded-coaches-jacket/VN000T6RBLK/image_5_cropped.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -237319,7 +237469,11 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/stacked-hi-pullover-hoodie/VN00105PY28/image_0_cropped.jpg",
+      "apparel_dataset/vans/stacked-hi-pullover-hoodie/VN00105PY28/image_1_cropped.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -237411,7 +237565,14 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/premium-pullover-hoodie/VN000T6FEMV/image_0_cropped.jpg",
+      "apparel_dataset/vans/premium-pullover-hoodie/VN000T6FEMV/image_1_cropped.jpg",
+      "apparel_dataset/vans/premium-pullover-hoodie/VN000T6FEMV/image_2_cropped.jpg",
+      "apparel_dataset/vans/premium-pullover-hoodie/VN000T6FEMV/image_3_cropped.jpg",
+      "apparel_dataset/vans/premium-pullover-hoodie/VN000T6FEMV/image_4_cropped.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -237493,7 +237654,12 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/stacked-hi-pullover-hoodie/VN000ST5Y28/image_0_cropped.jpg",
+      "apparel_dataset/vans/stacked-hi-pullover-hoodie/VN000ST5Y28/image_1_cropped.jpg",
+      "apparel_dataset/vans/stacked-hi-pullover-hoodie/VN000ST5Y28/image_2_cropped.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -237584,7 +237750,15 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/torrey-hooded-coaches-jacket/VN000T6RH89/image_0_cropped.jpg",
+      "apparel_dataset/vans/torrey-hooded-coaches-jacket/VN000T6RH89/image_1_cropped.jpg",
+      "apparel_dataset/vans/torrey-hooded-coaches-jacket/VN000T6RH89/image_2.jpg",
+      "apparel_dataset/vans/torrey-hooded-coaches-jacket/VN000T6RH89/image_3_cropped.jpg",
+      "apparel_dataset/vans/torrey-hooded-coaches-jacket/VN000T6RH89/image_4.jpg",
+      "apparel_dataset/vans/torrey-hooded-coaches-jacket/VN000T6RH89/image_5_cropped.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -237680,7 +237854,17 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/otw-by-vans-x-julian-klincewicz-collared-fleece/VN000RSDYQX/image_0_cropped.jpg",
+      "apparel_dataset/vans/otw-by-vans-x-julian-klincewicz-collared-fleece/VN000RSDYQX/image_1.jpg",
+      "apparel_dataset/vans/otw-by-vans-x-julian-klincewicz-collared-fleece/VN000RSDYQX/image_2_cropped.jpg",
+      "apparel_dataset/vans/otw-by-vans-x-julian-klincewicz-collared-fleece/VN000RSDYQX/image_3_cropped.jpg",
+      "apparel_dataset/vans/otw-by-vans-x-julian-klincewicz-collared-fleece/VN000RSDYQX/image_4_cropped.jpg",
+      "apparel_dataset/vans/otw-by-vans-x-julian-klincewicz-collared-fleece/VN000RSDYQX/image_5_cropped.jpg",
+      "apparel_dataset/vans/otw-by-vans-x-julian-klincewicz-collared-fleece/VN000RSDYQX/image_6_cropped.jpg",
+      "apparel_dataset/vans/otw-by-vans-x-julian-klincewicz-collared-fleece/VN000RSDYQX/image_7.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -237757,7 +237941,14 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/old-scratch-crew-sweatshirt/VN000WXWBLK/image_0_cropped.jpg",
+      "apparel_dataset/vans/old-scratch-crew-sweatshirt/VN000WXWBLK/image_1_cropped.jpg",
+      "apparel_dataset/vans/old-scratch-crew-sweatshirt/VN000WXWBLK/image_2_cropped.jpg",
+      "apparel_dataset/vans/old-scratch-crew-sweatshirt/VN000WXWBLK/image_3_cropped.jpg",
+      "apparel_dataset/vans/old-scratch-crew-sweatshirt/VN000WXWBLK/image_4_cropped.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -237838,7 +238029,14 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/premium-crewneck-sweatshirts/VN000T6TEMV/image_0_cropped.jpg",
+      "apparel_dataset/vans/premium-crewneck-sweatshirts/VN000T6TEMV/image_1_cropped.jpg",
+      "apparel_dataset/vans/premium-crewneck-sweatshirts/VN000T6TEMV/image_2_cropped.jpg",
+      "apparel_dataset/vans/premium-crewneck-sweatshirts/VN000T6TEMV/image_3_cropped.jpg",
+      "apparel_dataset/vans/premium-crewneck-sweatshirts/VN000T6TEMV/image_4_cropped.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -237926,7 +238124,14 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/stacked-hi-pullover-hoodie/VN00105PGRT/image_0_cropped.jpg",
+      "apparel_dataset/vans/stacked-hi-pullover-hoodie/VN00105PGRT/image_1_cropped.jpg",
+      "apparel_dataset/vans/stacked-hi-pullover-hoodie/VN00105PGRT/image_2_cropped.jpg",
+      "apparel_dataset/vans/stacked-hi-pullover-hoodie/VN00105PGRT/image_3_cropped.jpg",
+      "apparel_dataset/vans/stacked-hi-pullover-hoodie/VN00105PGRT/image_4_cropped.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -238019,7 +238224,14 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/premium-zip-hoodie/VN000T78EMV/image_0_cropped.jpg",
+      "apparel_dataset/vans/premium-zip-hoodie/VN000T78EMV/image_1_cropped.jpg",
+      "apparel_dataset/vans/premium-zip-hoodie/VN000T78EMV/image_2_cropped.jpg",
+      "apparel_dataset/vans/premium-zip-hoodie/VN000T78EMV/image_3_cropped.jpg",
+      "apparel_dataset/vans/premium-zip-hoodie/VN000T78EMV/image_4_cropped.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -238105,7 +238317,14 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/premium-pullover-hoodie/VN000T6FRKZ/image_0_cropped.jpg",
+      "apparel_dataset/vans/premium-pullover-hoodie/VN000T6FRKZ/image_1_cropped.jpg",
+      "apparel_dataset/vans/premium-pullover-hoodie/VN000T6FRKZ/image_2_cropped.jpg",
+      "apparel_dataset/vans/premium-pullover-hoodie/VN000T6FRKZ/image_3_cropped.jpg",
+      "apparel_dataset/vans/premium-pullover-hoodie/VN000T6FRKZ/image_4_cropped.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -238187,7 +238406,12 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/stretch-logo-pullover-hoodie/VN000STDY28/image_0_cropped.jpg",
+      "apparel_dataset/vans/stretch-logo-pullover-hoodie/VN000STDY28/image_1_cropped.jpg",
+      "apparel_dataset/vans/stretch-logo-pullover-hoodie/VN000STDY28/image_2_cropped.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -238290,7 +238514,14 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/ronnie-track-jacket/VN000U33BLK/image_0_cropped.jpg",
+      "apparel_dataset/vans/ronnie-track-jacket/VN000U33BLK/image_1_cropped.jpg",
+      "apparel_dataset/vans/ronnie-track-jacket/VN000U33BLK/image_2.jpg",
+      "apparel_dataset/vans/ronnie-track-jacket/VN000U33BLK/image_3.jpg",
+      "apparel_dataset/vans/ronnie-track-jacket/VN000U33BLK/image_4.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -238376,7 +238607,14 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/premium-zip-hoodie/VN000T78FOB/image_0_cropped.jpg",
+      "apparel_dataset/vans/premium-zip-hoodie/VN000T78FOB/image_1_cropped.jpg",
+      "apparel_dataset/vans/premium-zip-hoodie/VN000T78FOB/image_2_cropped.jpg",
+      "apparel_dataset/vans/premium-zip-hoodie/VN000T78FOB/image_3_cropped.jpg",
+      "apparel_dataset/vans/premium-zip-hoodie/VN000T78FOB/image_4.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -238461,7 +238699,14 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/stretch-logo-crew-sweatshirt/VN00105MY28/image_0_cropped.jpg",
+      "apparel_dataset/vans/stretch-logo-crew-sweatshirt/VN00105MY28/image_1_cropped.jpg",
+      "apparel_dataset/vans/stretch-logo-crew-sweatshirt/VN00105MY28/image_2_cropped.jpg",
+      "apparel_dataset/vans/stretch-logo-crew-sweatshirt/VN00105MY28/image_3_cropped.jpg",
+      "apparel_dataset/vans/stretch-logo-crew-sweatshirt/VN00105MY28/image_4.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -238545,7 +238790,14 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/premium-crewneck-sweatshirt/VN000T6TRKZ/image_0_cropped.jpg",
+      "apparel_dataset/vans/premium-crewneck-sweatshirt/VN000T6TRKZ/image_1_cropped.jpg",
+      "apparel_dataset/vans/premium-crewneck-sweatshirt/VN000T6TRKZ/image_2_cropped.jpg",
+      "apparel_dataset/vans/premium-crewneck-sweatshirt/VN000T6TRKZ/image_3_cropped.jpg",
+      "apparel_dataset/vans/premium-crewneck-sweatshirt/VN000T6TRKZ/image_4_cropped.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -238630,7 +238882,14 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/premium-crewneck-sweatshirt/VN000T6TH90/image_0_cropped.jpg",
+      "apparel_dataset/vans/premium-crewneck-sweatshirt/VN000T6TH90/image_1_cropped.jpg",
+      "apparel_dataset/vans/premium-crewneck-sweatshirt/VN000T6TH90/image_2_cropped.jpg",
+      "apparel_dataset/vans/premium-crewneck-sweatshirt/VN000T6TH90/image_3_cropped.jpg",
+      "apparel_dataset/vans/premium-crewneck-sweatshirt/VN000T6TH90/image_4.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -238716,7 +238975,14 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/premium-crewneck-sweatshirt/VN000T6TFOB/image_0_cropped.jpg",
+      "apparel_dataset/vans/premium-crewneck-sweatshirt/VN000T6TFOB/image_1_cropped.jpg",
+      "apparel_dataset/vans/premium-crewneck-sweatshirt/VN000T6TFOB/image_2_cropped.jpg",
+      "apparel_dataset/vans/premium-crewneck-sweatshirt/VN000T6TFOB/image_3_cropped.jpg",
+      "apparel_dataset/vans/premium-crewneck-sweatshirt/VN000T6TFOB/image_4_cropped.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -238779,7 +239045,11 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/check-5-denim-trucker-jacket/VN000UB4TTJ/image_0_cropped.jpg",
+      "apparel_dataset/vans/check-5-denim-trucker-jacket/VN000UB4TTJ/image_1_cropped.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -238865,7 +239135,14 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/premium-zip-hoodie/VN000T78RKZ/image_0_cropped.jpg",
+      "apparel_dataset/vans/premium-zip-hoodie/VN000T78RKZ/image_1_cropped.jpg",
+      "apparel_dataset/vans/premium-zip-hoodie/VN000T78RKZ/image_2_cropped.jpg",
+      "apparel_dataset/vans/premium-zip-hoodie/VN000T78RKZ/image_3_cropped.jpg",
+      "apparel_dataset/vans/premium-zip-hoodie/VN000T78RKZ/image_4_cropped.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -238951,7 +239228,14 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/vans-x-rowan-quarter-zip-hoodie/VN000ZY77CA/image_0_cropped.jpg",
+      "apparel_dataset/vans/vans-x-rowan-quarter-zip-hoodie/VN000ZY77CA/image_1_cropped.jpg",
+      "apparel_dataset/vans/vans-x-rowan-quarter-zip-hoodie/VN000ZY77CA/image_2_cropped.jpg",
+      "apparel_dataset/vans/vans-x-rowan-quarter-zip-hoodie/VN000ZY77CA/image_3_cropped.jpg",
+      "apparel_dataset/vans/vans-x-rowan-quarter-zip-hoodie/VN000ZY77CA/image_4_cropped.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -239035,7 +239319,14 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/stretch-logo-crew-sweatshirt/VN000STSY28/image_0_cropped.jpg",
+      "apparel_dataset/vans/stretch-logo-crew-sweatshirt/VN000STSY28/image_1_cropped.jpg",
+      "apparel_dataset/vans/stretch-logo-crew-sweatshirt/VN000STSY28/image_2_cropped.jpg",
+      "apparel_dataset/vans/stretch-logo-crew-sweatshirt/VN000STSY28/image_3_cropped.jpg",
+      "apparel_dataset/vans/stretch-logo-crew-sweatshirt/VN000STSY28/image_4.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -239120,7 +239411,14 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/stacked-hi-pullover-hoodie/VN000ST5C9F/image_0_cropped.jpg",
+      "apparel_dataset/vans/stacked-hi-pullover-hoodie/VN000ST5C9F/image_1_cropped.jpg",
+      "apparel_dataset/vans/stacked-hi-pullover-hoodie/VN000ST5C9F/image_2_cropped.jpg",
+      "apparel_dataset/vans/stacked-hi-pullover-hoodie/VN000ST5C9F/image_3_cropped.jpg",
+      "apparel_dataset/vans/stacked-hi-pullover-hoodie/VN000ST5C9F/image_4_cropped.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -239213,7 +239511,15 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/pomona-station-jacket/VN000T6PBLK/image_0_cropped.jpg",
+      "apparel_dataset/vans/pomona-station-jacket/VN000T6PBLK/image_1_cropped.jpg",
+      "apparel_dataset/vans/pomona-station-jacket/VN000T6PBLK/image_2_cropped.jpg",
+      "apparel_dataset/vans/pomona-station-jacket/VN000T6PBLK/image_3_cropped.jpg",
+      "apparel_dataset/vans/pomona-station-jacket/VN000T6PBLK/image_4.jpg",
+      "apparel_dataset/vans/pomona-station-jacket/VN000T6PBLK/image_5_cropped.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -239294,7 +239600,12 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/stretch-logo-pullover-hoodie/VN000STD02F/image_0_cropped.jpg",
+      "apparel_dataset/vans/stretch-logo-pullover-hoodie/VN000STD02F/image_1_cropped.jpg",
+      "apparel_dataset/vans/stretch-logo-pullover-hoodie/VN000STD02F/image_2_cropped.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -239382,7 +239693,14 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/stacked-hi-pullover-hoodie/VN000ST5FST/image_0_cropped.jpg",
+      "apparel_dataset/vans/stacked-hi-pullover-hoodie/VN000ST5FST/image_1_cropped.jpg",
+      "apparel_dataset/vans/stacked-hi-pullover-hoodie/VN000ST5FST/image_2_cropped.jpg",
+      "apparel_dataset/vans/stacked-hi-pullover-hoodie/VN000ST5FST/image_3_cropped.jpg",
+      "apparel_dataset/vans/stacked-hi-pullover-hoodie/VN000ST5FST/image_4_cropped.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -239463,7 +239781,14 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/stretch-logo-zip-hoodie/VN000ST602F/image_0_cropped.jpg",
+      "apparel_dataset/vans/stretch-logo-zip-hoodie/VN000ST602F/image_1_cropped.jpg",
+      "apparel_dataset/vans/stretch-logo-zip-hoodie/VN000ST602F/image_2_cropped.jpg",
+      "apparel_dataset/vans/stretch-logo-zip-hoodie/VN000ST602F/image_3_cropped.jpg",
+      "apparel_dataset/vans/stretch-logo-zip-hoodie/VN000ST602F/image_4_cropped.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -239598,7 +239923,19 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/hellbound-snow-jacket/VN000PMFENB/image_0_cropped.jpg",
+      "apparel_dataset/vans/hellbound-snow-jacket/VN000PMFENB/image_1_cropped.jpg",
+      "apparel_dataset/vans/hellbound-snow-jacket/VN000PMFENB/image_2_cropped.jpg",
+      "apparel_dataset/vans/hellbound-snow-jacket/VN000PMFENB/image_3_cropped.jpg",
+      "apparel_dataset/vans/hellbound-snow-jacket/VN000PMFENB/image_4_cropped.jpg",
+      "apparel_dataset/vans/hellbound-snow-jacket/VN000PMFENB/image_5_cropped.jpg",
+      "apparel_dataset/vans/hellbound-snow-jacket/VN000PMFENB/image_6_cropped.jpg",
+      "apparel_dataset/vans/hellbound-snow-jacket/VN000PMFENB/image_7_cropped.jpg",
+      "apparel_dataset/vans/hellbound-snow-jacket/VN000PMFENB/image_8_cropped.jpg",
+      "apparel_dataset/vans/hellbound-snow-jacket/VN000PMFENB/image_9_cropped.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -239657,7 +239994,13 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/old-skool-bloom-t-shirt/VN000WYXBLK/image_0_cropped.jpg",
+      "apparel_dataset/vans/old-skool-bloom-t-shirt/VN000WYXBLK/image_1_cropped.jpg",
+      "apparel_dataset/vans/old-skool-bloom-t-shirt/VN000WYXBLK/image_2_cropped.jpg",
+      "apparel_dataset/vans/old-skool-bloom-t-shirt/VN000WYXBLK/image_3_cropped.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -239729,7 +240072,13 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/raccoon-sign-t-shirt/VN0008SDBRG/image_0_cropped.jpg",
+      "apparel_dataset/vans/raccoon-sign-t-shirt/VN0008SDBRG/image_1_cropped.jpg",
+      "apparel_dataset/vans/raccoon-sign-t-shirt/VN0008SDBRG/image_2_cropped.jpg",
+      "apparel_dataset/vans/raccoon-sign-t-shirt/VN0008SDBRG/image_3_cropped.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -239791,7 +240140,13 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/bait-and-tackle-t-shirt/VN001268BLK/image_0_cropped.jpg",
+      "apparel_dataset/vans/bait-and-tackle-t-shirt/VN001268BLK/image_1_cropped.jpg",
+      "apparel_dataset/vans/bait-and-tackle-t-shirt/VN001268BLK/image_2_cropped.jpg",
+      "apparel_dataset/vans/bait-and-tackle-t-shirt/VN001268BLK/image_3_cropped.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -239855,7 +240210,12 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/wiz-kitty-t-shirt/VN0014E0NVY/image_0_cropped.jpg",
+      "apparel_dataset/vans/wiz-kitty-t-shirt/VN0014E0NVY/image_1_cropped.jpg",
+      "apparel_dataset/vans/wiz-kitty-t-shirt/VN0014E0NVY/image_2_cropped.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -239908,7 +240268,13 @@
           "cotton"
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/touch-grass-t-shirt/VN0014E5FRS/image_0_cropped.jpg",
+      "apparel_dataset/vans/touch-grass-t-shirt/VN0014E5FRS/image_1_cropped.jpg",
+      "apparel_dataset/vans/touch-grass-t-shirt/VN0014E5FRS/image_2_cropped.jpg",
+      "apparel_dataset/vans/touch-grass-t-shirt/VN0014E5FRS/image_3_cropped.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -239955,7 +240321,13 @@
           "black"
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/molto-bene-t-shirt/VN0014E2BLK/image_0_cropped.jpg",
+      "apparel_dataset/vans/molto-bene-t-shirt/VN0014E2BLK/image_1_cropped.jpg",
+      "apparel_dataset/vans/molto-bene-t-shirt/VN0014E2BLK/image_2_cropped.jpg",
+      "apparel_dataset/vans/molto-bene-t-shirt/VN0014E2BLK/image_3_cropped.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -239999,7 +240371,11 @@
           "navy blue"
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/airbrush-special-t-shirt/VN0014DZNVY/image_0_cropped.jpg",
+      "apparel_dataset/vans/airbrush-special-t-shirt/VN0014DZNVY/image_1_cropped.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -240048,7 +240424,13 @@
           "black"
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/bell-tolls-for-thee-t-shirt/VN0014E1BLK/image_0_cropped.jpg",
+      "apparel_dataset/vans/bell-tolls-for-thee-t-shirt/VN0014E1BLK/image_1_cropped.jpg",
+      "apparel_dataset/vans/bell-tolls-for-thee-t-shirt/VN0014E1BLK/image_2_cropped.jpg",
+      "apparel_dataset/vans/bell-tolls-for-thee-t-shirt/VN0014E1BLK/image_3_cropped.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -240124,7 +240506,14 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/long-sleeve-t-shirt/VN000U58C9F/image_0_cropped.jpg",
+      "apparel_dataset/vans/long-sleeve-t-shirt/VN000U58C9F/image_1_cropped.jpg",
+      "apparel_dataset/vans/long-sleeve-t-shirt/VN000U58C9F/image_2_cropped.jpg",
+      "apparel_dataset/vans/long-sleeve-t-shirt/VN000U58C9F/image_3_cropped.jpg",
+      "apparel_dataset/vans/long-sleeve-t-shirt/VN000U58C9F/image_4_cropped.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -240172,7 +240561,13 @@
           "faded black"
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/jetty-sets-t-shirt/VN000WYDEMV/image_0_cropped.jpg",
+      "apparel_dataset/vans/jetty-sets-t-shirt/VN000WYDEMV/image_1_cropped.jpg",
+      "apparel_dataset/vans/jetty-sets-t-shirt/VN000WYDEMV/image_2_cropped.jpg",
+      "apparel_dataset/vans/jetty-sets-t-shirt/VN000WYDEMV/image_3_cropped.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -240233,7 +240628,10 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/stacked-hi-t-shirt/VN000PEW10Z/image_0_cropped.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -240298,7 +240696,14 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/new-left-chest-t-shirt/VN000TBXFST/image_0_cropped.jpg",
+      "apparel_dataset/vans/new-left-chest-t-shirt/VN000TBXFST/image_1_cropped.jpg",
+      "apparel_dataset/vans/new-left-chest-t-shirt/VN000TBXFST/image_2_cropped.jpg",
+      "apparel_dataset/vans/new-left-chest-t-shirt/VN000TBXFST/image_3_cropped.jpg",
+      "apparel_dataset/vans/new-left-chest-t-shirt/VN000TBXFST/image_4.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -240386,7 +240791,14 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/vans-speedway-long-sleeve-t-shirt/VN000X2GFS8/image_0_cropped.jpg",
+      "apparel_dataset/vans/vans-speedway-long-sleeve-t-shirt/VN000X2GFS8/image_1_cropped.jpg",
+      "apparel_dataset/vans/vans-speedway-long-sleeve-t-shirt/VN000X2GFS8/image_2_cropped.jpg",
+      "apparel_dataset/vans/vans-speedway-long-sleeve-t-shirt/VN000X2GFS8/image_3_cropped.jpg",
+      "apparel_dataset/vans/vans-speedway-long-sleeve-t-shirt/VN000X2GFS8/image_4_cropped.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -240469,7 +240881,14 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/toasted-t-shirt/VN000X2KBLK/image_0_cropped.jpg",
+      "apparel_dataset/vans/toasted-t-shirt/VN000X2KBLK/image_1_cropped.jpg",
+      "apparel_dataset/vans/toasted-t-shirt/VN000X2KBLK/image_2_cropped.jpg",
+      "apparel_dataset/vans/toasted-t-shirt/VN000X2KBLK/image_3_cropped.jpg",
+      "apparel_dataset/vans/toasted-t-shirt/VN000X2KBLK/image_4.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -240543,7 +240962,14 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/new-left-chest-t-shirt/VN000TBX10Z/image_0_cropped.jpg",
+      "apparel_dataset/vans/new-left-chest-t-shirt/VN000TBX10Z/image_1_cropped.jpg",
+      "apparel_dataset/vans/new-left-chest-t-shirt/VN000TBX10Z/image_2_cropped.jpg",
+      "apparel_dataset/vans/new-left-chest-t-shirt/VN000TBX10Z/image_3_cropped.jpg",
+      "apparel_dataset/vans/new-left-chest-t-shirt/VN000TBX10Z/image_4.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -240633,7 +241059,14 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/sickest-66-t-shirt/VN000X2JWHT/image_0_cropped.jpg",
+      "apparel_dataset/vans/sickest-66-t-shirt/VN000X2JWHT/image_1_cropped.jpg",
+      "apparel_dataset/vans/sickest-66-t-shirt/VN000X2JWHT/image_2_cropped.jpg",
+      "apparel_dataset/vans/sickest-66-t-shirt/VN000X2JWHT/image_3_cropped.jpg",
+      "apparel_dataset/vans/sickest-66-t-shirt/VN000X2JWHT/image_4.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -240714,7 +241147,14 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/sickest-66-t-shirt/VN000X2JLKZ/image_0_cropped.jpg",
+      "apparel_dataset/vans/sickest-66-t-shirt/VN000X2JLKZ/image_1_cropped.jpg",
+      "apparel_dataset/vans/sickest-66-t-shirt/VN000X2JLKZ/image_2_cropped.jpg",
+      "apparel_dataset/vans/sickest-66-t-shirt/VN000X2JLKZ/image_3_cropped.jpg",
+      "apparel_dataset/vans/sickest-66-t-shirt/VN000X2JLKZ/image_4.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -240789,7 +241229,14 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/bold-era-t-shirt/VN000X0XBLK/image_0_cropped.jpg",
+      "apparel_dataset/vans/bold-era-t-shirt/VN000X0XBLK/image_1_cropped.jpg",
+      "apparel_dataset/vans/bold-era-t-shirt/VN000X0XBLK/image_2_cropped.jpg",
+      "apparel_dataset/vans/bold-era-t-shirt/VN000X0XBLK/image_3_cropped.jpg",
+      "apparel_dataset/vans/bold-era-t-shirt/VN000X0XBLK/image_4_cropped.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -240843,7 +241290,14 @@
           "check"
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/check-rugby-knit/VN000UCEH89/image_0.jpg",
+      "apparel_dataset/vans/check-rugby-knit/VN000UCEH89/image_1.jpg",
+      "apparel_dataset/vans/check-rugby-knit/VN000UCEH89/image_2_cropped.jpg",
+      "apparel_dataset/vans/check-rugby-knit/VN000UCEH89/image_3_cropped.jpg",
+      "apparel_dataset/vans/check-rugby-knit/VN000UCEH89/image_4_cropped.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -240928,7 +241382,14 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/vans-speedway-long-sleeve-t-shirt/VN000X2GEMV/image_0_cropped.jpg",
+      "apparel_dataset/vans/vans-speedway-long-sleeve-t-shirt/VN000X2GEMV/image_1_cropped.jpg",
+      "apparel_dataset/vans/vans-speedway-long-sleeve-t-shirt/VN000X2GEMV/image_2_cropped.jpg",
+      "apparel_dataset/vans/vans-speedway-long-sleeve-t-shirt/VN000X2GEMV/image_3_cropped.jpg",
+      "apparel_dataset/vans/vans-speedway-long-sleeve-t-shirt/VN000X2GEMV/image_4_cropped.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -240990,7 +241451,14 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/blaze-head-t-shirt/VN000WZ5BLK/image_0_cropped.jpg",
+      "apparel_dataset/vans/blaze-head-t-shirt/VN000WZ5BLK/image_1_cropped.jpg",
+      "apparel_dataset/vans/blaze-head-t-shirt/VN000WZ5BLK/image_2_cropped.jpg",
+      "apparel_dataset/vans/blaze-head-t-shirt/VN000WZ5BLK/image_3_cropped.jpg",
+      "apparel_dataset/vans/blaze-head-t-shirt/VN000WZ5BLK/image_4_cropped.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -241072,7 +241540,14 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/ringer-striped-knit-shirt/VN000U59H90/image_0_cropped.jpg",
+      "apparel_dataset/vans/ringer-striped-knit-shirt/VN000U59H90/image_1_cropped.jpg",
+      "apparel_dataset/vans/ringer-striped-knit-shirt/VN000U59H90/image_2_cropped.jpg",
+      "apparel_dataset/vans/ringer-striped-knit-shirt/VN000U59H90/image_3_cropped.jpg",
+      "apparel_dataset/vans/ringer-striped-knit-shirt/VN000U59H90/image_4_cropped.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -241151,7 +241626,14 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/ringer-striped-knit-shirt/VN000U59OVB/image_0_cropped.jpg",
+      "apparel_dataset/vans/ringer-striped-knit-shirt/VN000U59OVB/image_1_cropped.jpg",
+      "apparel_dataset/vans/ringer-striped-knit-shirt/VN000U59OVB/image_2_cropped.jpg",
+      "apparel_dataset/vans/ringer-striped-knit-shirt/VN000U59OVB/image_3_cropped.jpg",
+      "apparel_dataset/vans/ringer-striped-knit-shirt/VN000U59OVB/image_4_cropped.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -241229,7 +241711,14 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/lawson-stripe-long-sleeve-shirt/VN000U5UJDU/image_0_cropped.jpg",
+      "apparel_dataset/vans/lawson-stripe-long-sleeve-shirt/VN000U5UJDU/image_1_cropped.jpg",
+      "apparel_dataset/vans/lawson-stripe-long-sleeve-shirt/VN000U5UJDU/image_2_cropped.jpg",
+      "apparel_dataset/vans/lawson-stripe-long-sleeve-shirt/VN000U5UJDU/image_3_cropped.jpg",
+      "apparel_dataset/vans/lawson-stripe-long-sleeve-shirt/VN000U5UJDU/image_4.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -241306,7 +241795,14 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/retro-sport-long-sleeve-t-shirt/VN000XFSBLK/image_0_cropped.jpg",
+      "apparel_dataset/vans/retro-sport-long-sleeve-t-shirt/VN000XFSBLK/image_1_cropped.jpg",
+      "apparel_dataset/vans/retro-sport-long-sleeve-t-shirt/VN000XFSBLK/image_2_cropped.jpg",
+      "apparel_dataset/vans/retro-sport-long-sleeve-t-shirt/VN000XFSBLK/image_3_cropped.jpg",
+      "apparel_dataset/vans/retro-sport-long-sleeve-t-shirt/VN000XFSBLK/image_4_cropped.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -241391,7 +241887,14 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/the-painted-rose-t-shirt/VN000WV1EMV/image_0_cropped.jpg",
+      "apparel_dataset/vans/the-painted-rose-t-shirt/VN000WV1EMV/image_1_cropped.jpg",
+      "apparel_dataset/vans/the-painted-rose-t-shirt/VN000WV1EMV/image_2_cropped.jpg",
+      "apparel_dataset/vans/the-painted-rose-t-shirt/VN000WV1EMV/image_3_cropped.jpg",
+      "apparel_dataset/vans/the-painted-rose-t-shirt/VN000WV1EMV/image_4_cropped.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -241483,7 +241986,14 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/premium-loose-fit-t-shirt/VN000TBPEMV/image_0_cropped.jpg",
+      "apparel_dataset/vans/premium-loose-fit-t-shirt/VN000TBPEMV/image_1_cropped.jpg",
+      "apparel_dataset/vans/premium-loose-fit-t-shirt/VN000TBPEMV/image_2_cropped.jpg",
+      "apparel_dataset/vans/premium-loose-fit-t-shirt/VN000TBPEMV/image_3_cropped.jpg",
+      "apparel_dataset/vans/premium-loose-fit-t-shirt/VN000TBPEMV/image_4_cropped.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -241541,7 +242051,13 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/trashy-t-shirt/VN000X1EBLK/image_0_cropped.jpg",
+      "apparel_dataset/vans/trashy-t-shirt/VN000X1EBLK/image_1_cropped.jpg",
+      "apparel_dataset/vans/trashy-t-shirt/VN000X1EBLK/image_2_cropped.jpg",
+      "apparel_dataset/vans/trashy-t-shirt/VN000X1EBLK/image_3_cropped.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -241626,7 +242142,14 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/new-left-chest-t-shirt/VN000TBXY28/image_0_cropped.jpg",
+      "apparel_dataset/vans/new-left-chest-t-shirt/VN000TBXY28/image_1_cropped.jpg",
+      "apparel_dataset/vans/new-left-chest-t-shirt/VN000TBXY28/image_2_cropped.jpg",
+      "apparel_dataset/vans/new-left-chest-t-shirt/VN000TBXY28/image_3_cropped.jpg",
+      "apparel_dataset/vans/new-left-chest-t-shirt/VN000TBXY28/image_4_cropped.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -241712,7 +242235,14 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/knu-patch-t-shirt/VN000WU8BLK/image_0_cropped.jpg",
+      "apparel_dataset/vans/knu-patch-t-shirt/VN000WU8BLK/image_1_cropped.jpg",
+      "apparel_dataset/vans/knu-patch-t-shirt/VN000WU8BLK/image_2_cropped.jpg",
+      "apparel_dataset/vans/knu-patch-t-shirt/VN000WU8BLK/image_3_cropped.jpg",
+      "apparel_dataset/vans/knu-patch-t-shirt/VN000WU8BLK/image_4.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -241787,7 +242317,14 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/knu-patch-t-shirt/VN000WU85TU/image_0_cropped.jpg",
+      "apparel_dataset/vans/knu-patch-t-shirt/VN000WU85TU/image_1_cropped.jpg",
+      "apparel_dataset/vans/knu-patch-t-shirt/VN000WU85TU/image_2_cropped.jpg",
+      "apparel_dataset/vans/knu-patch-t-shirt/VN000WU85TU/image_3_cropped.jpg",
+      "apparel_dataset/vans/knu-patch-t-shirt/VN000WU85TU/image_4.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -241871,7 +242408,14 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/double-standard-t-shirt/VN000SYDY28/image_0_cropped.jpg",
+      "apparel_dataset/vans/double-standard-t-shirt/VN000SYDY28/image_1_cropped.jpg",
+      "apparel_dataset/vans/double-standard-t-shirt/VN000SYDY28/image_2_cropped.jpg",
+      "apparel_dataset/vans/double-standard-t-shirt/VN000SYDY28/image_3_cropped.jpg",
+      "apparel_dataset/vans/double-standard-t-shirt/VN000SYDY28/image_4_cropped.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -241920,7 +242464,13 @@
           "black"
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/alley-cat-aperitivo-t-shirt/VN00140TBLK/image_0_cropped.jpg",
+      "apparel_dataset/vans/alley-cat-aperitivo-t-shirt/VN00140TBLK/image_1_cropped.jpg",
+      "apparel_dataset/vans/alley-cat-aperitivo-t-shirt/VN00140TBLK/image_2_cropped.jpg",
+      "apparel_dataset/vans/alley-cat-aperitivo-t-shirt/VN00140TBLK/image_3_cropped.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -241979,7 +242529,13 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/corner-st-bodega-t-shirt/VN0014AXBLK/image_0_cropped.jpg",
+      "apparel_dataset/vans/corner-st-bodega-t-shirt/VN0014AXBLK/image_1_cropped.jpg",
+      "apparel_dataset/vans/corner-st-bodega-t-shirt/VN0014AXBLK/image_2_cropped.jpg",
+      "apparel_dataset/vans/corner-st-bodega-t-shirt/VN0014AXBLK/image_3_cropped.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -242066,7 +242622,14 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/old-skool-bloom-t-shirt/VN000WYXLKZ/image_0_cropped.jpg",
+      "apparel_dataset/vans/old-skool-bloom-t-shirt/VN000WYXLKZ/image_1_cropped.jpg",
+      "apparel_dataset/vans/old-skool-bloom-t-shirt/VN000WYXLKZ/image_2_cropped.jpg",
+      "apparel_dataset/vans/old-skool-bloom-t-shirt/VN000WYXLKZ/image_3_cropped.jpg",
+      "apparel_dataset/vans/old-skool-bloom-t-shirt/VN000WYXLKZ/image_4_cropped.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -242131,7 +242694,13 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/break-the-matrix-t-shirt/VN0014AVBLK/image_0_cropped.jpg",
+      "apparel_dataset/vans/break-the-matrix-t-shirt/VN0014AVBLK/image_1_cropped.jpg",
+      "apparel_dataset/vans/break-the-matrix-t-shirt/VN0014AVBLK/image_2_cropped.jpg",
+      "apparel_dataset/vans/break-the-matrix-t-shirt/VN0014AVBLK/image_3_cropped.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -242208,7 +242777,14 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/pismo-knit-shirt/VN000XFMBLK/image_0_cropped.jpg",
+      "apparel_dataset/vans/pismo-knit-shirt/VN000XFMBLK/image_1_cropped.jpg",
+      "apparel_dataset/vans/pismo-knit-shirt/VN000XFMBLK/image_2_cropped.jpg",
+      "apparel_dataset/vans/pismo-knit-shirt/VN000XFMBLK/image_3_cropped.jpg",
+      "apparel_dataset/vans/pismo-knit-shirt/VN000XFMBLK/image_4.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -242282,7 +242858,14 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/stacked-hi-t-shirt/VN000PEWGRT/image_0_cropped.jpg",
+      "apparel_dataset/vans/stacked-hi-t-shirt/VN000PEWGRT/image_1_cropped.jpg",
+      "apparel_dataset/vans/stacked-hi-t-shirt/VN000PEWGRT/image_2_cropped.jpg",
+      "apparel_dataset/vans/stacked-hi-t-shirt/VN000PEWGRT/image_3_cropped.jpg",
+      "apparel_dataset/vans/stacked-hi-t-shirt/VN000PEWGRT/image_4.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -242365,7 +242948,14 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/premium-loose-fit-t-shirt/VN000TBPRKZ/image_0_cropped.jpg",
+      "apparel_dataset/vans/premium-loose-fit-t-shirt/VN000TBPRKZ/image_1_cropped.jpg",
+      "apparel_dataset/vans/premium-loose-fit-t-shirt/VN000TBPRKZ/image_2_cropped.jpg",
+      "apparel_dataset/vans/premium-loose-fit-t-shirt/VN000TBPRKZ/image_3_cropped.jpg",
+      "apparel_dataset/vans/premium-loose-fit-t-shirt/VN000TBPRKZ/image_4_cropped.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -242446,7 +243036,14 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/left-chest-logo-t-shirt/VN000TBXATH/image_0_cropped.jpg",
+      "apparel_dataset/vans/left-chest-logo-t-shirt/VN000TBXATH/image_1_cropped.jpg",
+      "apparel_dataset/vans/left-chest-logo-t-shirt/VN000TBXATH/image_2_cropped.jpg",
+      "apparel_dataset/vans/left-chest-logo-t-shirt/VN000TBXATH/image_3_cropped.jpg",
+      "apparel_dataset/vans/left-chest-logo-t-shirt/VN000TBXATH/image_4_cropped.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -242507,7 +243104,14 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/custom-cat-t-shirt/VN000X2SWHT/image_0_cropped.jpg",
+      "apparel_dataset/vans/custom-cat-t-shirt/VN000X2SWHT/image_1_cropped.jpg",
+      "apparel_dataset/vans/custom-cat-t-shirt/VN000X2SWHT/image_2_cropped.jpg",
+      "apparel_dataset/vans/custom-cat-t-shirt/VN000X2SWHT/image_3_cropped.jpg",
+      "apparel_dataset/vans/custom-cat-t-shirt/VN000X2SWHT/image_4.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -242591,7 +243195,14 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/the-painted-rose-t-shirt/VN000WV1WHT/image_0_cropped.jpg",
+      "apparel_dataset/vans/the-painted-rose-t-shirt/VN000WV1WHT/image_1_cropped.jpg",
+      "apparel_dataset/vans/the-painted-rose-t-shirt/VN000WV1WHT/image_2_cropped.jpg",
+      "apparel_dataset/vans/the-painted-rose-t-shirt/VN000WV1WHT/image_3_cropped.jpg",
+      "apparel_dataset/vans/the-painted-rose-t-shirt/VN000WV1WHT/image_4.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -242676,7 +243287,14 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/premium-loose-fit-t-shirt/VN000TBPC9F/image_0_cropped.jpg",
+      "apparel_dataset/vans/premium-loose-fit-t-shirt/VN000TBPC9F/image_1_cropped.jpg",
+      "apparel_dataset/vans/premium-loose-fit-t-shirt/VN000TBPC9F/image_2_cropped.jpg",
+      "apparel_dataset/vans/premium-loose-fit-t-shirt/VN000TBPC9F/image_3_cropped.jpg",
+      "apparel_dataset/vans/premium-loose-fit-t-shirt/VN000TBPC9F/image_4_cropped.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -242740,7 +243358,14 @@
           "loose"
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/premium-loose-fit-t-shirt/VN000TBPFOB/image_0_cropped.jpg",
+      "apparel_dataset/vans/premium-loose-fit-t-shirt/VN000TBPFOB/image_1_cropped.jpg",
+      "apparel_dataset/vans/premium-loose-fit-t-shirt/VN000TBPFOB/image_2_cropped.jpg",
+      "apparel_dataset/vans/premium-loose-fit-t-shirt/VN000TBPFOB/image_3_cropped.jpg",
+      "apparel_dataset/vans/premium-loose-fit-t-shirt/VN000TBPFOB/image_4_cropped.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -242821,7 +243446,14 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/pismo-knit-shirt/VN000XFMDMV/image_0_cropped.jpg",
+      "apparel_dataset/vans/pismo-knit-shirt/VN000XFMDMV/image_1_cropped.jpg",
+      "apparel_dataset/vans/pismo-knit-shirt/VN000XFMDMV/image_2_cropped.jpg",
+      "apparel_dataset/vans/pismo-knit-shirt/VN000XFMDMV/image_3_cropped.jpg",
+      "apparel_dataset/vans/pismo-knit-shirt/VN000XFMDMV/image_4.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -242911,7 +243543,14 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/premium-loose-fit-t-shirt/VN000TBPGRK/image_0_cropped.jpg",
+      "apparel_dataset/vans/premium-loose-fit-t-shirt/VN000TBPGRK/image_1_cropped.jpg",
+      "apparel_dataset/vans/premium-loose-fit-t-shirt/VN000TBPGRK/image_2_cropped.jpg",
+      "apparel_dataset/vans/premium-loose-fit-t-shirt/VN000TBPGRK/image_3_cropped.jpg",
+      "apparel_dataset/vans/premium-loose-fit-t-shirt/VN000TBPGRK/image_4_cropped.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -242992,7 +243631,11 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/old-scratch-t-shirt/VN000X2TBLK/image_0_cropped.jpg",
+      "apparel_dataset/vans/old-scratch-t-shirt/VN000X2TBLK/image_1_cropped.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -243067,7 +243710,15 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/vans-x-travis-barker-t-shirt/VN0013QABLK/image_0_cropped.jpg",
+      "apparel_dataset/vans/vans-x-travis-barker-t-shirt/VN0013QABLK/image_1_cropped.jpg",
+      "apparel_dataset/vans/vans-x-travis-barker-t-shirt/VN0013QABLK/image_2_cropped.jpg",
+      "apparel_dataset/vans/vans-x-travis-barker-t-shirt/VN0013QABLK/image_3_cropped.jpg",
+      "apparel_dataset/vans/vans-x-travis-barker-t-shirt/VN0013QABLK/image_4.jpg",
+      "apparel_dataset/vans/vans-x-travis-barker-t-shirt/VN0013QABLK/image_5_cropped.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -243130,7 +243781,13 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/corner-st-bodega-t-shirt/VN0014AXWHT/image_0_cropped.jpg",
+      "apparel_dataset/vans/corner-st-bodega-t-shirt/VN0014AXWHT/image_1_cropped.jpg",
+      "apparel_dataset/vans/corner-st-bodega-t-shirt/VN0014AXWHT/image_2_cropped.jpg",
+      "apparel_dataset/vans/corner-st-bodega-t-shirt/VN0014AXWHT/image_3_cropped.jpg"
+    ]
   },
   {
     "brand": "vans",
@@ -243215,6 +243872,13 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/vans/double-standard-t-shirt/VN000SYDYB2/image_0_cropped.jpg",
+      "apparel_dataset/vans/double-standard-t-shirt/VN000SYDYB2/image_1_cropped.jpg",
+      "apparel_dataset/vans/double-standard-t-shirt/VN000SYDYB2/image_2_cropped.jpg",
+      "apparel_dataset/vans/double-standard-t-shirt/VN000SYDYB2/image_3_cropped.jpg",
+      "apparel_dataset/vans/double-standard-t-shirt/VN000SYDYB2/image_4.jpg"
+    ]
   }
 ]
