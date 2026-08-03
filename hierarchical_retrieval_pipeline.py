@@ -168,6 +168,32 @@ AMBIGUITY_MARGIN = 0.03        # DINOv3 cosine-similarity gap under which top-1/
 # consider tolerable) and pass it via --reject-threshold once you do.
 REJECT_SIMILARITY_THRESHOLD = None
 
+# Open-set rejection EVAL SPLIT (spec section 8.1's named "open-set
+# rejection" split, never built until 2026-08-03). Fraction of catalog
+# IDENTITIES held out of the gallery entirely -- not just their test
+# images held out (that's SPLIT_SEED's job, and those products are still
+# retrievable), but every image of every colorway sibling removed from
+# the DINOv3 gallery index AND from the SigLIP2 identity shortlist, so a
+# query from one of them has NO correct answer available at any rank.
+#
+# Held out at IDENTITY granularity, not product-code granularity, on
+# purpose: dropping a single product code would leave its colorway
+# siblings ("same shoe, different colorway") in the gallery, so the
+# "correct" answer would still be sitting there in near-identical form
+# and the query wouldn't be genuinely off-catalog. Identity-level holdout
+# is also what makes this directly comparable to
+# unseen_product_enrollment_eval.py's framing.
+#
+# 0.0 = disabled (default). This deliberately does NOT default on: an
+# open-set run shrinks the gallery, so its R@K numbers are NOT comparable
+# to the main benchmark rows in docs/eval_log.md and must never be logged
+# as if they were. See evaluate()'s open_set block.
+OPEN_SET_HOLDOUT_FRACTION = 0.0
+# Separate from SPLIT_SEED so that changing the image-level view split
+# doesn't silently reshuffle which identities are considered off-catalog
+# (and vice versa) -- these two splits answer different questions.
+OPEN_SET_SPLIT_SEED = 20260803
+
 # Score fusion (spec sections 2.1/6: candidates should be reranked with
 # more than one signal, not DINOv3-rerank-only). Off by default, same
 # caution pattern as the category gate -- an unvalidated new arm to
@@ -434,18 +460,56 @@ def hsc_node_level(node):
     return "leaf"
 
 
-def make_view_split():
+def pick_open_set_identities(holdout_fraction):
+    """Deterministically choose which identities are treated as entirely
+    off-catalog (spec section 8.1's open-set rejection split). Returns an
+    empty set when disabled, so every caller's non-open-set behavior is
+    bit-identical to before this existed."""
+    if not holdout_fraction:
+        return set()
+    identities = sorted(IDENTITY_TO_PRODUCT_CODES)
+    num_holdout = int(round(len(identities) * holdout_fraction))
+    # At least 1 (a 0-identity "open-set" run would silently report
+    # open-set metrics over an empty query set), at most len-1 (never
+    # empty the gallery entirely).
+    num_holdout = max(1, min(num_holdout, len(identities) - 1))
+    rng = random.Random(OPEN_SET_SPLIT_SEED)
+    return set(rng.sample(identities, num_holdout))
+
+
+def make_view_split(open_set_identities=frozenset()):
     """Identical logic/seed to dino_identity_finetune.py's make_view_split,
     reapplied per product_code here (rather than per image record) since
     that's the granularity this pipeline's gallery/query split needs --
     reproduces the exact same held-out test image per product so
     evaluate_pipeline's numbers are directly comparable to that script's
-    own isolated eval."""
+    own isolated eval.
+
+    open_set_identities (default empty = original behavior exactly): any
+    product whose identity is in this set is removed from the gallery
+    completely and ALL of its images become open-set queries instead of
+    the usual 1-image-held-out-per-product treatment -- there is no
+    correct gallery answer for them by construction, which is the whole
+    point of that split."""
+    open_set_codes = set()
+    for identity in open_set_identities:
+        open_set_codes.update(IDENTITY_TO_PRODUCT_CODES.get(identity, ()))
+
     rng = random.Random(SPLIT_SEED)
     gallery_images_by_product, test_image_by_product = {}, {}
+    open_set_queries = []
     for code, images in IMAGES_BY_PRODUCT.items():
         images = images.copy()
+        # Shuffle BEFORE the open-set branch so the RNG consumption order
+        # is unchanged for the products that do stay in the gallery --
+        # otherwise enabling open-set holdout would also silently perturb
+        # which test image every OTHER product gets, making the known-query
+        # arm non-comparable to a normal run for reasons that have nothing
+        # to do with open-set.
         rng.shuffle(images)
+        if code in open_set_codes:
+            open_set_queries.extend((code, path) for path in images)
+            continue
         if len(images) < 2:
             gallery_images_by_product[code] = images
             continue
@@ -453,7 +517,7 @@ def make_view_split():
         num_test = min(TEST_IMAGES_PER_PRODUCT, max_holdout)
         test_image_by_product[code] = images[:num_test]
         gallery_images_by_product[code] = images[num_test:]
-    return gallery_images_by_product, test_image_by_product
+    return gallery_images_by_product, test_image_by_product, open_set_queries
 
 
 # ============================================================
@@ -719,7 +783,7 @@ def hsc_climb(leaf_probabilities, leaf_ids, threshold):
     }
 
 
-def build_or_load_identity_index(backbone, projection_head, use_projection, processor, dino_checkpoint, gallery_images_by_product):
+def build_or_load_identity_index(backbone, projection_head, use_projection, processor, dino_checkpoint, gallery_images_by_product, open_set_holdout_fraction=0.0):
     config_path = INDEX_DIR / "identity_index_config.json"
     product_codes = sorted(gallery_images_by_product)
     # SPLIT_SEED/TEST_IMAGES_PER_PRODUCT/VAL_IMAGES_PER_PRODUCT included
@@ -733,10 +797,18 @@ def build_or_load_identity_index(backbone, projection_head, use_projection, proc
     # built from a different held-out split than the one actually in use,
     # with no warning. Matches the same caching-invalidation care already
     # taken for --top-identity-candidates (a real CLI flag, unlike these).
+    # open_set_* included for exactly the same reason SPLIT_SEED et al.
+    # are: an open-set run REMOVES whole identities from the gallery, so a
+    # cached full-gallery index would look "fresh" by product count alone
+    # only if the count happened to match -- and worse, a cached OPEN-SET
+    # index (missing identities) could be silently reused by a subsequent
+    # normal run, quietly deflating every headline number with no warning.
     expected = {
         "checkpoint": dino_checkpoint, "use_projection": use_projection, "num_products": len(product_codes),
         "split_seed": SPLIT_SEED, "test_images_per_product": TEST_IMAGES_PER_PRODUCT,
         "val_images_per_product": VAL_IMAGES_PER_PRODUCT,
+        "open_set_holdout_fraction": open_set_holdout_fraction,
+        "open_set_split_seed": OPEN_SET_SPLIT_SEED if open_set_holdout_fraction else None,
     }
 
     if _index_is_fresh(config_path, expected):
@@ -794,13 +866,78 @@ def build_or_load_identity_index(backbone, projection_head, use_projection, proc
 # The pipeline itself
 # ============================================================
 
+def roc_auc(positive_scores, negative_scores):
+    """Rank-based (Mann-Whitney U) AUROC, with proper average-rank tie
+    handling. Written out rather than pulled from sklearn/scipy to avoid
+    adding a dependency to a script that already runs in three different
+    environments (local/Colab/Modal). Interpretation here: the
+    probability that a randomly chosen in-catalog correct answer scores
+    higher than a randomly chosen off-catalog query."""
+    positives = np.asarray(positive_scores, dtype=float)
+    negatives = np.asarray(negative_scores, dtype=float)
+    if len(positives) == 0 or len(negatives) == 0:
+        return None
+
+    combined = np.concatenate([positives, negatives])
+    order = combined.argsort(kind="mergesort")
+    ranks = np.empty(len(combined), dtype=float)
+    ranks[order] = np.arange(1, len(combined) + 1, dtype=float)
+
+    sorted_values = combined[order]
+    start = 0
+    while start < len(sorted_values):
+        stop = start
+        while stop + 1 < len(sorted_values) and sorted_values[stop + 1] == sorted_values[start]:
+            stop += 1
+        if stop > start:
+            ranks[order[start:stop + 1]] = (start + 1 + stop + 1) / 2.0
+        start = stop + 1
+
+    positive_rank_sum = ranks[:len(positives)].sum()
+    return float((positive_rank_sum - len(positives) * (len(positives) + 1) / 2.0) / (len(positives) * len(negatives)))
+
+
+def _threshold_row(threshold, correct_scores, open_set_scores):
+    return {
+        "threshold": float(threshold),
+        # Correct in-catalog answers this threshold would throw away.
+        "false_reject_rate": float(np.mean(correct_scores < threshold)),
+        # Off-catalog queries this threshold would still confidently
+        # assert some (necessarily wrong) product for.
+        "false_accept_rate": float(np.mean(open_set_scores >= threshold)),
+    }
+
+
+def open_set_threshold_table(correct_scores, open_set_scores):
+    """The operating table --reject-threshold has never had: for each
+    candidate threshold, BOTH error rates it buys. Percentile rows are
+    anchored on the correct-answer distribution (so they stay meaningful
+    whatever absolute score scale a checkpoint happens to produce);
+    best_balanced is the threshold minimizing the sum of both error rates
+    (equivalently, maximizing Youden's J) over every observed score."""
+    rows = {}
+    for percentile in (1, 2, 5, 10, 20, 30, 50):
+        rows[f"p{percentile}"] = _threshold_row(np.percentile(correct_scores, percentile), correct_scores, open_set_scores)
+
+    grid = np.unique(np.concatenate([correct_scores, open_set_scores]))
+    best = min(grid, key=lambda t: np.mean(correct_scores < t) + np.mean(open_set_scores >= t))
+    rows["best_balanced"] = _threshold_row(best, correct_scores, open_set_scores)
+    return rows
+
+
 class HierarchicalRetriever:
-    def __init__(self):
+    def __init__(self, open_set_holdout_fraction=OPEN_SET_HOLDOUT_FRACTION):
         self.siglip2_model, self.siglip2_processor, siglip2_checkpoint = load_siglip2()
         self.dino_backbone, self.dino_head, self.dino_use_projection, dino_checkpoint = load_dinov3()
         self.dino_processor = AutoImageProcessor.from_pretrained(DINOV3_MODEL_ID, token=os.environ.get("HF_TOKEN"))
 
-        self.gallery_images_by_product, self.test_image_by_product = make_view_split()
+        self.open_set_holdout_fraction = open_set_holdout_fraction
+        self.open_set_identities = pick_open_set_identities(open_set_holdout_fraction)
+        self.gallery_images_by_product, self.test_image_by_product, self.open_set_queries = make_view_split(self.open_set_identities)
+        if self.open_set_identities:
+            print(f"Open-set split: {len(self.open_set_identities):,} of {len(IDENTITY_TO_PRODUCT_CODES):,} identities held "
+                  f"OUT of the gallery entirely ({len(self.open_set_queries):,} off-catalog queries). "
+                  f"R@K from this run is NOT comparable to normal-run numbers -- the gallery is smaller.")
 
         self.identities, self.identity_embeddings = build_or_load_semantic_index(
             self.siglip2_model, self.siglip2_processor, siglip2_checkpoint,
@@ -817,7 +954,7 @@ class HierarchicalRetriever:
 
         self.gallery_product_codes, self.gallery_embeddings = build_or_load_identity_index(
             self.dino_backbone, self.dino_head, self.dino_use_projection, self.dino_processor,
-            dino_checkpoint, self.gallery_images_by_product,
+            dino_checkpoint, self.gallery_images_by_product, open_set_holdout_fraction,
         )
         self.gallery_index_by_code = {code: i for i, code in enumerate(self.gallery_product_codes)}
 
@@ -827,12 +964,21 @@ class HierarchicalRetriever:
         return hsc_climb(leaf_probabilities, self.hsc_leaf_ids, threshold)
 
     def shortlist_identities(self, siglip_image_embedding, allowed_categories, top_k):
+        # Open-set holdout has to be applied HERE too, not just in the
+        # DINOv3 gallery: rerank_by_identity already drops codes missing
+        # from the gallery, so a held-out identity could never be returned
+        # either way -- but leaving it in the shortlist would let it
+        # consume top_k slots that then silently evaporate, shrinking the
+        # effective shortlist size and confounding the very parameter
+        # (--top-identity-candidates) this project has tuned most.
+        excluded = self.open_set_identities
         if allowed_categories is not None:
-            candidate_indices = [i for i, identity in enumerate(self.identities) if self.identity_category.get(identity) in allowed_categories]
+            candidate_indices = [i for i, identity in enumerate(self.identities)
+                                 if self.identity_category.get(identity) in allowed_categories and identity not in excluded]
         else:
-            candidate_indices = list(range(len(self.identities)))
+            candidate_indices = [i for i, identity in enumerate(self.identities) if identity not in excluded]
         if not candidate_indices:
-            candidate_indices = list(range(len(self.identities)))
+            candidate_indices = [i for i, identity in enumerate(self.identities) if identity not in excluded]
 
         index_tensor = torch.tensor(candidate_indices, dtype=torch.long)
         sub_embeddings = self.identity_embeddings[index_tensor]
@@ -1083,6 +1229,38 @@ class HierarchicalRetriever:
 
         ranks = np.asarray(ranks, dtype=float)
         correct_scores = np.asarray(correct_top1_scores, dtype=float)
+
+        # ---- Open-set arm (spec section 8.1) -------------------------
+        # Queries whose true identity was removed from the gallery
+        # entirely, so NO answer at any rank is correct. Their top-1
+        # scores are the negatives the reject threshold has to separate
+        # from `correct_scores` (the positives). Empty unless
+        # --open-set-holdout-fraction was passed, in which case every
+        # number below is None and nothing about a normal run changes.
+        open_set_scores = np.asarray(
+            self._score_open_set_queries(use_category_gate, hsc_threshold, top_identity_candidates, use_score_fusion),
+            dtype=float,
+        )
+        open_set_metrics = None
+        if len(open_set_scores) > 0 and len(correct_scores) > 0:
+            open_set_metrics = {
+                "num_open_set_queries": int(len(open_set_scores)),
+                "num_held_out_identities": len(self.open_set_identities),
+                "open_set_score_mean": float(open_set_scores.mean()),
+                "correct_score_mean": float(correct_scores.mean()),
+                # Threshold-free separability: probability that a random
+                # in-catalog correct answer outscores a random off-catalog
+                # query. 0.5 = the DINOv3 score carries NO information
+                # about whether the product is in the catalog at all, and
+                # no choice of --reject-threshold can ever work; that
+                # would be a real (negative) finding, not a bug.
+                "auroc": roc_auc(correct_scores, open_set_scores),
+                # The real operating table: each row is a threshold and
+                # BOTH error rates it buys. false_reject = correct answers
+                # thrown away; false_accept = off-catalog queries the
+                # system still confidently asserts a product for.
+                "threshold_table": open_set_threshold_table(correct_scores, open_set_scores),
+            }
         # Sweep candidate thresholds and report what fraction of REAL
         # correct top-1 answers each would falsely reject -- the only
         # thing measurable without a genuinely-unknown-product eval split
@@ -1108,8 +1286,39 @@ class HierarchicalRetriever:
             "median_rank": float(np.median(ranks)),
             "mean_rank": float(np.mean(ranks)),
             "reject_threshold_sweep": reject_threshold_sweep,
+            "open_set": open_set_metrics,
         }
         return metrics
+
+    def _score_open_set_queries(self, use_category_gate, hsc_threshold, top_identity_candidates, use_score_fusion):
+        """Top-1 DINOv3 score for every off-catalog query. Same shortlist
+        -> rerank path as a real query (deliberately -- these have to be
+        scored exactly the way a genuine unknown product would be at
+        serving time, not through some shortcut). Returns [] when the
+        open-set split is disabled. patch_rerank is intentionally not
+        applied: it's confirmed harmful (docs/eval_log.md 2026-08-03) and
+        re-sorting the top-10 window can only change WHICH wrong product
+        wins here, not whether one is asserted."""
+        if not self.open_set_queries:
+            return []
+        print(f"Scoring {len(self.open_set_queries):,} off-catalog (open-set) queries...")
+
+        scores = []
+        CHUNK = 32
+        for start in range(0, len(self.open_set_queries), CHUNK):
+            chunk = self.open_set_queries[start:start + CHUNK]
+            images = [load_rgb_image(path) for _, path in chunk]
+            siglip_chunk = embed_images_siglip(self.siglip2_model, self.siglip2_processor, images)
+            dino_chunk = embed_images_dino(self.dino_backbone, self.dino_head, self.dino_use_projection, self.dino_processor, images)
+            for i in range(len(chunk)):
+                siglip_embedding = siglip_chunk[i:i + 1]
+                dino_embedding = dino_chunk[i:i + 1]
+                allowed = self.hsc_predict(siglip_embedding, threshold=hsc_threshold)["allowed_categories"] if use_category_gate else None
+                candidates = self.shortlist_identities(siglip_embedding, allowed, top_identity_candidates)
+                ranked = self.rerank_by_identity(dino_embedding, candidates, len(self.gallery_product_codes), use_score_fusion=use_score_fusion)
+                if ranked:
+                    scores.append(ranked[0][1])
+        return scores
 
 
 def print_result(query_path, result):
@@ -1153,6 +1362,20 @@ def print_metrics(title, metrics):
         for label, row in metrics["reject_threshold_sweep"].items():
             print(f"    {label}: threshold={row['threshold']:.4f}  false_reject_rate={row['false_reject_rate']*100:.2f}%")
 
+    open_set = metrics.get("open_set")
+    if open_set:
+        print(f"\nOPEN-SET REJECTION (spec 8.1) -- {open_set['num_held_out_identities']:,} identities held fully out of "
+              f"the gallery, {open_set['num_open_set_queries']:,} off-catalog queries with NO correct answer at any rank.")
+        print(f"  NOTE: R@K above is NOT comparable to normal-run numbers -- this run's gallery is smaller.")
+        print(f"  Mean top-1 score: correct in-catalog {open_set['correct_score_mean']:.4f} vs off-catalog {open_set['open_set_score_mean']:.4f}")
+        auroc = open_set["auroc"]
+        print(f"  AUROC (separability of in-catalog vs off-catalog): {auroc:.4f}"
+              f"{'  <-- ~0.5 means NO threshold can work' if auroc is not None and auroc < 0.6 else ''}")
+        print("  Threshold operating table (pick a row, pass it as --reject-threshold):")
+        for label, row in open_set["threshold_table"].items():
+            print(f"    {label:>13}: threshold={row['threshold']:.4f}  "
+                  f"false_reject={row['false_reject_rate']*100:5.2f}%  false_accept={row['false_accept_rate']*100:5.2f}%")
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -1171,7 +1394,7 @@ if __name__ == "__main__":
     parser.add_argument("--score-fusion", action="store_true",
                          help="Rerank by a weighted fusion of DINOv3 + SigLIP2 identity scores instead of "
                               "DINOv3-only (spec sections 2.1/6). Off by default -- unvalidated new arm, "
-                              "benchmark against the real 47.65% ungated baseline before trusting it. Only "
+                              "benchmark against the real 47.65%% ungated baseline before trusting it. Only "
                               "affects ranking ACROSS different identities in the shortlist -- SigLIP2's score "
                               "is identical across colorway siblings of the same identity by design, so this "
                               "can't help DINOv3 pick between those.")
@@ -1182,12 +1405,20 @@ if __name__ == "__main__":
     parser.add_argument("--top-identity-candidates", type=int, default=TOP_IDENTITY_CANDIDATES,
                          help=f"SigLIP2 identity-shortlist size fed to DINOv3's rerank (default {TOP_IDENTITY_CANDIDATES}). "
                               "The single most validated lever in this project's history (10->25 drove the "
-                              "36.72%->47.65% jump, docs/eval_log.md 2026-07-31) -- sweeping past 25 (e.g. 35/50/75/100) "
+                              "36.72%%->47.65%% jump, docs/eval_log.md 2026-07-31) -- sweeping past 25 (e.g. 35/50/75/100) "
                               "is the top-priority untested experiment per docs/roadmap.md's 2026-08-02 analysis. "
                               "Exposed as a flag so this can be swept without editing the module constant each time.")
+    parser.add_argument("--open-set-holdout-fraction", type=float, default=OPEN_SET_HOLDOUT_FRACTION,
+                         help="Fraction of catalog IDENTITIES (0-1) to remove from the gallery entirely, turning all "
+                              "their images into off-catalog queries with no correct answer -- spec section 8.1's "
+                              "open-set rejection split, the missing ingredient for calibrating --reject-threshold "
+                              "(which has shipped uncalibrated because the existing eval can only measure FALSE "
+                              "rejects, never false ACCEPTS). Try 0.1. Off by default. IMPORTANT: an open-set run's "
+                              "R@K is NOT comparable to the normal benchmark rows in docs/eval_log.md -- the gallery "
+                              "is deliberately smaller -- so log it as its own row, never alongside them.")
     args = parser.parse_args()
 
-    retriever = HierarchicalRetriever()
+    retriever = HierarchicalRetriever(open_set_holdout_fraction=args.open_set_holdout_fraction)
 
     if args.image:
         result = retriever.retrieve(args.image, use_category_gate=args.category_gate, hsc_threshold=args.hsc_threshold, final_top_k=args.top_k, reject_threshold=args.reject_threshold, use_score_fusion=args.score_fusion, use_patch_rerank=args.patch_rerank, top_identity_candidates=args.top_identity_candidates)

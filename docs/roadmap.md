@@ -2035,3 +2035,80 @@ brands, ~1,153 records) are scraped, captioned, and (mostly) cropped,
 but **none have been re-embedded against either encoder yet** — every
 real number above is measured against the original 6-brand/1,234-
 product catalog only.
+
+## Update — 2026-08-03: open-set rejection eval split built (spec §8.1), the missing half of `--reject-threshold`
+
+Picked this up while a `--score-fusion` run was occupying Colab, on the
+reasoning that it's the one item that needed no GPU to build and blocked
+nothing else in flight.
+
+**The gap, stated precisely**: open-set rejection itself was already
+implemented (`--reject-threshold`, `REJECT_SIMILARITY_THRESHOLD`,
+`retrieve()`'s `rejected_open_set` field) — but has shipped permanently
+uncalibrated (`None`) because there was no way to pick its one parameter.
+Every eval query's true product is in the gallery by construction, so
+`evaluate()`'s existing `reject_threshold_sweep` can only ever measure the
+**false-reject** rate (correct answers a threshold throws away). It can
+never measure the **false-accept** rate (off-catalog queries the system
+still confidently asserts a product for) — which is the entire reason
+open-set rejection exists. A one-sided error table can't calibrate a
+threshold.
+
+**What was built** (`hierarchical_retrieval_pipeline.py`,
+`--open-set-holdout-fraction`, default 0.0 = off, behavior bit-identical
+to before when disabled):
+
+- Holds out a deterministic fraction of catalog **identities** — not
+  product codes — from the gallery entirely. Identity granularity is the
+  point: dropping one product code leaves its colorway siblings ("same
+  shoe, different colorway") in the gallery, so the query wouldn't be
+  genuinely off-catalog. Same framing as
+  `unseen_product_enrollment_eval.py`.
+- Held-out identities are removed from **both** the DINOv3 gallery index
+  *and* the SigLIP2 identity shortlist. `rerank_by_identity` already drops
+  codes missing from the gallery, so they were unretrievable either way —
+  but leaving them in the shortlist would let them consume `top_k` slots
+  that then silently evaporate, shrinking the effective shortlist and
+  confounding `--top-identity-candidates`, the single most-tuned parameter
+  in this project.
+- Reports **AUROC** (threshold-free separability of in-catalog vs
+  off-catalog top-1 scores) plus a real two-sided **threshold operating
+  table**: every row gives both false-reject and false-accept rate, with a
+  `best_balanced` row (minimizes their sum / maximizes Youden's J). If
+  AUROC comes back ≈0.5, that means the DINOv3 score carries no
+  information about catalog membership and **no threshold can ever work** —
+  a real negative finding this design can now surface rather than hide.
+- `build_or_load_identity_index`'s cache fingerprint extended with the
+  open-set params. This is the same stale-cache bug class the 2026-08-02
+  correctness review already caught once: without it, a cached open-set
+  index (missing identities) could be silently reused by a later normal
+  run and quietly deflate every headline number with no warning.
+
+**Validated locally, no GPU needed** (pure-function level — the split
+logic and metrics, not the encoders): AUROC verified against four
+hand-computable cases (perfect separation 1.0, perfect inversion 0.0, all
+ties 0.5, a known mixed case 0.25) and an empty-input guard. The split
+itself verified against the real catalog at fraction 0.1: 93 of 930
+identities → 124 product codes → 698 off-catalog queries, deterministic
+across calls, **zero leakage** (no held-out code appears in the gallery or
+the known-query test set), and every off-catalog query traced back to a
+held-out code. Also explicitly verified the **non-perturbation guarantee**:
+every surviving product keeps its byte-identical gallery/test image split
+whether or not open-set holdout is on (the shuffle happens before the
+holdout branch on purpose), so the known-query arm stays comparable to a
+normal run.
+
+**Not yet run for real** — needs the fine-tuned checkpoints on Colab/Modal.
+Suggested first run: `--evaluate --open-set-holdout-fraction 0.1
+--top-identity-candidates 75` (K=75 being the current best). **Its R@K must
+be logged as its own `docs/eval_log.md` row, never alongside the normal
+rows** — an open-set run's gallery is deliberately smaller, so its R@K is
+not comparable. The AUROC and the threshold table are the outputs that
+matter.
+
+**Pre-existing bug found and fixed in passing**: `--help` crashed outright
+(`ValueError: badly formed help string`) — unescaped `%` in the
+`--score-fusion` and `--top-identity-candidates` help text, which
+Python 3.14's argparse validates and older Pythons silently tolerated.
+Escaped to `%%`. Confirmed pre-existing against `git show HEAD`, not
+introduced by this change.
