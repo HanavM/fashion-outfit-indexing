@@ -92,20 +92,38 @@ ENV = {
 
 @app.function(image=image, gpu="A10G", volumes={"/data": volume},
               secrets=[hf_secret], timeout=90 * 60)
-def evaluate():
-    import os
-    import subprocess
+def evaluate(extra_args: str = "", index_dir: str = ""):
+    """`extra_args` is appended to --evaluate (e.g. "--open-set-holdout-fraction 0.1").
 
-    os.environ.update(ENV)
-    subprocess.run(
-        ["python", "/root/hierarchical_retrieval_pipeline.py", "--evaluate"],
-        check=True,
-    )
+    `index_dir` sets RETRIEVAL_INDEX_DIR. Pass it for ANY run whose flags
+    change the identity index fingerprint -- open-set holdout is the live
+    example, since it removes whole identities from the gallery and would
+    otherwise rebuild the shared retrieval_indexes/ in place. modal_app_serve.py
+    loads that directory at container start, so a shared rebuild means the
+    next serving cold start quietly answers from a smaller catalog.
+    """
+    import os
+    import shlex
+    import subprocess
+    import sys
+
+    env = {**os.environ, **ENV, "PYTHONUNBUFFERED": "1"}
+    if index_dir:
+        env["RETRIEVAL_INDEX_DIR"] = index_dir
+        print(f"index dir isolated to {index_dir} (serving index untouched)", flush=True)
+
+    args = [sys.executable, "/root/hierarchical_retrieval_pipeline.py", "--evaluate"]
+    args += shlex.split(extra_args)
+    print(f"running: {' '.join(args)}", flush=True)
+
+    result = subprocess.run(args, env=env)
     # Persists the catalog + index caches this run just built, so the next
     # invocation skips catalog verification and index building entirely.
     volume.commit()
+    if result.returncode != 0:
+        raise RuntimeError(f"evaluate failed ({result.returncode})")
 
 
 @app.local_entrypoint()
-def main():
-    evaluate.remote()
+def main(extra_args: str = "", index_dir: str = ""):
+    evaluate.remote(extra_args=extra_args, index_dir=index_dir)
