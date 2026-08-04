@@ -125,7 +125,17 @@ _HIERARCHY_CANDIDATES = [
 ]
 HIERARCHY_PATH = next((p for p in _HIERARCHY_CANDIDATES if p.is_file()), _HIERARCHY_CANDIDATES[0])
 
-INDEX_DIR = DATASET_ROOT / "retrieval_indexes"
+# Overridable so an EXPERIMENT cannot clobber the index a live service is
+# serving from. This is not hypothetical: `open_set_holdout_fraction` is
+# part of the identity index's invalidating fingerprint, so running
+# `--evaluate --open-set-holdout-fraction 0.1` against the same dataset
+# root rebuilds retrieval_indexes/ IN PLACE with whole identities removed
+# from the gallery. modal_app_serve.py loads that directory at container
+# start, so the next cold start would come up serving a silently smaller
+# catalog -- no error, just quietly worse answers. Point experiments at
+# their own directory instead:
+#     RETRIEVAL_INDEX_DIR=/data/apparel_dataset/retrieval_indexes_openset
+INDEX_DIR = Path(os.environ.get("RETRIEVAL_INDEX_DIR", str(DATASET_ROOT / "retrieval_indexes")))
 INDEX_DIR.mkdir(parents=True, exist_ok=True)
 
 SIGLIP2_BASE_MODEL_ID = "google/siglip2-base-patch16-384"
