@@ -61,9 +61,33 @@ For an unordered pair (a, b) over N outfit observations:
   lift           p(a,b) / (p(a)p(b)) -- >1 means more often than independent
   npmi           normalized pointwise mutual information, in [-1, 1]
 
-`lift`/`npmi` matter because raw counts just rank by popularity: pants
-co-occur with everything, so counts alone would recommend pants for every
-query. Lift asks whether the pairing is more common than chance.
+`lift`/`npmi` were intended to correct for popularity -- pants co-occur
+with everything, so counts alone look like they would just recommend pants
+for every query.
+
+**MEASURED, 2026-08-04: lift does not work on this data, and the reason is
+worth stating rather than quietly dropping it.** On the first 1,233 outfit
+observations, 51 of 63 pairs scored lift < 1 (median 0.82) -- i.e. almost
+every pair of garments appeared TOGETHER LESS OFTEN THAN CHANCE, which is
+impossible as a fact about clothing and is therefore a fact about the
+detector. The cause is that the detector recovers only ~1.74 items per
+photo while a dressed person is wearing four or five. Categories are
+competing for a small, capped number of detections (segment_outfit.py
+keeps at most one item per category and NMS-suppresses overlaps), so
+detecting a sneaker actively lowers the chance of also detecting pants in
+the same photo. That depresses every joint probability below the product
+of the marginals.
+
+Two consequences, both applied here:
+  1. Ranking is by COUNT by default, not lift. Within a fixed anchor,
+     ranking by count and by p(b|a) are the same ordering, and that
+     ordering is the directly interpretable one: "of the outfits where the
+     detector saw a jacket, this is what it most often also saw."
+  2. lift and npmi are still emitted, as DIAGNOSTICS, and the index
+     carries the measured artifact in `diagnostics` so a reader cannot
+     pick lift up and use it as a ranking signal without seeing why not.
+Ranking by lift also puts n=3 pairs at the top, which is small-count noise
+rather than signal.
 
 Usage:
     python3 build_outfit_cooccurrence.py
@@ -102,6 +126,10 @@ CAVEATS = [
     "The corpus is Reddit/Pinterest/wear-site street style. It is not a "
     "representative sample of how anyone dresses; it is a sample of what gets "
     "posted.",
+    "DO NOT RANK BY `lift` OR `npmi`. They are emitted as diagnostics only. "
+    "The detector recovers ~1.7 items from photos of people wearing 4-5, so "
+    "categories compete for a capped number of detections and nearly every "
+    "pair scores below chance. See `diagnostics.lift_is_unreliable`.",
 ]
 
 
@@ -226,9 +254,29 @@ def build_index(records, min_confidence=0.0, min_pair_count=3, sources=None):
         if top:
             by_context[context] = {"outfits": context_totals[context], "top_pairs": top}
 
+    # Recomputed every build rather than hard-coded from the day it was
+    # first observed: if a better detector ever lifts items/outfit, this
+    # number is how a future reader finds out that lift became usable.
+    mean_items = (sum(int(k) * v for k, v in item_count_hist.items()) / denominator)
+    lifts = [p["lift"] for p in pairs]
+    below_chance = sum(1 for lift in lifts if lift < 1.0)
+
     return {
         "schema_version": SCHEMA_VERSION,
         "generated_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        "diagnostics": {
+            "mean_items_per_outfit": mean_items,
+            "pairs_with_lift_below_1": below_chance,
+            "pairs_total": len(pairs),
+            "lift_is_unreliable": below_chance > len(pairs) / 2 if pairs else True,
+            "why": "A dressed person wears 4-5 garments; the detector recovers "
+                   f"{mean_items:.2f} on average. Categories therefore compete for a "
+                   "capped number of detections (one item per category, plus NMS), "
+                   "which pushes joint probabilities below the product of the "
+                   "marginals. A majority of pairs scoring below chance is an artifact "
+                   "of that competition, not evidence that garments avoid each other. "
+                   "Rank by `count` / `p_b_given_a` instead.",
+        },
         "provenance": {
             "source_corpus": "outfit_dataset/metadata.json",
             "detector": "index_outfits.py -> segment_outfit.detect_outfit_items "
@@ -309,11 +357,17 @@ class OutfitCooccurrence:
     def known_category(self, category):
         return category in self.data.get("categories", {})
 
-    def companions(self, category, top_k=8, min_count=3, rank_by="lift"):
-        """Categories observed alongside `category`, ranked by `lift`
-        (surprise) or `count` (popularity). Empty list when there is no
-        evidence -- that emptiness is what the caller uses to decide to fall
-        back."""
+    def companions(self, category, top_k=8, min_count=3, rank_by="count"):
+        """Categories observed alongside `category`, ranked by `count` (which
+        for a fixed anchor is the same ordering as p(companion|anchor)).
+
+        `rank_by="lift"` is available but is NOT the default and should not
+        be used on this data -- see the module docstring's measured finding
+        that detector competition drives most pairs below chance, and
+        `diagnostics.lift_is_unreliable` in the index itself.
+
+        Empty list when there is no evidence -- that emptiness is what the
+        caller uses to decide to fall back."""
         results = []
         for other, pair, conditional_key in self._by_category.get(category, []):
             if pair["count"] < min_count:
@@ -328,7 +382,7 @@ class OutfitCooccurrence:
                 "example_post_urls": pair.get("example_post_urls", []),
             })
         key = (lambda r: (r["lift"], r["cooccurrence_count"])) if rank_by == "lift" \
-            else (lambda r: (r["cooccurrence_count"], r["lift"]))
+            else (lambda r: (r["cooccurrence_count"], r["share_of_outfits_with_anchor"]))
         results.sort(key=key, reverse=True)
         return results[:top_k]
 
@@ -396,6 +450,15 @@ def main():
     for pair in index["pairs"][:12]:
         print(f"    {pair['a']:<12} + {pair['b']:<12} n={pair['count']:<5} "
               f"p(b|a)={pair['p_b_given_a']:.2f}  lift={pair['lift']:.2f}")
+
+    diagnostics = index["diagnostics"]
+    print(f"\n  mean items/outfit     : {diagnostics['mean_items_per_outfit']:.2f}")
+    print(f"  pairs with lift < 1   : {diagnostics['pairs_with_lift_below_1']}"
+          f"/{diagnostics['pairs_total']}")
+    if diagnostics["lift_is_unreliable"]:
+        print("  -> lift is UNRELIABLE on this data (detector competition, not "
+              "garments avoiding each other). Rank by count / p(b|a).")
+
     print("\nThese are UNVALIDATED model outputs, not measured facts about "
           "what people wear. See the index's own `caveats` array.")
 

@@ -98,6 +98,11 @@ person. Two changes here follow from it:
      PROPOSED from co-occurrence -- "what actually gets worn with this" --
      rather than requiring the user to already know what they want. That
      is the outfit-level result the spec's architecture diagram asks for.
+     Proposals are ranked by observed count, i.e. by p(companion|anchor);
+     lift was measured and rejected for this (see
+     build_outfit_cooccurrence.py -- the detector recovers ~1.7 items from
+     photos containing 4-5, so categories compete and nearly every pair
+     scores below chance).
 
 The old independent-search path is untouched and is still what runs when
 the index is missing, when the anchor category is unknown, or when the
@@ -649,6 +654,8 @@ if __name__ == "__main__":
                              "taxonomy category directly (e.g. 'jacket'). Loads no model weights.")
     parser.add_argument("--no-cooccurrence", action="store_true",
                         help="Force the pre-11.1 two-independent-searches behaviour.")
+    parser.add_argument("--cooccurrence-path", type=str, default=str(COOCCURRENCE_PATH),
+                        help="Override the outfit co-occurrence index location.")
     parser.add_argument("--canonical-only", action="store_true",
                          help="Skip catalog_query_search.py's semantic-embedding fallback for the text side "
                               "(no model weights loaded for that stage). Also engaged automatically if the "
@@ -661,6 +668,7 @@ if __name__ == "__main__":
     result = composed_search(args.image, args.text, top_k=args.top_k, metadata_path=args.metadata,
                              canonical_only=args.canonical_only,
                              use_cooccurrence=not args.no_cooccurrence,
+                             cooccurrence_path=args.cooccurrence_path,
                              anchor_category=args.anchor_category)
 
     parsed = result["parsed_text_query"]
@@ -688,7 +696,9 @@ if __name__ == "__main__":
     print(f"anchor_category: {result['anchor_category']}")
 
     if result["companion_suggestions"]:
-        print("\nObserved companions for the anchor (DETECTED, not verified; ranked by lift):")
+        print("\nObserved companions for the anchor (DETECTED, not verified; "
+              "ranked by co-occurrence count -- see build_outfit_cooccurrence.py "
+              "on why lift is not usable here):")
         for suggestion in result["companion_suggestions"]:
             print(f"  {suggestion['category']:<12} n={suggestion['cooccurrence_count']:<5} "
                   f"p(companion|anchor)={suggestion['share_of_outfits_with_anchor']:.2f}  "
