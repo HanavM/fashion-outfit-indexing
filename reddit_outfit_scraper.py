@@ -47,24 +47,19 @@ Source notes:
 """
 
 import argparse
-import io
-import json
 import time
 from datetime import datetime, timezone
 from pathlib import Path
 
-import imagehash
 import requests
-from PIL import Image
 
 from dataset_utils import load_outfit_records, outfit_key, save_outfit_records_safe
+from outfit_scrape_common import (
+    HEADERS, MIN_IMAGE_BYTES, MIN_IMAGE_SIDE, PHASH_DISTANCE, USER_AGENT,
+    download_images, format_stats, is_duplicate, load_seen_hashes, new_stats,
+)
 
 API = "https://arctic-shift.photon-reddit.com/api/posts/search"
-USER_AGENT = (
-    "fashion-tests-outfit-research/1.0 "
-    "(non-commercial dataset research; contact hanavmw13@gmail.com)"
-)
-HEADERS = {"User-Agent": USER_AGENT}
 
 DATASET_DIR = Path("outfit_dataset/reddit")
 
@@ -137,11 +132,10 @@ SUBREDDITS = [
 # Add it back with an explicit --subreddit if that mix proves acceptable.
 
 MAX_IMAGES_PER_POST = 4
-PHASH_DISTANCE = 6
-MIN_IMAGE_BYTES = 15_000
-MIN_IMAGE_SIDE = 320
+# PHASH_DISTANCE / MIN_IMAGE_BYTES / MIN_IMAGE_SIDE / IMAGE_SLEEP now live in
+# outfit_scrape_common so every outfit source dedups and validates
+# identically -- re-exported above for callers that import them from here.
 API_SLEEP = 1.2
-IMAGE_SLEEP = 0.35
 CHECKPOINT_EVERY = 15
 
 IMAGE_EXTS = (".jpg", ".jpeg", ".png", ".webp")
@@ -253,80 +247,10 @@ def is_candidate(post, allowed_flairs, min_score):
     return bool(image_urls_for(post))
 
 
-def load_seen_hashes(records):
-    hashes = []
-    for record in records:
-        for value in record.get("phash", []):
-            try:
-                hashes.append(imagehash.hex_to_hash(value))
-            except Exception:
-                continue
-    return hashes
-
-
-def is_duplicate(candidate, seen_hashes):
-    return any(candidate - other <= PHASH_DISTANCE for other in seen_hashes)
-
-
 def download_post_images(post_id, urls, seen_hashes, stats):
-    """Download up to MAX_IMAGES_PER_POST images, skipping perceptual dupes.
-
-    Idempotent: an already-downloaded file is re-hashed from disk instead of
-    re-fetched, so re-running costs no bandwidth and creates no duplicates.
-    """
-    post_dir = DATASET_DIR / post_id
-    saved_paths, saved_urls, saved_hashes = [], [], []
-
-    for index, url in enumerate(urls[:MAX_IMAGES_PER_POST]):
-        dest = post_dir / f"image_{len(saved_paths)}.jpg"
-        if dest.is_file():
-            try:
-                phash = imagehash.phash(Image.open(dest).convert("RGB"))
-            except Exception:
-                dest.unlink(missing_ok=True)
-                continue
-            saved_paths.append(str(dest))
-            saved_urls.append(url)
-            saved_hashes.append(str(phash))
-            seen_hashes.append(phash)
-            continue
-
-        try:
-            resp = requests.get(url, headers=HEADERS, timeout=45)
-            resp.raise_for_status()
-            blob = resp.content
-        except Exception as error:
-            print(f"    image fetch failed ({error}): {url[:90]}")
-            stats["fetch_failed"] += 1
-            continue
-        finally:
-            time.sleep(IMAGE_SLEEP)
-
-        if len(blob) < MIN_IMAGE_BYTES:
-            stats["too_small"] += 1
-            continue
-        try:
-            image = Image.open(io.BytesIO(blob)).convert("RGB")
-        except Exception:
-            stats["undecodable"] += 1
-            continue
-        if min(image.size) < MIN_IMAGE_SIDE:
-            stats["too_small"] += 1
-            continue
-
-        phash = imagehash.phash(image)
-        if is_duplicate(phash, seen_hashes) or is_duplicate(phash, [imagehash.hex_to_hash(h) for h in saved_hashes]):
-            stats["dup"] += 1
-            continue
-
-        post_dir.mkdir(parents=True, exist_ok=True)
-        image.save(dest, "JPEG", quality=92)
-        saved_paths.append(str(dest))
-        saved_urls.append(url)
-        saved_hashes.append(str(phash))
-        seen_hashes.append(phash)
-
-    return saved_paths, saved_urls, saved_hashes
+    """Download up to MAX_IMAGES_PER_POST of a post's images."""
+    return download_images(DATASET_DIR / post_id, urls, seen_hashes, stats,
+                           max_images=MAX_IMAGES_PER_POST)
 
 
 def build_record(post, subreddit, paths, urls, hashes):
@@ -424,7 +348,7 @@ def main():
     print(f"Existing reddit outfit records: {len(existing_ids)} "
           f"({len(seen_hashes)} known image hashes)")
 
-    stats = {"dup": 0, "too_small": 0, "undecodable": 0, "fetch_failed": 0}
+    stats = new_stats()
     summary = []
     for subreddit, target, allowed_flairs, min_score in plan:
         posts, images, scanned = scrape_subreddit(
@@ -441,8 +365,7 @@ def main():
     print("\n=== summary ===")
     for subreddit, posts, images, scanned in summary:
         print(f"  r/{subreddit:22s} {posts:4d} posts  {images:4d} images  ({scanned} scanned)")
-    print(f"  skipped: {stats['dup']} perceptual dupes, {stats['too_small']} too small, "
-          f"{stats['undecodable']} undecodable, {stats['fetch_failed']} fetch failures")
+    print(f"  skipped: {format_stats(stats)}")
     print(f"Total outfit_dataset records: {len(final)}, images: {total_images}")
 
 

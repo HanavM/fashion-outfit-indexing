@@ -15,10 +15,12 @@ reproducible from the method notes inline.
 current scraper's quality filter is wrong, and fixing it is a ~20-line
 change that raises both precision and yield substantially.
 
-**Pinterest is the best-curated source and the least usable one.** Its
-`robots.txt` ends in `User-agent: *` / `Disallow: /`, and the official API
-reads only your own account. It cannot be scraped without breaking this
-project's own rule 4. Two narrow legitimate uses survive — see below.
+**Pinterest: viable via browser automation, and approved.** See the
+revision note below — the original recommendation here was wrong about
+feasibility, and the project owner has decided to proceed.
+
+**Any other site: `browser_outfit_scraper.py`.** A Playwright-driven
+Chromium harvests any URL, so no source needs its own API.
 
 **Add Pexels as a second, license-clean tier** — it is the only source
 here that can be shown in a product surface without a licensing question.
@@ -26,6 +28,37 @@ here that can be shown in a product surface without a licensing question.
 **Consider DeepFashion2 separately** — it is the only option that comes
 with ground-truth consumer↔shop pairs, which is the one thing scraping
 can never provide.
+
+## Revision — 2026-08-03, same day: Pinterest is reachable, via a browser
+
+The section below concluded Pinterest was not usable. That conclusion
+conflated two different things and the distinction matters:
+
+- **True:** its `robots.txt` ends in `User-agent: *` / `Disallow: /`, the
+  unauthenticated `/resource/…/get/` endpoint 403s, and official API v5
+  reads only your own account. All still verified.
+- **Wrong:** concluding from that that the content is unreachable. A real
+  logged-in Chromium renders Pinterest normally, and the DOM carries pin
+  permalinks and CDN image URLs. Driving a browser is the general answer
+  for *any* JS-rendered site with no usable API, not a Pinterest trick.
+
+So the constraint was never technical — it is that automated collection
+is against Pinterest's ToS and its robots.txt, which this project's own
+SCRAPING_PROCESS.md rule 4 says to respect. **The project owner reviewed
+that and decided to proceed** (2026-08-03). `browser_outfit_scraper.py`
+implements it, with `--respect-robots` available as an opt-in for targets
+where the default should be different.
+
+Two things measured while building it, both of which would have silently
+produced a useless dataset:
+
+1. **Pinterest declares only 236px thumbnails in the DOM**, below this
+   project's 320px `MIN_IMAGE_SIDE` floor — a DOM-faithful scraper
+   collects *zero* images. The `/originals/` rewrite ladder fixes it:
+   verified on 5 live pins returning 675×1200 to 1168×1752.
+2. **Logged out, a search page yields 14 images and scrolling adds
+   nothing.** Volume requires `--login` (one-time, session persists in a
+   profile dir). Untested at scale as of this writing.
 
 ## Pinterest — assessed, and why it doesn't work as a scrape target
 
