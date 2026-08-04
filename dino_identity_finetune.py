@@ -682,14 +682,37 @@ class ArcFaceHead(nn.Module):
         self.scale = scale
 
     def forward(self, embeddings, label_indices):
-        weight_normalized = F.normalize(self.weight, dim=-1)
-        cosine = embeddings @ weight_normalized.T
-        target_cosine = cosine.gather(1, label_indices[:, None]).squeeze(1).clamp(-1 + 1e-7, 1 - 1e-7)
-        target_angle = torch.acos(target_cosine)
-        margin_cosine = torch.cos(target_angle + self.margin)
-        logits = cosine.clone()
-        logits.scatter_(1, label_indices[:, None], margin_cosine[:, None])
-        return logits * self.scale
+        # Computed entirely in fp32, explicitly outside autocast. Two
+        # independent reasons, and the first one is why this class had
+        # never actually run:
+        #
+        #   * Correctness. Under autocast the matmul returns fp16
+        #     `cosine`, but torch promotes acos/cos to fp32 for
+        #     stability -- so `margin_cosine` came back fp32 while
+        #     `logits` stayed fp16, and `scatter_` raised
+        #     "Expected self.dtype to be equal to src.dtype" on the very
+        #     first batch. ArcFace was implemented, documented and
+        #     benchmarkable-on-paper since this file was written, but it
+        #     crashed instantly every time it was selected, which is
+        #     exactly why docs/eval_log.md never had an arcface row.
+        #
+        #   * Numerics. acos is most precision-sensitive as |cos| -> 1,
+        #     which is precisely where a well-trained embedding puts its
+        #     positives and where the angular margin has to do its work.
+        #     fp16 is the wrong precision for it regardless of the crash.
+        #
+        # The head is tiny (num_identities x embedding_dim), so forcing
+        # fp32 here costs nothing measurable next to the backbone.
+        with torch.autocast(device_type=embeddings.device.type, enabled=False):
+            embeddings = embeddings.float()
+            weight_normalized = F.normalize(self.weight.float(), dim=-1)
+            cosine = embeddings @ weight_normalized.T
+            target_cosine = cosine.gather(1, label_indices[:, None]).squeeze(1).clamp(-1 + 1e-7, 1 - 1e-7)
+            target_angle = torch.acos(target_cosine)
+            margin_cosine = torch.cos(target_angle + self.margin)
+            logits = cosine.clone()
+            logits.scatter_(1, label_indices[:, None], margin_cosine[:, None])
+            return logits * self.scale
 
 
 all_product_codes_train = sorted(set(r["product_code"] for r in train_records))
