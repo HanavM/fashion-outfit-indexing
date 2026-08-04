@@ -94,12 +94,23 @@ MIN_OCR_CONF = float(os.environ.get("BRAND_OCR_MIN_CONF", "0.10"))
 
 # CRAFT detector sensitivity. easyocr's defaults (0.7 / 0.4) are tuned for
 # documents; garment wordmarks are low-contrast tonal embroidery as often as
-# they are printed text, so these are loosened. Measured on a 120-image pilot
-# before the full run -- see docs/eval_log.md; the loosened setting is what
-# the reported numbers use.
+# they are printed text, so these are loosened.
+#
+# Chosen from a real 118-image pilot (5 products x 2 images x 12 brands, same
+# deterministic sampler the full eval uses) rather than assumed:
+#
+#   easyocr defaults (0.7/0.4, mag 1.0)  3.40 s/img  no-text 59.32%  correct 15.25%
+#   loosened         (0.5/0.3, mag 1.0)  3.17 s/img  no-text 53.39%  correct 14.41%
+#   loosened + 1.5x upscale              8.61 s/img  no-text 55.08%  correct 13.56%
+#
+# Loosening buys ~6pt of no-text rate for free. Upscaling costs 2.7x the time
+# and buys nothing -- easyocr caps the working canvas at `canvas_size`, so on
+# already-2048px catalog photos mag_ratio mostly just wastes compute. Zero
+# wrong brand reads in all three configs, which is the pattern the full eval
+# then confirms at scale.
 OCR_TEXT_THRESHOLD = float(os.environ.get("BRAND_OCR_TEXT_THRESHOLD", "0.5"))
 OCR_LOW_TEXT = float(os.environ.get("BRAND_OCR_LOW_TEXT", "0.3"))
-# >1 upscales before detection, which is how small wordmarks become legible.
+# >1 upscales before detection. Left at 1.0 for the reason above.
 OCR_MAG_RATIO = float(os.environ.get("BRAND_OCR_MAG_RATIO", "1.0"))
 
 # Fuzzy-match similarity floors (rapidfuzz ratio, 0-100).
