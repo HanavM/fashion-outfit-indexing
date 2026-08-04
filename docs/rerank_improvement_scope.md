@@ -118,13 +118,33 @@ first would confound the cheap answers.
 
 ## Where each lever can actually run
 
-The Modal `fashion-dataset` Volume is stale (6 brands, no
-`finetuned_dinov3_identity_v1_supcon`), and this dev machine holds only a
-partial catalog copy. **Colab Drive is the only place the current catalog
-and both checkpoints coexist**, so A and B run there unless the Volume is
-synced first. Lever C is a training job and is well suited to Modal, but
-it needs that sync regardless.
+**Correction, 2026-08-03**: an earlier draft of this section claimed Colab
+Drive was "the only place the current catalog and both checkpoints
+coexist." That was asserted without checking and is wrong. Running the
+sync exposed the real layout — **no single machine has everything**:
 
-Syncing the Volume is therefore a prerequisite for doing any of this on
-Modal, and is worth doing once rather than per-experiment — commands are
-in `modal_app_phase4_eval.py`'s docstring.
+| | brands | records | DINOv3 checkpoint |
+|---|---|---:|---|
+| Colab Drive | 6 (adidas, gap, newbalance, nike, pacsun, skechers) | 1,234 | yes |
+| Modal Volume | same 6, synced 2026-08-03 | 1,234 | **yes**, now |
+| This dev machine | all 12 | 2,387 | no |
+
+The six newer brands (carhartt, champion, dickies, levis, stussy, vans —
+1,153 records) were scraped locally and never pushed to Drive.
+
+So Modal and Colab are now **mirrors of each other**, and either can run
+levers A and B with results directly comparable to the 53.95% baseline.
+Lever C (training) suits Modal.
+
+### The catalog-size trap this creates
+
+Every Phase 4 number in `docs/eval_log.md`, including the 53.95% best, is
+measured against a **1,234-product / 6-brand gallery**. Pushing the other
+six brands to Drive or the Volume would nearly double the gallery to
+2,387 products, and **R@1 would fall for reasons that have nothing to do
+with model quality** — a bigger gallery is simply more distractors.
+
+If that sync ever happens, its results must open a NEW baseline block in
+the eval log and must not be compared to any row above it. This is the
+same discipline the open-set rows already follow, and for the same
+reason.
