@@ -124,12 +124,53 @@ SUBREDDITS = [
     # because WDYWT is rare on both; a shortfall NOTE here is expected.
     ("japanesestreetwear", 60, {"wdywt"}, 0),
     ("techwearclothing", 30, {"wdywt"}, 0),
+    # Added 2026-08-03 after probing 14 further candidate subs against live
+    # flair distributions (100-post samples, 2023-01..2025-09). Only the ones
+    # that actually measured well are here; the rejects are listed below so
+    # they are not re-probed.
+    #
+    # r/altfashion is the best single addition found: 70 of 100 posts are
+    # usable image posts and ALL of them carry an outfit flair. It also adds
+    # subcultural range (goth/punk/emo/kawaii) that the mainstream
+    # streetwear subs do not cover at all.
+    ("altfashion", 300, {"outfit (goth, punk, emo, scene, etc.)",
+                         "outfit (other/general alt)",
+                         "outfit (pastel, kawaii, decora etc)",
+                         "masculine fit 🤍", "feminine fit 🩷",
+                         "non-binary fit 🤍"}, 0),
+    # r/OOTD: 81 usable image posts per 100 and the sub uses no flair at all
+    # -- the name is the filter. Highest raw density measured anywhere.
+    ("OOTD", 300, None, 0),
+    # Body-diverse advice subs, all unflaired-accept: their flair vocabularies
+    # are height/region buckets rather than content types (r/PetiteFashionAdvice
+    # tags by height, r/BigMenFashionAdvice by country), so flair carries no
+    # outfit signal and the subreddit's own topic is the precision. ~45 usable
+    # image posts per 100 each. These matter beyond volume: every other source
+    # here skews slim and young, and Phase 3 is meant to work on real bodies.
+    ("BigMenFashionAdvice", 200, None, 0),
+    ("PetiteFashionAdvice", 200, None, 0),
+    ("curvyfashion", 100, None, 0),
+    # r/vintagefashion needs its flair gate: 'sweet find!' is 18% of image
+    # posts and is flat-lay thrift hauls -- the product-shot look this dataset
+    # exists to contrast against -- while ootd/menswear/inspo/advice are worn.
+    ("vintagefashion", 150, {"ootd", "menswear", "inspo", "advice plz"}, 0),
 ]
 
 # Deliberately NOT in the default list: r/malefashionadvice. Its image
 # posts are flaired Question/Discussion/Guide -- no worn-outfit flair
 # exists, and "Question" mixes fit checks with product and sizing queries.
 # Add it back with an explicit --subreddit if that mix proves acceptable.
+#
+# Also probed 2026-08-03 and rejected, so nobody re-probes them:
+#   r/goodyearwelt      63 image posts/100, but they are boot close-ups
+#                       flaired review/questions -- footwear, not outfits.
+#   r/FashionReps       42/100, but 24 are 'w2c' product shots of replicas.
+#   r/AusFemaleFashion  42/100, dominated by 'recommendations wanted'
+#                       (product links); 'look of the day' was 1 in 100.
+#   r/workwear          45/100 but the mix is workwear PRODUCT questions.
+#   r/OutfitIdeas, r/koreanfashion, r/genderqueerfashion, r/streetweardaily
+#                       returned zero posts from the archive -- private,
+#                       renamed, or too small to have been indexed.
 
 MAX_IMAGES_PER_POST = 4
 # PHASH_DISTANCE / MIN_IMAGE_BYTES / MIN_IMAGE_SIDE / IMAGE_SLEEP now live in
