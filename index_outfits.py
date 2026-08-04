@@ -50,6 +50,7 @@ import json
 import time
 from pathlib import Path
 
+import numpy as np
 import torch
 from transformers import AutoProcessor, AutoModelForZeroShotImageClassification
 
@@ -78,6 +79,80 @@ CHECKPOINT_EVERY = 10
 # re-detected instead of being silently mixed with newer ones -- the same
 # staleness discipline the retrieval index's cache fingerprint uses.
 DETECTION_VERSION = 1
+
+
+# ------------------------------------------------------------------
+# Crude dominant-colour naming.
+#
+# Added because the co-occurrence index this run feeds (see
+# build_cooccurrence.py) wants "black jacket + blue jeans", not just
+# "jacket + pants" -- and colour is the one extra attribute that can be
+# read straight off the pixels without a second model pass over 8k images.
+#
+# It is deliberately CRUDE and it is NOT ground truth:
+#   - it reads the BBOX crop, not the mask (segment_outfit.detect_outfit_items
+#     returns only the crop, and that file is off-limits for edits), so
+#     background bleeds in at the corners. Mitigated by sampling the
+#     centre 50% box only, where the garment actually is.
+#   - nearest-neighbour in plain RGB against a 16-entry palette is not a
+#     perceptual colour space. Navy/black and beige/white will confuse.
+# Both facts are recorded in the co-occurrence index's schema so nobody
+# downstream reads these as measured colour labels.
+# ------------------------------------------------------------------
+COLOR_PALETTE = {
+    "black": (25, 25, 25),
+    "charcoal": (70, 70, 72),
+    "gray": (128, 128, 130),
+    "light gray": (190, 190, 192),
+    "white": (240, 240, 238),
+    "cream": (232, 222, 198),
+    "beige": (205, 183, 148),
+    "brown": (110, 78, 52),
+    "tan": (170, 132, 88),
+    "olive": (110, 112, 62),
+    "green": (60, 130, 70),
+    "navy": (36, 46, 82),
+    "blue": (60, 100, 180),
+    "light blue": (145, 180, 220),
+    "purple": (110, 70, 150),
+    "red": (170, 45, 45),
+    "pink": (225, 150, 165),
+    "orange": (215, 125, 50),
+    "yellow": (225, 200, 70),
+}
+_PALETTE_NAMES = list(COLOR_PALETTE)
+_PALETTE_RGB = np.array([COLOR_PALETTE[name] for name in _PALETTE_NAMES], dtype=np.float32)
+
+
+def dominant_color(crop):
+    """Nearest palette name for the centre of a crop, plus the mean RGB it
+    came from so a reader can re-judge the naming without the image."""
+    try:
+        width, height = crop.size
+        if width < 4 or height < 4:
+            return None
+        box = (width // 4, height // 4, width - width // 4, height - height // 4)
+        patch = crop.convert("RGB").crop(box)
+        patch.thumbnail((32, 32))
+        pixels = np.asarray(patch, dtype=np.float32).reshape(-1, 3)
+        if pixels.size == 0:
+            return None
+        # Per-pixel vote rather than mean-then-name: the mean of a
+        # black-and-white striped shirt is gray, which is a colour that is
+        # not in the photo. A vote returns the actual majority colour.
+        distances = ((pixels[:, None, :] - _PALETTE_RGB[None, :, :]) ** 2).sum(axis=2)
+        assignments = distances.argmin(axis=1)
+        counts = np.bincount(assignments, minlength=len(_PALETTE_NAMES))
+        winner = int(counts.argmax())
+        return {
+            "name": _PALETTE_NAMES[winner],
+            "share": float(counts[winner] / len(assignments)),
+            "mean_rgb": [round(float(v), 1) for v in pixels.mean(axis=0)],
+            "method": "centre-box palette vote (heuristic, not ground truth)",
+        }
+    except Exception:
+        # A colour guess is never worth failing a detection over.
+        return None
 
 
 def record_key(record):
@@ -226,6 +301,7 @@ def main():
                     "bbox": list(item["bbox"]),
                     "area_fraction": item["area_fraction"],
                     "crop_path": str(crop_path),
+                    "color": dominant_color(item["crop"]),
                 })
 
         stats["items"] += len(detected_items)
