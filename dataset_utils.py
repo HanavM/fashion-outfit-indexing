@@ -28,6 +28,12 @@ from pathlib import Path
 
 DB_FILE = Path("apparel_dataset/metadata.json")
 
+# The real-outfit dataset (photos of real people wearing real outfits) is a
+# SEPARATE tree with its own metadata file -- see SCRAPING_PROCESS.md,
+# "Real-outfit scraping". It must never be merged into apparel_dataset, which
+# is the labelled retrieval gallery every eval number depends on.
+OUTFIT_DB_FILE = Path("outfit_dataset/metadata.json")
+
 
 def load_records() -> list[dict]:
     if DB_FILE.exists():
@@ -43,4 +49,27 @@ def save_records_safe(touched: dict) -> list[dict]:
     by_code.update(touched)
     merged = list(by_code.values())
     DB_FILE.write_text(json.dumps(merged, indent=2, ensure_ascii=False))
+    return merged
+
+
+def outfit_key(record: dict) -> str:
+    """Stable identity for an outfit record: source + per-source id."""
+    return f"{record['source']}:{record['source_id']}"
+
+
+def load_outfit_records() -> list[dict]:
+    if OUTFIT_DB_FILE.exists():
+        return json.loads(OUTFIT_DB_FILE.read_text())
+    return []
+
+
+def save_outfit_records_safe(touched: dict) -> list[dict]:
+    """Same merge-on-save discipline as save_records_safe(), for
+    outfit_dataset/metadata.json. `touched` maps outfit_key -> record."""
+    current = load_outfit_records()
+    by_key = {outfit_key(r): r for r in current}
+    by_key.update(touched)
+    merged = list(by_key.values())
+    OUTFIT_DB_FILE.parent.mkdir(parents=True, exist_ok=True)
+    OUTFIT_DB_FILE.write_text(json.dumps(merged, indent=2, ensure_ascii=False))
     return merged
