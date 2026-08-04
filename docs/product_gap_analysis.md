@@ -15,7 +15,7 @@ built-but-disproven items are stated plainly.
 | DINOv3 visual-identity embedding | **Done**, fine-tuned supcon, 59.92% R@1 |
 | Category head | **Done** as HSC climbing over 42 leaves |
 | Attribute heads | **Not built.** Attributes exist only as offline LLM captions in `structured_caption.attributes`; nothing predicts them at query time |
-| **Logo detection and OCR** | **Not built at all.** Zero references in the codebase. This is spec §4.5's entire "brand evidence" path |
+| **Logo detection and OCR** | **OCR half built and measured (2026-08-04, `brand_evidence.py`); logo half still absent.** OCR reads a brand on 11% of product photos at 100% precision, but wiring it into retrieval moved R@1 +0.10pt (one query in 1,043) even at a weight that amounts to a brand restriction. See eval log |
 | Optional VLM structured evidence | Offline only (`caption_apparel.py`), never at query time |
 | Confidence calibration and label backoff | **Done** — HSC backoff + open-set rejection, now calibrated (AUROC 0.769) |
 | Structured item record | Done for catalog; **absent for outfit photos** |
@@ -86,12 +86,38 @@ subject to ~360×180, which is likely why SAM2 stops proposing per-garment
 masks), then validate on a real labelled screenshot set. Until then the
 Shortcut relies on a human crop, which currently beats the detector.
 
-**11.3 Brand evidence — logo detection and OCR.** Spec §4.5, entirely
-absent. Most product photos carry legible wordmarks and most screenshots
-carry the brand in page text. This is likely the single largest
-*untried* accuracy lever left, precisely because it uses a signal the
-current pipeline throws away — and unlike patch-rerank and score-fusion,
-it adds information rather than re-weighting what is already there.
+**11.3 Brand evidence — logo detection and OCR.** ~~Likely the single
+largest untried accuracy lever left.~~ **Built and measured 2026-08-04
+(`brand_evidence.py`, `brand_evidence_eval.py`, `--brand-boost`). The
+premise was wrong on both halves.**
+
+*"Most product photos carry legible wordmarks"* — they do not. Over
+1,186 real catalog images, **51% contain no OCR-legible text at all**
+and only **11% yield a brand**. What it does read, it reads perfectly:
+132 assertions, zero wrong, an exactly diagonal confusion matrix. The
+per-brand spread splits on **wordmark vs. logo** — adidas 40% recall
+(prints its name), New Balance 1% and Stüssy 0% (a giant "N" and a
+handwritten script, which OCR cannot read by construction). Spec §4.5
+lists "Visible logo" and "OCR" as separate sources for exactly this
+reason; only the second is built, and the brands it misses are the ones
+that need the first.
+
+*"It adds information rather than re-weighting"* — it does not add any
+the pipeline lacked. Wired in as a boost (never a filter, so it cannot
+repeat the category gate's unrecoverable exclusions), R@1 moved
+**65.00% → 65.10%, one query in 1,043**. Re-run at a weight large enough
+to function as a brand restriction: **the same 65.10%**. Brand is
+already implicit in the fine-tuned identity embedding — products of one
+brand look alike, so DINOv3 had already ranked a same-brand product
+first on nearly every query where OCR fired.
+
+`--brand-boost` stays in the tree, off by default, harmless and
+measured. The live follow-ups are **a logo detector** (a small trained
+classifier over brand marks, which is what the 89% of photos OCR cannot
+help with actually needs) and **brand evidence for open-set rejection**
+rather than ranking — a brand read matching no catalog brand is positive
+evidence the product is off-catalog, and that path badly needs a better
+signal (AUROC 0.769).
 
 ### P2 — worth doing, not blocking
 

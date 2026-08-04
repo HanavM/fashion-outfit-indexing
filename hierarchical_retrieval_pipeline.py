@@ -261,6 +261,23 @@ PATCH_RERANK_CANDIDATES = 10
 # the default weight is of that order: large enough to break near-ties in
 # favour of the OCR-confirmed brand, too small to overturn a confident
 # DINOv3 decision.
+#
+# **MEASURED 2026-08-04 (docs/eval_log.md): neutral. Leave it off.**
+# Ungated R@1 65.00% -> 65.10% on a 1,043-query Modal run -- one query.
+# R@5/R@10 bit-identical. Re-run at weight 1.0, large enough that the
+# bonus functions as a hard brand restriction over the candidate set,
+# gave the SAME 65.10%, so this is not a mistuned weight: the signal has
+# no ranking information left to contribute at any weight.
+#
+# Detection itself is fine -- it fired on 11.22% of queries at 100.00%
+# precision. The problem is redundancy, not error: products of one brand
+# look like each other, so the fine-tuned identity embedding had already
+# ranked a same-brand product first on nearly every query where OCR
+# fired. Brand evidence is correct and it is not new.
+#
+# Unlike --patch-rerank and --score-fusion this costs nothing when wrong,
+# which is what boost-not-filter bought. It just earns nothing either.
+# Kept as a measured, off-by-default flag, not an unvalidated option.
 USE_BRAND_BOOST = False
 BRAND_BOOST_WEIGHT = float(os.environ.get("BRAND_BOOST_WEIGHT", "0.03"))
 # Minimum brand_evidence score to act on at all. Anything below is treated
