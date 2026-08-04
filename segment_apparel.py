@@ -43,7 +43,12 @@ from sam2.automatic_mask_generator import SAM2AutomaticMaskGenerator
 
 from dataset_utils import DB_FILE, load_records, save_records_safe
 
-CHECKPOINT_EVERY = 5
+# Low on purpose: a record takes minutes on CPU (SAM2 runs per image, and
+# products average ~6 images), so at 5 a worker could go 2+ hours between
+# durable writes and lose all of it to a sleep/kill. Checkpointing is a
+# cheap merge-and-write against metadata.json, so the frequency costs
+# almost nothing relative to the segmentation itself.
+CHECKPOINT_EVERY = 2
 
 # Using the "small" checkpoint (184MB) instead of "large" — lighter, and
 # device is forced to CPU (see main()), never MPS: SAM2 on Apple's MPS
@@ -192,6 +197,16 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--limit", type=int, default=None, help="limit number of RECORDS processed")
     parser.add_argument("--brand", default="nike")
+    # Splitting a brand's run by category is the safe way to parallelize this
+    # script: SAM2-on-CPU only saturates ~2 of this machine's 8 cores, so one
+    # process per category runs ~4x faster wall-clock, and the resulting
+    # processes touch strictly DISJOINT records — exactly the case
+    # dataset_utils.save_records_safe's merge-by-product_code handles (unlike
+    # two scripts mutating different fields on the SAME records, which it does
+    # not protect against; see SCRAPING_PROCESS.md). Do not run this
+    # concurrently with caption_apparel.py on the same records.
+    parser.add_argument("--category", default=None,
+                        help="only segment records in this category (for parallel per-category runs)")
     args = parser.parse_args()
 
     # Deliberately no MPS branch — see MASK_GENERATOR_KWARGS comment above.
@@ -212,6 +227,7 @@ def main():
         r for r in database
         if r.get("brand") == args.brand
         and r.get("category") in CATEGORY_LABELS
+        and (args.category is None or r.get("category") == args.category)
         and "cropped_images" not in r
     ]
     if args.limit:
