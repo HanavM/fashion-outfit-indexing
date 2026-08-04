@@ -67,6 +67,20 @@ explicitly via `reject_threshold_calibrated: false`. A caller may pass
 chooses, and `REJECT_THRESHOLD` can be set as an env default once the
 open-set run produces a real number. Surfacing an uncalibrated flag as if
 it were calibrated would be worse than surfacing nothing.
+
+## Deploying a change: `modal deploy` alone is NOT enough
+
+`modal deploy` updates the app definition but does NOT cycle a warm
+container, and a warm container keeps running the OLD code and the OLD
+secrets. This has now bitten twice on this app: a rotated API key kept
+accepting the leaked value, and a fixed endpoint kept throwing its old
+traceback -- both after a "successful" 2-second deploy.
+
+If the deploy returns in a couple of seconds, assume nothing changed for
+live traffic. To actually apply a change:
+
+    modal app stop fashion-serve --yes && modal deploy modal_app_serve.py
+
 """
 
 import os
@@ -323,6 +337,26 @@ class FashionService:
             return f"That looks like a {label}, though I can't call the colorway."
         return f"That looks like a {label}."
 
+    def _spoken_search(self, query, hits, semantic):
+        """Text-search results as one sentence for TTS.
+
+        Deliberately says when nothing matched rather than reading out the
+        closest thing anyway -- a text query that misses should sound like a
+        miss. The canonical index answering nothing is a real signal (the
+        phrasing isn't in the catalog's label space at all), and suggesting
+        the semantic fallback is more useful than a wrong product name.
+        """
+        if not hits:
+            if not semantic:
+                return (f"I didn't find anything matching {query}. "
+                        "There may be results with semantic search turned on.")
+            return f"I didn't find anything matching {query}."
+        top = hits[0]
+        label = self._short(top.get("brand", ""), top.get("name", ""))
+        if len(hits) == 1:
+            return f"I found one match for {query}: a {label}."
+        return f"I found {len(hits)} matches for {query}. The closest is a {label}."
+
     # ---------------- ASGI ----------------
 
     @modal.asgi_app()
@@ -429,6 +463,64 @@ class FashionService:
                 "latency_ms": round((time.time() - started) * 1000, 1),
             }
             payload["spoken"] = self._spoken_compose(primary, companions, parsed)
+            return JSONResponse(payload)
+
+        @web.post("/search")
+        async def search(request: Request):
+            """Text-only catalog search -- spec section 1's "Show me blue jeans"
+            and "Show me gray suede Adidas sneakers".
+
+            Two of the spec's four named query types had no endpoint at all
+            even though catalog_query_search.py and free_text_visual_search.py
+            were both finished and working; they were simply never wired to
+            HTTP (docs/product_gap_analysis.md). This is that wiring, not new
+            retrieval logic.
+
+            `semantic_fallback` is opt-in and off by default for a real
+            reason, not caution: the canonical path is a pure string index
+            over metadata.json and answers in milliseconds, while the
+            semantic path constructs FreeTextVisualSearch, which embeds the
+            WHOLE catalog on first use. That is minutes on a cold container
+            and would blow the ~2s voice budget for every caller, including
+            the ones whose query the canonical index already answers.
+            """
+            # Local import, matching this file's convention everywhere else --
+            # the enclosing api() scope imports only FastAPI/Request/JSONResponse,
+            # so referencing HTTPException here without it is a NameError at
+            # request time, not at import time.
+            from fastapi import HTTPException
+
+            self._authorize(request)
+            started = time.time()
+            # _read_payload returns (image_bytes, fields) in that order, and
+            # does NOT require an image -- the "no image supplied" 400 lives
+            # in _write_temp_image, which this endpoint never calls. So a
+            # text-only body is accepted here by design.
+            _, fields = await self._read_payload(request)
+
+            query = (fields.get("query") or fields.get("text") or "").strip()
+            if not query:
+                raise HTTPException(status_code=400, detail="'query' is required")
+
+            top_k = int(fields.get("top_k") or 15)
+            semantic = str(fields.get("semantic_fallback", "")).lower() in {"1", "true", "yes"}
+
+            # Held under the same lock as the retriever: the semantic path
+            # touches the GPU, and CatalogQuerySearch memoises its engine on
+            # first use, so two concurrent first-callers would otherwise race
+            # to build it.
+            with self._gpu_lock:
+                hits = self.text_engine.search(query, top_k=top_k, canonical_only=not semantic)
+
+            payload = {
+                "query": query,
+                "results": hits,
+                "semantic_fallback_used": semantic and any(
+                    h.get("match_type") == "semantic" for h in hits),
+                "match_types": sorted({h.get("match_type") for h in hits if h.get("match_type")}),
+                "latency_ms": round((time.time() - started) * 1000, 1),
+            }
+            payload["spoken"] = self._spoken_search(query, hits, semantic)
             return JSONResponse(payload)
 
         return web
