@@ -1282,3 +1282,88 @@ per-source license terms vary (Reddit's user agreement, Lookbook's terms,
 Pexels/Unsplash's explicitly permissive licenses are all different). Worth
 resolving deliberately before any of this is shown to end users. Flagged
 here once so it's on the record and not rediscovered late.
+
+
+## Non-clothing scraping (`negatives_dataset/`) — the negative half of a gate, added 2026-08-04
+
+A third dataset, and the first one whose images are deliberately **not**
+fashion. It exists because of the finding in `docs/eval_log.md`'s open-set
+rejection row: pointed at something that is not in the catalog, the retrieval
+pipeline still confidently names a product, and no threshold on the DINOv3
+score fixes it (false-accept ~68% at any usable false-reject rate). The
+conclusion there was that the fix has to sit **upstream** — refuse to query at
+all unless the photo contains a garment.
+
+That gate is a SigLIP2 zero-shot margin, and it had only ever been scored
+against **synthetic** negatives (bar charts, solid colour fields, blocks of
+text), which gives AUROC 1.0000. That number is true and useless: it measures
+how easily SigLIP2 tells a photograph from a chart, when the deployed failure
+mode is a photograph of a sofa — and a sofa is a photograph. Calibrating a
+shipping threshold on it would be calibrating on the easy half of the problem.
+
+```
+negatives_dataset/{source}/{source_id}.jpg
+negatives_dataset/metadata.json
+```
+
+Note the flat `{source_id}.jpg` layout rather than `outfit_dataset`'s
+`{source_id}/image_N.jpg`: these sources return one image per result, not a
+gallery per post, so a directory per image would be a directory per file.
+
+### Hard rule: a negative containing prominent clothing is a mislabelled positive
+
+Not noise — a **positive on the wrong side of the split**. A photo of a person
+in a jacket filed as a negative pulls the threshold in exactly the direction
+that makes the gate reject real clothes, which is the one failure the gate must
+not have. Three defences, in order of how much they are trusted:
+
+1. **Query wording.** Object and empty-scene phrasings throughout, and the two
+   themes most likely to smuggle in a clothed person — `street` and `screens` —
+   are worded toward the empty/technical variants *and* capped at half the
+   per-theme quota.
+2. **`review_negatives.py`.** Ranks every negative by a person/clothing-presence
+   probe and prints a review queue. It never deletes on its own: the ranking
+   model is SigLIP2, the same family as the gate being calibrated, so letting it
+   choose which negatives survive would delete its own hard cases and inflate
+   the very AUROC this exercise exists to deflate. A human passes ids to
+   `--drop`.
+3. **Looking at them.** The probe cannot see a shirt on a hanger with nobody
+   wearing it, so the review also draws a random control block.
+
+### Sources: both keyless, both crawl-friendly
+
+No Pexels/Unsplash — those need an API key that does not exist in this repo,
+and obtaining one was explicitly out of scope.
+
+- **Wikimedia Commons** (`commons.wikimedia.org/w/api.php`). Queried with
+  `generator=search` + `filetype:bitmap`, **not** `list=categorymembers`:
+  Commons categories are curated for topic, not for "is this a usable
+  photograph," and `Category:Chairs` genuinely returns `.ogg` pronunciation
+  files. `iiurlwidth` asks Commons to pre-scale to the 1536px storage cap, so a
+  40 MB original is never transferred to produce a small JPEG.
+- **Openverse** (`api.openverse.org`). Widens provider diversity beyond
+  Commons' house style (Flickr, museums). It serves **full-size originals**,
+  which is the single biggest cost in a run — multi-MB files, occasionally
+  tens of MB, and a theme that falls through to Openverse takes ~5-8 minutes
+  against Commons' ~1. Budget for it; it is not a hang.
+
+### Conventions shared with the outfit scrapers
+
+Dedup (`imagehash.phash`, Hamming ≤ 6), the 15 KB / 320px size floors, the
+1536px long-side cap and the candidate-URL ladder all come from
+`outfit_scrape_common.py` rather than being reimplemented, so negatives obey
+the same rules as everything else collected here. Provenance per record is
+source, source_id, page_url, licence, title, theme, the query used, image_url,
+local path, phash and scraped_at.
+
+### Two writers will destroy `metadata.json` — now enforced
+
+Learned by doing it: the collection was accidentally started twice and the two
+processes **silently erased 127 already-downloaded images** from each other.
+Same mechanism as the `apparel_dataset` incident recorded above — each process
+holds the whole record list in memory and rewrites the file wholesale, so
+whichever saves last wins. The files stayed on disk as orphans, invisible to
+every consumer and un-re-addable, because the scraper skips destinations that
+already exist. Nothing crashed and nothing warned; the only symptom was the
+count sitting still. `negatives_scraper.py` now refuses to start if another
+copy is running (pid file, with stale-pid takeover).
