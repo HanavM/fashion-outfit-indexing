@@ -243962,7 +243962,18 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/original-874-r-work-pants-dk0008740bk/9256981627068/image_0_cropped.jpg",
+      "apparel_dataset/dickies/original-874-r-work-pants-dk0008740bk/9256981627068/image_1_cropped.jpg",
+      "apparel_dataset/dickies/original-874-r-work-pants-dk0008740bk/9256981627068/image_2_cropped.jpg",
+      "apparel_dataset/dickies/original-874-r-work-pants-dk0008740bk/9256981627068/image_3_cropped.jpg",
+      "apparel_dataset/dickies/original-874-r-work-pants-dk0008740bk/9256981627068/image_4.jpg",
+      "apparel_dataset/dickies/original-874-r-work-pants-dk0008740bk/9256981627068/image_5.jpg",
+      "apparel_dataset/dickies/original-874-r-work-pants-dk0008740bk/9256981627068/image_6.jpg",
+      "apparel_dataset/dickies/original-874-r-work-pants-dk0008740bk/9256981627068/image_7.jpg",
+      "apparel_dataset/dickies/original-874-r-work-pants-dk0008740bk/9256981627068/image_8_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -244040,7 +244051,19 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/loose-fit-double-knee-work-pants-dk0852830bk/9256988049596/image_0_cropped.jpg",
+      "apparel_dataset/dickies/loose-fit-double-knee-work-pants-dk0852830bk/9256988049596/image_1_cropped.jpg",
+      "apparel_dataset/dickies/loose-fit-double-knee-work-pants-dk0852830bk/9256988049596/image_2_cropped.jpg",
+      "apparel_dataset/dickies/loose-fit-double-knee-work-pants-dk0852830bk/9256988049596/image_3_cropped.jpg",
+      "apparel_dataset/dickies/loose-fit-double-knee-work-pants-dk0852830bk/9256988049596/image_4.jpg",
+      "apparel_dataset/dickies/loose-fit-double-knee-work-pants-dk0852830bk/9256988049596/image_5.jpg",
+      "apparel_dataset/dickies/loose-fit-double-knee-work-pants-dk0852830bk/9256988049596/image_6.jpg",
+      "apparel_dataset/dickies/loose-fit-double-knee-work-pants-dk0852830bk/9256988049596/image_7_cropped.jpg",
+      "apparel_dataset/dickies/loose-fit-double-knee-work-pants-dk0852830bk/9256988049596/image_8_cropped.jpg",
+      "apparel_dataset/dickies/loose-fit-double-knee-work-pants-dk0852830bk/9256988049596/image_9_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -244112,7 +244135,17 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/flex-regular-fit-cargo-pants-dk0wp5950bk/9256987852988/image_0_cropped.jpg",
+      "apparel_dataset/dickies/flex-regular-fit-cargo-pants-dk0wp5950bk/9256987852988/image_1_cropped.jpg",
+      "apparel_dataset/dickies/flex-regular-fit-cargo-pants-dk0wp5950bk/9256987852988/image_2_cropped.jpg",
+      "apparel_dataset/dickies/flex-regular-fit-cargo-pants-dk0wp5950bk/9256987852988/image_3.jpg",
+      "apparel_dataset/dickies/flex-regular-fit-cargo-pants-dk0wp5950bk/9256987852988/image_4.jpg",
+      "apparel_dataset/dickies/flex-regular-fit-cargo-pants-dk0wp5950bk/9256987852988/image_5_cropped.jpg",
+      "apparel_dataset/dickies/flex-regular-fit-cargo-pants-dk0wp5950bk/9256987852988/image_6_cropped.jpg",
+      "apparel_dataset/dickies/flex-regular-fit-cargo-pants-dk0wp5950bk/9256987852988/image_7_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -244194,7 +244227,16 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/original-874-r-work-pants-dk0008740dn/9256981954748/image_0_cropped.jpg",
+      "apparel_dataset/dickies/original-874-r-work-pants-dk0008740dn/9256981954748/image_1_cropped.jpg",
+      "apparel_dataset/dickies/original-874-r-work-pants-dk0008740dn/9256981954748/image_2_cropped.jpg",
+      "apparel_dataset/dickies/original-874-r-work-pants-dk0008740dn/9256981954748/image_3_cropped.jpg",
+      "apparel_dataset/dickies/original-874-r-work-pants-dk0008740dn/9256981954748/image_4.jpg",
+      "apparel_dataset/dickies/original-874-r-work-pants-dk0008740dn/9256981954748/image_5.jpg",
+      "apparel_dataset/dickies/original-874-r-work-pants-dk0008740dn/9256981954748/image_6_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -244293,7 +244335,22 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/relaxed-fit-carpenter-jeans-dk019294snb/8984588255420/image_0_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-carpenter-jeans-dk019294snb/8984588255420/image_1_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-carpenter-jeans-dk019294snb/8984588255420/image_2_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-carpenter-jeans-dk019294snb/8984588255420/image_3_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-carpenter-jeans-dk019294snb/8984588255420/image_4_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-carpenter-jeans-dk019294snb/8984588255420/image_5_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-carpenter-jeans-dk019294snb/8984588255420/image_6_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-carpenter-jeans-dk019294snb/8984588255420/image_7_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-carpenter-jeans-dk019294snb/8984588255420/image_8_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-carpenter-jeans-dk019294snb/8984588255420/image_9_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-carpenter-jeans-dk019294snb/8984588255420/image_10_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-carpenter-jeans-dk019294snb/8984588255420/image_11_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-carpenter-jeans-dk019294snb/8984588255420/image_12_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -244373,7 +244430,17 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/original-874-r-work-pants-dk0008740kh/9256981856444/image_0_cropped.jpg",
+      "apparel_dataset/dickies/original-874-r-work-pants-dk0008740kh/9256981856444/image_1_cropped.jpg",
+      "apparel_dataset/dickies/original-874-r-work-pants-dk0008740kh/9256981856444/image_2_cropped.jpg",
+      "apparel_dataset/dickies/original-874-r-work-pants-dk0008740kh/9256981856444/image_3_cropped.jpg",
+      "apparel_dataset/dickies/original-874-r-work-pants-dk0008740kh/9256981856444/image_4.jpg",
+      "apparel_dataset/dickies/original-874-r-work-pants-dk0008740kh/9256981856444/image_5_cropped.jpg",
+      "apparel_dataset/dickies/original-874-r-work-pants-dk0008740kh/9256981856444/image_6_cropped.jpg",
+      "apparel_dataset/dickies/original-874-r-work-pants-dk0008740kh/9256981856444/image_7_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -244454,7 +244521,17 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/original-874-r-work-pants-dk0008740db/9256981070012/image_0_cropped.jpg",
+      "apparel_dataset/dickies/original-874-r-work-pants-dk0008740db/9256981070012/image_1_cropped.jpg",
+      "apparel_dataset/dickies/original-874-r-work-pants-dk0008740db/9256981070012/image_2_cropped.jpg",
+      "apparel_dataset/dickies/original-874-r-work-pants-dk0008740db/9256981070012/image_3_cropped.jpg",
+      "apparel_dataset/dickies/original-874-r-work-pants-dk0008740db/9256981070012/image_4.jpg",
+      "apparel_dataset/dickies/original-874-r-work-pants-dk0008740db/9256981070012/image_5.jpg",
+      "apparel_dataset/dickies/original-874-r-work-pants-dk0008740db/9256981070012/image_6_cropped.jpg",
+      "apparel_dataset/dickies/original-874-r-work-pants-dk0008740db/9256981070012/image_7.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -244531,7 +244608,18 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/loose-fit-double-knee-work-pants-dk0852830dn/9256988377276/image_0_cropped.jpg",
+      "apparel_dataset/dickies/loose-fit-double-knee-work-pants-dk0852830dn/9256988377276/image_1_cropped.jpg",
+      "apparel_dataset/dickies/loose-fit-double-knee-work-pants-dk0852830dn/9256988377276/image_2_cropped.jpg",
+      "apparel_dataset/dickies/loose-fit-double-knee-work-pants-dk0852830dn/9256988377276/image_3_cropped.jpg",
+      "apparel_dataset/dickies/loose-fit-double-knee-work-pants-dk0852830dn/9256988377276/image_4.jpg",
+      "apparel_dataset/dickies/loose-fit-double-knee-work-pants-dk0852830dn/9256988377276/image_5_cropped.jpg",
+      "apparel_dataset/dickies/loose-fit-double-knee-work-pants-dk0852830dn/9256988377276/image_6_cropped.jpg",
+      "apparel_dataset/dickies/loose-fit-double-knee-work-pants-dk0852830dn/9256988377276/image_7_cropped.jpg",
+      "apparel_dataset/dickies/loose-fit-double-knee-work-pants-dk0852830dn/9256988377276/image_8_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -244606,7 +244694,17 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/loose-fit-double-knee-work-pants-dk0852830kh/9256988082364/image_0_cropped.jpg",
+      "apparel_dataset/dickies/loose-fit-double-knee-work-pants-dk0852830kh/9256988082364/image_1_cropped.jpg",
+      "apparel_dataset/dickies/loose-fit-double-knee-work-pants-dk0852830kh/9256988082364/image_2_cropped.jpg",
+      "apparel_dataset/dickies/loose-fit-double-knee-work-pants-dk0852830kh/9256988082364/image_3.jpg",
+      "apparel_dataset/dickies/loose-fit-double-knee-work-pants-dk0852830kh/9256988082364/image_4.jpg",
+      "apparel_dataset/dickies/loose-fit-double-knee-work-pants-dk0852830kh/9256988082364/image_5_cropped.jpg",
+      "apparel_dataset/dickies/loose-fit-double-knee-work-pants-dk0852830kh/9256988082364/image_6_cropped.jpg",
+      "apparel_dataset/dickies/loose-fit-double-knee-work-pants-dk0852830kh/9256988082364/image_7.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -244687,7 +244785,17 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/original-874-r-work-pants-dk0008740ch/9256981463228/image_0_cropped.jpg",
+      "apparel_dataset/dickies/original-874-r-work-pants-dk0008740ch/9256981463228/image_1_cropped.jpg",
+      "apparel_dataset/dickies/original-874-r-work-pants-dk0008740ch/9256981463228/image_2_cropped.jpg",
+      "apparel_dataset/dickies/original-874-r-work-pants-dk0008740ch/9256981463228/image_3_cropped.jpg",
+      "apparel_dataset/dickies/original-874-r-work-pants-dk0008740ch/9256981463228/image_4.jpg",
+      "apparel_dataset/dickies/original-874-r-work-pants-dk0008740ch/9256981463228/image_5.jpg",
+      "apparel_dataset/dickies/original-874-r-work-pants-dk0008740ch/9256981463228/image_6_cropped.jpg",
+      "apparel_dataset/dickies/original-874-r-work-pants-dk0008740ch/9256981463228/image_7_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -244773,7 +244881,19 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-duck-carpenter-pants-dk001939rbk/8984558272700/image_0_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-duck-carpenter-pants-dk001939rbk/8984558272700/image_1_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-duck-carpenter-pants-dk001939rbk/8984558272700/image_2_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-duck-carpenter-pants-dk001939rbk/8984558272700/image_3_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-duck-carpenter-pants-dk001939rbk/8984558272700/image_4.jpg",
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-duck-carpenter-pants-dk001939rbk/8984558272700/image_5_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-duck-carpenter-pants-dk001939rbk/8984558272700/image_6_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-duck-carpenter-pants-dk001939rbk/8984558272700/image_7.jpg",
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-duck-carpenter-pants-dk001939rbk/8984558272700/image_8_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-duck-carpenter-pants-dk001939rbk/8984558272700/image_9_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -244852,7 +244972,19 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/loose-fit-double-knee-work-pants-dk0852830ch/9256988246204/image_0_cropped.jpg",
+      "apparel_dataset/dickies/loose-fit-double-knee-work-pants-dk0852830ch/9256988246204/image_1_cropped.jpg",
+      "apparel_dataset/dickies/loose-fit-double-knee-work-pants-dk0852830ch/9256988246204/image_2_cropped.jpg",
+      "apparel_dataset/dickies/loose-fit-double-knee-work-pants-dk0852830ch/9256988246204/image_3_cropped.jpg",
+      "apparel_dataset/dickies/loose-fit-double-knee-work-pants-dk0852830ch/9256988246204/image_4.jpg",
+      "apparel_dataset/dickies/loose-fit-double-knee-work-pants-dk0852830ch/9256988246204/image_5_cropped.jpg",
+      "apparel_dataset/dickies/loose-fit-double-knee-work-pants-dk0852830ch/9256988246204/image_6_cropped.jpg",
+      "apparel_dataset/dickies/loose-fit-double-knee-work-pants-dk0852830ch/9256988246204/image_7_cropped.jpg",
+      "apparel_dataset/dickies/loose-fit-double-knee-work-pants-dk0852830ch/9256988246204/image_8_cropped.jpg",
+      "apparel_dataset/dickies/loose-fit-double-knee-work-pants-dk0852830ch/9256988246204/image_9_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -244941,7 +245073,17 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-carpenter-jeans-dk001993snb/8984568627388/image_0_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-carpenter-jeans-dk001993snb/8984568627388/image_1_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-carpenter-jeans-dk001993snb/8984568627388/image_2_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-carpenter-jeans-dk001993snb/8984568627388/image_3_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-carpenter-jeans-dk001993snb/8984568627388/image_4_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-carpenter-jeans-dk001993snb/8984568627388/image_5_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-carpenter-jeans-dk001993snb/8984568627388/image_6_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-carpenter-jeans-dk001993snb/8984568627388/image_7_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -245016,7 +245158,17 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/flex-regular-fit-cargo-pants-dk0wp5950dn/9256986902716/image_0_cropped.jpg",
+      "apparel_dataset/dickies/flex-regular-fit-cargo-pants-dk0wp5950dn/9256986902716/image_1_cropped.jpg",
+      "apparel_dataset/dickies/flex-regular-fit-cargo-pants-dk0wp5950dn/9256986902716/image_2_cropped.jpg",
+      "apparel_dataset/dickies/flex-regular-fit-cargo-pants-dk0wp5950dn/9256986902716/image_3.jpg",
+      "apparel_dataset/dickies/flex-regular-fit-cargo-pants-dk0wp5950dn/9256986902716/image_4_cropped.jpg",
+      "apparel_dataset/dickies/flex-regular-fit-cargo-pants-dk0wp5950dn/9256986902716/image_5_cropped.jpg",
+      "apparel_dataset/dickies/flex-regular-fit-cargo-pants-dk0wp5950dn/9256986902716/image_6_cropped.jpg",
+      "apparel_dataset/dickies/flex-regular-fit-cargo-pants-dk0wp5950dn/9256986902716/image_7_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -245090,7 +245242,18 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/loose-fit-cargo-pants-dk023214rbk/8984568660156/image_0_cropped.jpg",
+      "apparel_dataset/dickies/loose-fit-cargo-pants-dk023214rbk/8984568660156/image_1_cropped.jpg",
+      "apparel_dataset/dickies/loose-fit-cargo-pants-dk023214rbk/8984568660156/image_2_cropped.jpg",
+      "apparel_dataset/dickies/loose-fit-cargo-pants-dk023214rbk/8984568660156/image_3_cropped.jpg",
+      "apparel_dataset/dickies/loose-fit-cargo-pants-dk023214rbk/8984568660156/image_4.jpg",
+      "apparel_dataset/dickies/loose-fit-cargo-pants-dk023214rbk/8984568660156/image_5_cropped.jpg",
+      "apparel_dataset/dickies/loose-fit-cargo-pants-dk023214rbk/8984568660156/image_6_cropped.jpg",
+      "apparel_dataset/dickies/loose-fit-cargo-pants-dk023214rbk/8984568660156/image_7_cropped.jpg",
+      "apparel_dataset/dickies/loose-fit-cargo-pants-dk023214rbk/8984568660156/image_8_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -245173,7 +245336,18 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-duck-carpenter-pants-dk001939rms/8984557519036/image_0_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-duck-carpenter-pants-dk001939rms/8984557519036/image_1_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-duck-carpenter-pants-dk001939rms/8984557519036/image_2_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-duck-carpenter-pants-dk001939rms/8984557519036/image_3.jpg",
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-duck-carpenter-pants-dk001939rms/8984557519036/image_4_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-duck-carpenter-pants-dk001939rms/8984557519036/image_5.jpg",
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-duck-carpenter-pants-dk001939rms/8984557519036/image_6_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-duck-carpenter-pants-dk001939rms/8984557519036/image_7_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-duck-carpenter-pants-dk001939rms/8984557519036/image_8_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -245256,7 +245430,18 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-duck-carpenter-pants-dk001939rtb/8984557846716/image_0_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-duck-carpenter-pants-dk001939rtb/8984557846716/image_1_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-duck-carpenter-pants-dk001939rtb/8984557846716/image_2_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-duck-carpenter-pants-dk001939rtb/8984557846716/image_3.jpg",
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-duck-carpenter-pants-dk001939rtb/8984557846716/image_4_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-duck-carpenter-pants-dk001939rtb/8984557846716/image_5_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-duck-carpenter-pants-dk001939rtb/8984557846716/image_6_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-duck-carpenter-pants-dk001939rtb/8984557846716/image_7_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-duck-carpenter-pants-dk001939rtb/8984557846716/image_8_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -245341,7 +245526,19 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/relaxed-fit-cargo-work-pants-dk0wp5920dn/9256989917372/image_0_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-cargo-work-pants-dk0wp5920dn/9256989917372/image_1_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-cargo-work-pants-dk0wp5920dn/9256989917372/image_2_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-cargo-work-pants-dk0wp5920dn/9256989917372/image_3.jpg",
+      "apparel_dataset/dickies/relaxed-fit-cargo-work-pants-dk0wp5920dn/9256989917372/image_4.jpg",
+      "apparel_dataset/dickies/relaxed-fit-cargo-work-pants-dk0wp5920dn/9256989917372/image_5_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-cargo-work-pants-dk0wp5920dn/9256989917372/image_6.jpg",
+      "apparel_dataset/dickies/relaxed-fit-cargo-work-pants-dk0wp5920dn/9256989917372/image_7_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-cargo-work-pants-dk0wp5920dn/9256989917372/image_8_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-cargo-work-pants-dk0wp5920dn/9256989917372/image_9_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -245429,7 +245626,18 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/flex-skinny-fit-double-knee-work-pants-dk0wp8110bk/9256987295932/image_0_cropped.jpg",
+      "apparel_dataset/dickies/flex-skinny-fit-double-knee-work-pants-dk0wp8110bk/9256987295932/image_1_cropped.jpg",
+      "apparel_dataset/dickies/flex-skinny-fit-double-knee-work-pants-dk0wp8110bk/9256987295932/image_2_cropped.jpg",
+      "apparel_dataset/dickies/flex-skinny-fit-double-knee-work-pants-dk0wp8110bk/9256987295932/image_3.jpg",
+      "apparel_dataset/dickies/flex-skinny-fit-double-knee-work-pants-dk0wp8110bk/9256987295932/image_4.jpg",
+      "apparel_dataset/dickies/flex-skinny-fit-double-knee-work-pants-dk0wp8110bk/9256987295932/image_5_cropped.jpg",
+      "apparel_dataset/dickies/flex-skinny-fit-double-knee-work-pants-dk0wp8110bk/9256987295932/image_6.jpg",
+      "apparel_dataset/dickies/flex-skinny-fit-double-knee-work-pants-dk0wp8110bk/9256987295932/image_7_cropped.jpg",
+      "apparel_dataset/dickies/flex-skinny-fit-double-knee-work-pants-dk0wp8110bk/9256987295932/image_8_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -245513,7 +245721,17 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/original-874-r-work-pants-dk0008740nv/9256981364924/image_0_cropped.jpg",
+      "apparel_dataset/dickies/original-874-r-work-pants-dk0008740nv/9256981364924/image_1_cropped.jpg",
+      "apparel_dataset/dickies/original-874-r-work-pants-dk0008740nv/9256981364924/image_2_cropped.jpg",
+      "apparel_dataset/dickies/original-874-r-work-pants-dk0008740nv/9256981364924/image_3_cropped.jpg",
+      "apparel_dataset/dickies/original-874-r-work-pants-dk0008740nv/9256981364924/image_4.jpg",
+      "apparel_dataset/dickies/original-874-r-work-pants-dk0008740nv/9256981364924/image_5_cropped.jpg",
+      "apparel_dataset/dickies/original-874-r-work-pants-dk0008740nv/9256981364924/image_6.jpg",
+      "apparel_dataset/dickies/original-874-r-work-pants-dk0008740nv/9256981364924/image_7_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -245599,7 +245817,19 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/relaxed-fit-cargo-work-pants-dk0wp5920bk/9256990179516/image_0_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-cargo-work-pants-dk0wp5920bk/9256990179516/image_1_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-cargo-work-pants-dk0wp5920bk/9256990179516/image_2_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-cargo-work-pants-dk0wp5920bk/9256990179516/image_3.jpg",
+      "apparel_dataset/dickies/relaxed-fit-cargo-work-pants-dk0wp5920bk/9256990179516/image_4.jpg",
+      "apparel_dataset/dickies/relaxed-fit-cargo-work-pants-dk0wp5920bk/9256990179516/image_5_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-cargo-work-pants-dk0wp5920bk/9256990179516/image_6.jpg",
+      "apparel_dataset/dickies/relaxed-fit-cargo-work-pants-dk0wp5920bk/9256990179516/image_7_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-cargo-work-pants-dk0wp5920bk/9256990179516/image_8_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-cargo-work-pants-dk0wp5920bk/9256990179516/image_9_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -245692,7 +245922,18 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/874-pro-series-work-pants-dk0a85zeblk/8984560337084/image_0_cropped.jpg",
+      "apparel_dataset/dickies/874-pro-series-work-pants-dk0a85zeblk/8984560337084/image_1_cropped.jpg",
+      "apparel_dataset/dickies/874-pro-series-work-pants-dk0a85zeblk/8984560337084/image_2_cropped.jpg",
+      "apparel_dataset/dickies/874-pro-series-work-pants-dk0a85zeblk/8984560337084/image_3_cropped.jpg",
+      "apparel_dataset/dickies/874-pro-series-work-pants-dk0a85zeblk/8984560337084/image_4_cropped.jpg",
+      "apparel_dataset/dickies/874-pro-series-work-pants-dk0a85zeblk/8984560337084/image_5.jpg",
+      "apparel_dataset/dickies/874-pro-series-work-pants-dk0a85zeblk/8984560337084/image_6_cropped.jpg",
+      "apparel_dataset/dickies/874-pro-series-work-pants-dk0a85zeblk/8984560337084/image_7_cropped.jpg",
+      "apparel_dataset/dickies/874-pro-series-work-pants-dk0a85zeblk/8984560337084/image_8_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -245795,7 +246036,25 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-carpenter-jeans-dk001993rnb/8984568496316/image_0_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-carpenter-jeans-dk001993rnb/8984568496316/image_1_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-carpenter-jeans-dk001993rnb/8984568496316/image_2_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-carpenter-jeans-dk001993rnb/8984568496316/image_3.jpg",
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-carpenter-jeans-dk001993rnb/8984568496316/image_4_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-carpenter-jeans-dk001993rnb/8984568496316/image_5_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-carpenter-jeans-dk001993rnb/8984568496316/image_6_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-carpenter-jeans-dk001993rnb/8984568496316/image_7_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-carpenter-jeans-dk001993rnb/8984568496316/image_8_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-carpenter-jeans-dk001993rnb/8984568496316/image_9_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-carpenter-jeans-dk001993rnb/8984568496316/image_10_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-carpenter-jeans-dk001993rnb/8984568496316/image_11.jpg",
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-carpenter-jeans-dk001993rnb/8984568496316/image_12_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-carpenter-jeans-dk001993rnb/8984568496316/image_13_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-carpenter-jeans-dk001993rnb/8984568496316/image_14_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-carpenter-jeans-dk001993rnb/8984568496316/image_15_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -245864,7 +246123,14 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/loose-fit-double-knee-work-pants-dk0852830db/9256987427004/image_0_cropped.jpg",
+      "apparel_dataset/dickies/loose-fit-double-knee-work-pants-dk0852830db/9256987427004/image_1_cropped.jpg",
+      "apparel_dataset/dickies/loose-fit-double-knee-work-pants-dk0852830db/9256987427004/image_2_cropped.jpg",
+      "apparel_dataset/dickies/loose-fit-double-knee-work-pants-dk0852830db/9256987427004/image_3_cropped.jpg",
+      "apparel_dataset/dickies/loose-fit-double-knee-work-pants-dk0852830db/9256987427004/image_4.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -245937,7 +246203,13 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/original-874-r-work-pants-dk000874mr1/9256980938940/image_0_cropped.jpg",
+      "apparel_dataset/dickies/original-874-r-work-pants-dk000874mr1/9256980938940/image_1_cropped.jpg",
+      "apparel_dataset/dickies/original-874-r-work-pants-dk000874mr1/9256980938940/image_2_cropped.jpg",
+      "apparel_dataset/dickies/original-874-r-work-pants-dk000874mr1/9256980938940/image_3.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -246016,7 +246288,16 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/flex-regular-fit-duck-carpenter-pants-dk0dp802ssl/8984591499452/image_0_cropped.jpg",
+      "apparel_dataset/dickies/flex-regular-fit-duck-carpenter-pants-dk0dp802ssl/8984591499452/image_1_cropped.jpg",
+      "apparel_dataset/dickies/flex-regular-fit-duck-carpenter-pants-dk0dp802ssl/8984591499452/image_2_cropped.jpg",
+      "apparel_dataset/dickies/flex-regular-fit-duck-carpenter-pants-dk0dp802ssl/8984591499452/image_3.jpg",
+      "apparel_dataset/dickies/flex-regular-fit-duck-carpenter-pants-dk0dp802ssl/8984591499452/image_4.jpg",
+      "apparel_dataset/dickies/flex-regular-fit-duck-carpenter-pants-dk0dp802ssl/8984591499452/image_5_cropped.jpg",
+      "apparel_dataset/dickies/flex-regular-fit-duck-carpenter-pants-dk0dp802ssl/8984591499452/image_6_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -246080,7 +246361,12 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/dickies-skateboarding-regular-fit-twill-pants-dkwpsk670bk/8984583766204/image_0_cropped.jpg",
+      "apparel_dataset/dickies/dickies-skateboarding-regular-fit-twill-pants-dkwpsk670bk/8984583766204/image_1_cropped.jpg",
+      "apparel_dataset/dickies/dickies-skateboarding-regular-fit-twill-pants-dkwpsk670bk/8984583766204/image_2_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -246174,7 +246460,16 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/regular-fit-jeans-dk009393rnb/8984588648636/image_0_cropped.jpg",
+      "apparel_dataset/dickies/regular-fit-jeans-dk009393rnb/8984588648636/image_1_cropped.jpg",
+      "apparel_dataset/dickies/regular-fit-jeans-dk009393rnb/8984588648636/image_2_cropped.jpg",
+      "apparel_dataset/dickies/regular-fit-jeans-dk009393rnb/8984588648636/image_3.jpg",
+      "apparel_dataset/dickies/regular-fit-jeans-dk009393rnb/8984588648636/image_4_cropped.jpg",
+      "apparel_dataset/dickies/regular-fit-jeans-dk009393rnb/8984588648636/image_5_cropped.jpg",
+      "apparel_dataset/dickies/regular-fit-jeans-dk009393rnb/8984588648636/image_6_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -246254,7 +246549,16 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/flex-regular-fit-duck-carpenter-pants-dk0dp802sbk/8984591466684/image_0_cropped.jpg",
+      "apparel_dataset/dickies/flex-regular-fit-duck-carpenter-pants-dk0dp802sbk/8984591466684/image_1_cropped.jpg",
+      "apparel_dataset/dickies/flex-regular-fit-duck-carpenter-pants-dk0dp802sbk/8984591466684/image_2_cropped.jpg",
+      "apparel_dataset/dickies/flex-regular-fit-duck-carpenter-pants-dk0dp802sbk/8984591466684/image_3.jpg",
+      "apparel_dataset/dickies/flex-regular-fit-duck-carpenter-pants-dk0dp802sbk/8984591466684/image_4_cropped.jpg",
+      "apparel_dataset/dickies/flex-regular-fit-duck-carpenter-pants-dk0dp802sbk/8984591466684/image_5_cropped.jpg",
+      "apparel_dataset/dickies/flex-regular-fit-duck-carpenter-pants-dk0dp802sbk/8984591466684/image_6_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -246338,7 +246642,18 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-duck-carpenter-pants-dk001939rsl/8984558043324/image_0_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-duck-carpenter-pants-dk001939rsl/8984558043324/image_1_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-duck-carpenter-pants-dk001939rsl/8984558043324/image_2_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-duck-carpenter-pants-dk001939rsl/8984558043324/image_3_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-duck-carpenter-pants-dk001939rsl/8984558043324/image_4.jpg",
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-duck-carpenter-pants-dk001939rsl/8984558043324/image_5_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-duck-carpenter-pants-dk001939rsl/8984558043324/image_6_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-duck-carpenter-pants-dk001939rsl/8984558043324/image_7_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-duck-carpenter-pants-dk001939rsl/8984558043324/image_8_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -246415,7 +246730,17 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/flex-regular-fit-cargo-pants-dk0wp5950ds/9256987885756/image_0_cropped.jpg",
+      "apparel_dataset/dickies/flex-regular-fit-cargo-pants-dk0wp5950ds/9256987885756/image_1_cropped.jpg",
+      "apparel_dataset/dickies/flex-regular-fit-cargo-pants-dk0wp5950ds/9256987885756/image_2_cropped.jpg",
+      "apparel_dataset/dickies/flex-regular-fit-cargo-pants-dk0wp5950ds/9256987885756/image_3.jpg",
+      "apparel_dataset/dickies/flex-regular-fit-cargo-pants-dk0wp5950ds/9256987885756/image_4.jpg",
+      "apparel_dataset/dickies/flex-regular-fit-cargo-pants-dk0wp5950ds/9256987885756/image_5_cropped.jpg",
+      "apparel_dataset/dickies/flex-regular-fit-cargo-pants-dk0wp5950ds/9256987885756/image_6_cropped.jpg",
+      "apparel_dataset/dickies/flex-regular-fit-cargo-pants-dk0wp5950ds/9256987885756/image_7.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -246496,7 +246821,17 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/original-874-r-work-pants-dk0008740ds/9256981037244/image_0_cropped.jpg",
+      "apparel_dataset/dickies/original-874-r-work-pants-dk0008740ds/9256981037244/image_1_cropped.jpg",
+      "apparel_dataset/dickies/original-874-r-work-pants-dk0008740ds/9256981037244/image_2_cropped.jpg",
+      "apparel_dataset/dickies/original-874-r-work-pants-dk0008740ds/9256981037244/image_3_cropped.jpg",
+      "apparel_dataset/dickies/original-874-r-work-pants-dk0008740ds/9256981037244/image_4.jpg",
+      "apparel_dataset/dickies/original-874-r-work-pants-dk0008740ds/9256981037244/image_5_cropped.jpg",
+      "apparel_dataset/dickies/original-874-r-work-pants-dk0008740ds/9256981037244/image_6_cropped.jpg",
+      "apparel_dataset/dickies/original-874-r-work-pants-dk0008740ds/9256981037244/image_7.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -246580,7 +246915,15 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-carpenter-jeans-dk001993l9d/8984568529084/image_0_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-carpenter-jeans-dk001993l9d/8984568529084/image_1_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-carpenter-jeans-dk001993l9d/8984568529084/image_2.jpg",
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-carpenter-jeans-dk001993l9d/8984568529084/image_3_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-carpenter-jeans-dk001993l9d/8984568529084/image_4_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-carpenter-jeans-dk001993l9d/8984568529084/image_5_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -246661,7 +247004,15 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/873-slim-fit-work-pants-dk0wp8730bk/9256984379580/image_0_cropped.jpg",
+      "apparel_dataset/dickies/873-slim-fit-work-pants-dk0wp8730bk/9256984379580/image_1_cropped.jpg",
+      "apparel_dataset/dickies/873-slim-fit-work-pants-dk0wp8730bk/9256984379580/image_2_cropped.jpg",
+      "apparel_dataset/dickies/873-slim-fit-work-pants-dk0wp8730bk/9256984379580/image_3.jpg",
+      "apparel_dataset/dickies/873-slim-fit-work-pants-dk0wp8730bk/9256984379580/image_4.jpg",
+      "apparel_dataset/dickies/873-slim-fit-work-pants-dk0wp8730bk/9256984379580/image_5.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -246746,7 +247097,18 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/flex-skinny-fit-double-knee-work-pants-dk0wp8110ds/9256988541116/image_0_cropped.jpg",
+      "apparel_dataset/dickies/flex-skinny-fit-double-knee-work-pants-dk0wp8110ds/9256988541116/image_1_cropped.jpg",
+      "apparel_dataset/dickies/flex-skinny-fit-double-knee-work-pants-dk0wp8110ds/9256988541116/image_2_cropped.jpg",
+      "apparel_dataset/dickies/flex-skinny-fit-double-knee-work-pants-dk0wp8110ds/9256988541116/image_3_cropped.jpg",
+      "apparel_dataset/dickies/flex-skinny-fit-double-knee-work-pants-dk0wp8110ds/9256988541116/image_4.jpg",
+      "apparel_dataset/dickies/flex-skinny-fit-double-knee-work-pants-dk0wp8110ds/9256988541116/image_5.jpg",
+      "apparel_dataset/dickies/flex-skinny-fit-double-knee-work-pants-dk0wp8110ds/9256988541116/image_6_cropped.jpg",
+      "apparel_dataset/dickies/flex-skinny-fit-double-knee-work-pants-dk0wp8110ds/9256988541116/image_7_cropped.jpg",
+      "apparel_dataset/dickies/flex-skinny-fit-double-knee-work-pants-dk0wp8110ds/9256988541116/image_8_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -246822,7 +247184,18 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/flex-regular-fit-cargo-pants-dk0wp5950vg/9256988737724/image_0_cropped.jpg",
+      "apparel_dataset/dickies/flex-regular-fit-cargo-pants-dk0wp5950vg/9256988737724/image_1_cropped.jpg",
+      "apparel_dataset/dickies/flex-regular-fit-cargo-pants-dk0wp5950vg/9256988737724/image_2_cropped.jpg",
+      "apparel_dataset/dickies/flex-regular-fit-cargo-pants-dk0wp5950vg/9256988737724/image_3_cropped.jpg",
+      "apparel_dataset/dickies/flex-regular-fit-cargo-pants-dk0wp5950vg/9256988737724/image_4.jpg",
+      "apparel_dataset/dickies/flex-regular-fit-cargo-pants-dk0wp5950vg/9256988737724/image_5.jpg",
+      "apparel_dataset/dickies/flex-regular-fit-cargo-pants-dk0wp5950vg/9256988737724/image_6_cropped.jpg",
+      "apparel_dataset/dickies/flex-regular-fit-cargo-pants-dk0wp5950vg/9256988737724/image_7_cropped.jpg",
+      "apparel_dataset/dickies/flex-regular-fit-cargo-pants-dk0wp5950vg/9256988737724/image_8_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -246908,7 +247281,18 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/flex-slim-fit-cargo-pants-dk0wp5940bk/9256989556924/image_0_cropped.jpg",
+      "apparel_dataset/dickies/flex-slim-fit-cargo-pants-dk0wp5940bk/9256989556924/image_1_cropped.jpg",
+      "apparel_dataset/dickies/flex-slim-fit-cargo-pants-dk0wp5940bk/9256989556924/image_2_cropped.jpg",
+      "apparel_dataset/dickies/flex-slim-fit-cargo-pants-dk0wp5940bk/9256989556924/image_3.jpg",
+      "apparel_dataset/dickies/flex-slim-fit-cargo-pants-dk0wp5940bk/9256989556924/image_4.jpg",
+      "apparel_dataset/dickies/flex-slim-fit-cargo-pants-dk0wp5940bk/9256989556924/image_5_cropped.jpg",
+      "apparel_dataset/dickies/flex-slim-fit-cargo-pants-dk0wp5940bk/9256989556924/image_6_cropped.jpg",
+      "apparel_dataset/dickies/flex-slim-fit-cargo-pants-dk0wp5940bk/9256989556924/image_7_cropped.jpg",
+      "apparel_dataset/dickies/flex-slim-fit-cargo-pants-dk0wp5940bk/9256989556924/image_8_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -246991,7 +247375,18 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/original-874-r-work-pants-dk0008740og/9256981758140/image_0_cropped.jpg",
+      "apparel_dataset/dickies/original-874-r-work-pants-dk0008740og/9256981758140/image_1_cropped.jpg",
+      "apparel_dataset/dickies/original-874-r-work-pants-dk0008740og/9256981758140/image_2_cropped.jpg",
+      "apparel_dataset/dickies/original-874-r-work-pants-dk0008740og/9256981758140/image_3_cropped.jpg",
+      "apparel_dataset/dickies/original-874-r-work-pants-dk0008740og/9256981758140/image_4.jpg",
+      "apparel_dataset/dickies/original-874-r-work-pants-dk0008740og/9256981758140/image_5.jpg",
+      "apparel_dataset/dickies/original-874-r-work-pants-dk0008740og/9256981758140/image_6_cropped.jpg",
+      "apparel_dataset/dickies/original-874-r-work-pants-dk0008740og/9256981758140/image_7_cropped.jpg",
+      "apparel_dataset/dickies/original-874-r-work-pants-dk0008740og/9256981758140/image_8_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -247080,7 +247475,19 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-duck-carpenter-pants-dk001939rbd/8984557584572/image_0_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-duck-carpenter-pants-dk001939rbd/8984557584572/image_1_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-duck-carpenter-pants-dk001939rbd/8984557584572/image_2_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-duck-carpenter-pants-dk001939rbd/8984557584572/image_3_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-duck-carpenter-pants-dk001939rbd/8984557584572/image_4.jpg",
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-duck-carpenter-pants-dk001939rbd/8984557584572/image_5.jpg",
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-duck-carpenter-pants-dk001939rbd/8984557584572/image_6_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-duck-carpenter-pants-dk001939rbd/8984557584572/image_7_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-duck-carpenter-pants-dk001939rbd/8984557584572/image_8_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-duck-carpenter-pants-dk001939rbd/8984557584572/image_9.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -247155,7 +247562,17 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/loose-fit-double-knee-work-pants-dk0852830og/9256987033788/image_0_cropped.jpg",
+      "apparel_dataset/dickies/loose-fit-double-knee-work-pants-dk0852830og/9256987033788/image_1_cropped.jpg",
+      "apparel_dataset/dickies/loose-fit-double-knee-work-pants-dk0852830og/9256987033788/image_2_cropped.jpg",
+      "apparel_dataset/dickies/loose-fit-double-knee-work-pants-dk0852830og/9256987033788/image_3_cropped.jpg",
+      "apparel_dataset/dickies/loose-fit-double-knee-work-pants-dk0852830og/9256987033788/image_4.jpg",
+      "apparel_dataset/dickies/loose-fit-double-knee-work-pants-dk0852830og/9256987033788/image_5.jpg",
+      "apparel_dataset/dickies/loose-fit-double-knee-work-pants-dk0852830og/9256987033788/image_6_cropped.jpg",
+      "apparel_dataset/dickies/loose-fit-double-knee-work-pants-dk0852830og/9256987033788/image_7.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -247233,7 +247650,11 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/relaxed-fit-sanded-duck-carpenter-pants-dk0du336rbk/8984593006780/image_0_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-sanded-duck-carpenter-pants-dk0du336rbk/8984593006780/image_1_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -247315,7 +247736,15 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/247-loose-fit-pants-dk0a87ypblk/8984559648956/image_0_cropped.jpg",
+      "apparel_dataset/dickies/247-loose-fit-pants-dk0a87ypblk/8984559648956/image_1_cropped.jpg",
+      "apparel_dataset/dickies/247-loose-fit-pants-dk0a87ypblk/8984559648956/image_2_cropped.jpg",
+      "apparel_dataset/dickies/247-loose-fit-pants-dk0a87ypblk/8984559648956/image_3_cropped.jpg",
+      "apparel_dataset/dickies/247-loose-fit-pants-dk0a87ypblk/8984559648956/image_4.jpg",
+      "apparel_dataset/dickies/247-loose-fit-pants-dk0a87ypblk/8984559648956/image_5_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -247377,7 +247806,11 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/flex-regular-fit-duck-pants-dk0dp803ssl/8984592842940/image_0_cropped.jpg",
+      "apparel_dataset/dickies/flex-regular-fit-duck-pants-dk0dp803ssl/8984592842940/image_1_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -247462,7 +247895,18 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-duck-carpenter-pants-dk0019390af/8984557650108/image_0_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-duck-carpenter-pants-dk0019390af/8984557650108/image_1_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-duck-carpenter-pants-dk0019390af/8984557650108/image_2_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-duck-carpenter-pants-dk0019390af/8984557650108/image_3.jpg",
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-duck-carpenter-pants-dk0019390af/8984557650108/image_4_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-duck-carpenter-pants-dk0019390af/8984557650108/image_5.jpg",
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-duck-carpenter-pants-dk0019390af/8984557650108/image_6_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-duck-carpenter-pants-dk0019390af/8984557650108/image_7_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-heavyweight-duck-carpenter-pants-dk0019390af/8984557650108/image_8.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -247526,7 +247970,12 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/dickies-skateboarding-slim-fit-pants-dkwpsk940bk/8984584028348/image_0_cropped.jpg",
+      "apparel_dataset/dickies/dickies-skateboarding-slim-fit-pants-dkwpsk940bk/8984584028348/image_1_cropped.jpg",
+      "apparel_dataset/dickies/dickies-skateboarding-slim-fit-pants-dkwpsk940bk/8984584028348/image_2_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -247618,7 +248067,18 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/874-pro-series-work-pants-dk0a85ze0dn/8984560435388/image_0_cropped.jpg",
+      "apparel_dataset/dickies/874-pro-series-work-pants-dk0a85ze0dn/8984560435388/image_1_cropped.jpg",
+      "apparel_dataset/dickies/874-pro-series-work-pants-dk0a85ze0dn/8984560435388/image_2_cropped.jpg",
+      "apparel_dataset/dickies/874-pro-series-work-pants-dk0a85ze0dn/8984560435388/image_3_cropped.jpg",
+      "apparel_dataset/dickies/874-pro-series-work-pants-dk0a85ze0dn/8984560435388/image_4.jpg",
+      "apparel_dataset/dickies/874-pro-series-work-pants-dk0a85ze0dn/8984560435388/image_5.jpg",
+      "apparel_dataset/dickies/874-pro-series-work-pants-dk0a85ze0dn/8984560435388/image_6_cropped.jpg",
+      "apparel_dataset/dickies/874-pro-series-work-pants-dk0a85ze0dn/8984560435388/image_7_cropped.jpg",
+      "apparel_dataset/dickies/874-pro-series-work-pants-dk0a85ze0dn/8984560435388/image_8_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -247682,7 +248142,12 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/dickies-skateboarding-regular-fit-twill-pants-dkwpsk670ch/8984583831740/image_0_cropped.jpg",
+      "apparel_dataset/dickies/dickies-skateboarding-regular-fit-twill-pants-dkwpsk670ch/8984583831740/image_1_cropped.jpg",
+      "apparel_dataset/dickies/dickies-skateboarding-regular-fit-twill-pants-dkwpsk670ch/8984583831740/image_2_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -247761,7 +248226,19 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/flex-regular-fit-cargo-pants-dk0wp5950ch/9256987754684/image_0_cropped.jpg",
+      "apparel_dataset/dickies/flex-regular-fit-cargo-pants-dk0wp5950ch/9256987754684/image_1_cropped.jpg",
+      "apparel_dataset/dickies/flex-regular-fit-cargo-pants-dk0wp5950ch/9256987754684/image_2_cropped.jpg",
+      "apparel_dataset/dickies/flex-regular-fit-cargo-pants-dk0wp5950ch/9256987754684/image_3_cropped.jpg",
+      "apparel_dataset/dickies/flex-regular-fit-cargo-pants-dk0wp5950ch/9256987754684/image_4.jpg",
+      "apparel_dataset/dickies/flex-regular-fit-cargo-pants-dk0wp5950ch/9256987754684/image_5.jpg",
+      "apparel_dataset/dickies/flex-regular-fit-cargo-pants-dk0wp5950ch/9256987754684/image_6_cropped.jpg",
+      "apparel_dataset/dickies/flex-regular-fit-cargo-pants-dk0wp5950ch/9256987754684/image_7_cropped.jpg",
+      "apparel_dataset/dickies/flex-regular-fit-cargo-pants-dk0wp5950ch/9256987754684/image_8_cropped.jpg",
+      "apparel_dataset/dickies/flex-regular-fit-cargo-pants-dk0wp5950ch/9256987754684/image_9_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -247835,7 +248312,17 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/loose-fit-double-knee-work-pants-dk0852830sv/9256986968252/image_0_cropped.jpg",
+      "apparel_dataset/dickies/loose-fit-double-knee-work-pants-dk0852830sv/9256986968252/image_1_cropped.jpg",
+      "apparel_dataset/dickies/loose-fit-double-knee-work-pants-dk0852830sv/9256986968252/image_2_cropped.jpg",
+      "apparel_dataset/dickies/loose-fit-double-knee-work-pants-dk0852830sv/9256986968252/image_3_cropped.jpg",
+      "apparel_dataset/dickies/loose-fit-double-knee-work-pants-dk0852830sv/9256986968252/image_4.jpg",
+      "apparel_dataset/dickies/loose-fit-double-knee-work-pants-dk0852830sv/9256986968252/image_5_cropped.jpg",
+      "apparel_dataset/dickies/loose-fit-double-knee-work-pants-dk0852830sv/9256986968252/image_6_cropped.jpg",
+      "apparel_dataset/dickies/loose-fit-double-knee-work-pants-dk0852830sv/9256986968252/image_7.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -247909,7 +248396,18 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/loose-fit-cargo-pants-dk023214rdn/8984568692924/image_0_cropped.jpg",
+      "apparel_dataset/dickies/loose-fit-cargo-pants-dk023214rdn/8984568692924/image_1_cropped.jpg",
+      "apparel_dataset/dickies/loose-fit-cargo-pants-dk023214rdn/8984568692924/image_2_cropped.jpg",
+      "apparel_dataset/dickies/loose-fit-cargo-pants-dk023214rdn/8984568692924/image_3_cropped.jpg",
+      "apparel_dataset/dickies/loose-fit-cargo-pants-dk023214rdn/8984568692924/image_4.jpg",
+      "apparel_dataset/dickies/loose-fit-cargo-pants-dk023214rdn/8984568692924/image_5_cropped.jpg",
+      "apparel_dataset/dickies/loose-fit-cargo-pants-dk023214rdn/8984568692924/image_6_cropped.jpg",
+      "apparel_dataset/dickies/loose-fit-cargo-pants-dk023214rdn/8984568692924/image_7_cropped.jpg",
+      "apparel_dataset/dickies/loose-fit-cargo-pants-dk023214rdn/8984568692924/image_8_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -247988,7 +248486,16 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500bk/8984558600380/image_0_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500bk/8984558600380/image_1_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500bk/8984558600380/image_2_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500bk/8984558600380/image_3_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500bk/8984558600380/image_4_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500bk/8984558600380/image_5.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500bk/8984558600380/image_6_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -248076,7 +248583,17 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/short-sleeve-work-shirt-dk0015740bk/9256992440508/image_0_cropped.jpg",
+      "apparel_dataset/dickies/short-sleeve-work-shirt-dk0015740bk/9256992440508/image_1_cropped.jpg",
+      "apparel_dataset/dickies/short-sleeve-work-shirt-dk0015740bk/9256992440508/image_2_cropped.jpg",
+      "apparel_dataset/dickies/short-sleeve-work-shirt-dk0015740bk/9256992440508/image_3.jpg",
+      "apparel_dataset/dickies/short-sleeve-work-shirt-dk0015740bk/9256992440508/image_4.jpg",
+      "apparel_dataset/dickies/short-sleeve-work-shirt-dk0015740bk/9256992440508/image_5_cropped.jpg",
+      "apparel_dataset/dickies/short-sleeve-work-shirt-dk0015740bk/9256992440508/image_6.jpg",
+      "apparel_dataset/dickies/short-sleeve-work-shirt-dk0015740bk/9256992440508/image_7.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -248148,7 +248665,13 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500dn/8984558928060/image_0_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500dn/8984558928060/image_1_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500dn/8984558928060/image_2_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500dn/8984558928060/image_3.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -248225,7 +248748,15 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500wh/8984558993596/image_0_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500wh/8984558993596/image_1_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500wh/8984558993596/image_2_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500wh/8984558993596/image_3_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500wh/8984558993596/image_4_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500wh/8984558993596/image_5_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -248301,7 +248832,15 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500ch/8984558534844/image_0_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500ch/8984558534844/image_1_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500ch/8984558534844/image_2_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500ch/8984558534844/image_3_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500ch/8984558534844/image_4.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500ch/8984558534844/image_5.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -248373,7 +248912,14 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/heavyweight-heathered-short-sleeve-pocket-t-shirt-dkws450hoih/8984561254588/image_0_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-heathered-short-sleeve-pocket-t-shirt-dkws450hoih/8984561254588/image_1_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-heathered-short-sleeve-pocket-t-shirt-dkws450hoih/8984561254588/image_2_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-heathered-short-sleeve-pocket-t-shirt-dkws450hoih/8984561254588/image_3.jpg",
+      "apparel_dataset/dickies/heavyweight-heathered-short-sleeve-pocket-t-shirt-dkws450hoih/8984561254588/image_4_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -248447,7 +248993,12 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/heavyweight-heathered-long-sleeve-pocket-t-shirt-dkwl450hbud/8984563515580/image_0_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-heathered-long-sleeve-pocket-t-shirt-dkwl450hbud/8984563515580/image_1_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-heathered-long-sleeve-pocket-t-shirt-dkwl450hbud/8984563515580/image_2_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -248516,7 +249067,13 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/heavyweight-heathered-short-sleeve-pocket-t-shirt-dkws450hbud/8984560894140/image_0_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-heathered-short-sleeve-pocket-t-shirt-dkws450hbud/8984560894140/image_1_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-heathered-short-sleeve-pocket-t-shirt-dkws450hbud/8984560894140/image_2_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-heathered-short-sleeve-pocket-t-shirt-dkws450hbud/8984560894140/image_3.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -248589,7 +249146,14 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/heavyweight-heathered-short-sleeve-pocket-t-shirt-dkws450hbyd/8984560959676/image_0_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-heathered-short-sleeve-pocket-t-shirt-dkws450hbyd/8984560959676/image_1_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-heathered-short-sleeve-pocket-t-shirt-dkws450hbyd/8984560959676/image_2_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-heathered-short-sleeve-pocket-t-shirt-dkws450hbyd/8984560959676/image_3.jpg",
+      "apparel_dataset/dickies/heavyweight-heathered-short-sleeve-pocket-t-shirt-dkws450hbyd/8984560959676/image_4_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -248668,7 +249232,16 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500cb/8984558731452/image_0_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500cb/8984558731452/image_1_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500cb/8984558731452/image_2_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500cb/8984558731452/image_3_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500cb/8984558731452/image_4.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500cb/8984558731452/image_5.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500cb/8984558731452/image_6_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -248738,7 +249311,13 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/heavyweight-heathered-short-sleeve-pocket-t-shirt-dkws450hcgh/8984560795836/image_0_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-heathered-short-sleeve-pocket-t-shirt-dkws450hcgh/8984560795836/image_1_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-heathered-short-sleeve-pocket-t-shirt-dkws450hcgh/8984560795836/image_2_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-heathered-short-sleeve-pocket-t-shirt-dkws450hcgh/8984560795836/image_3.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -248819,7 +249398,13 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/heavyweight-long-sleeve-pocket-t-shirt-dk0wl4500bk/8984563155132/image_0_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-long-sleeve-pocket-t-shirt-dk0wl4500bk/8984563155132/image_1_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-long-sleeve-pocket-t-shirt-dk0wl4500bk/8984563155132/image_2_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-long-sleeve-pocket-t-shirt-dk0wl4500bk/8984563155132/image_3_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -248893,7 +249478,12 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/heavyweight-heathered-long-sleeve-pocket-t-shirt-dkwl450hcgh/8984563613884/image_0_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-heathered-long-sleeve-pocket-t-shirt-dkwl450hcgh/8984563613884/image_1_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-heathered-long-sleeve-pocket-t-shirt-dkwl450hcgh/8984563613884/image_2.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -248972,7 +249562,16 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500ds/8984558764220/image_0_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500ds/8984558764220/image_1_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500ds/8984558764220/image_2_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500ds/8984558764220/image_3_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500ds/8984558764220/image_4.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500ds/8984558764220/image_5.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500ds/8984558764220/image_6.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -249045,7 +249644,12 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/heavyweight-heathered-long-sleeve-pocket-t-shirt-dkwl450hbyd/8984563450044/image_0_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-heathered-long-sleeve-pocket-t-shirt-dkwl450hbyd/8984563450044/image_1_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-heathered-long-sleeve-pocket-t-shirt-dkwl450hbyd/8984563450044/image_2_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -249118,7 +249722,13 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500hg/8984558862524/image_0_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500hg/8984558862524/image_1_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500hg/8984558862524/image_2_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500hg/8984558862524/image_3.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -249196,7 +249806,13 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/heavyweight-heathered-short-sleeve-pocket-t-shirt-dkws450hghh/8984560926908/image_0_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-heathered-short-sleeve-pocket-t-shirt-dkws450hghh/8984560926908/image_1_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-heathered-short-sleeve-pocket-t-shirt-dkws450hghh/8984560926908/image_2_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-heathered-short-sleeve-pocket-t-shirt-dkws450hghh/8984560926908/image_3.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -249268,7 +249884,14 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/heavyweight-heathered-short-sleeve-pocket-t-shirt-dkws450hlsd/8984561221820/image_0_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-heathered-short-sleeve-pocket-t-shirt-dkws450hlsd/8984561221820/image_1_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-heathered-short-sleeve-pocket-t-shirt-dkws450hlsd/8984561221820/image_2_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-heathered-short-sleeve-pocket-t-shirt-dkws450hlsd/8984561221820/image_3.jpg",
+      "apparel_dataset/dickies/heavyweight-heathered-short-sleeve-pocket-t-shirt-dkws450hlsd/8984561221820/image_4_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -249345,7 +249968,15 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500by/8984558502076/image_0_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500by/8984558502076/image_1_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500by/8984558502076/image_2_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500by/8984558502076/image_3.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500by/8984558502076/image_4.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500by/8984558502076/image_5.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -249424,7 +250055,16 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500ln/8984559059132/image_0_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500ln/8984559059132/image_1_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500ln/8984559059132/image_2_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500ln/8984559059132/image_3_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500ln/8984559059132/image_4.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500ln/8984559059132/image_5.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500ln/8984559059132/image_6_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -249493,7 +250133,13 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/heavyweight-heathered-short-sleeve-pocket-t-shirt-dkws450hcth/8984560763068/image_0_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-heathered-short-sleeve-pocket-t-shirt-dkws450hcth/8984560763068/image_1_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-heathered-short-sleeve-pocket-t-shirt-dkws450hcth/8984560763068/image_2_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-heathered-short-sleeve-pocket-t-shirt-dkws450hcth/8984560763068/image_3.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -249570,7 +250216,15 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500gh/8984558633148/image_0_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500gh/8984558633148/image_1_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500gh/8984558633148/image_2_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500gh/8984558633148/image_3_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500gh/8984558633148/image_4.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500gh/8984558633148/image_5.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -249648,7 +250302,16 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500ml/8984559485116/image_0_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500ml/8984559485116/image_1_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500ml/8984559485116/image_2_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500ml/8984559485116/image_3_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500ml/8984559485116/image_4.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500ml/8984559485116/image_5.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500ml/8984559485116/image_6_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -249727,7 +250390,16 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500rb/8984558960828/image_0_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500rb/8984558960828/image_1_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500rb/8984558960828/image_2_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500rb/8984558960828/image_3_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500rb/8984558960828/image_4.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500rb/8984558960828/image_5.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500rb/8984558960828/image_6_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -249800,7 +250472,13 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/heavyweight-neon-short-sleeve-pocket-t-shirt-dkws450nbod/8984594022588/image_0_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-neon-short-sleeve-pocket-t-shirt-dkws450nbod/8984594022588/image_1_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-neon-short-sleeve-pocket-t-shirt-dkws450nbod/8984594022588/image_2_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-neon-short-sleeve-pocket-t-shirt-dkws450nbod/8984594022588/image_3.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -249870,7 +250548,13 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/heavyweight-heathered-short-sleeve-pocket-t-shirt-dkws450hgsh/8984561025212/image_0_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-heathered-short-sleeve-pocket-t-shirt-dkws450hgsh/8984561025212/image_1_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-heathered-short-sleeve-pocket-t-shirt-dkws450hgsh/8984561025212/image_2_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-heathered-short-sleeve-pocket-t-shirt-dkws450hgsh/8984561025212/image_3.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -249955,7 +250639,16 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/short-sleeve-work-shirt-dk0015740ch/9256991654076/image_0_cropped.jpg",
+      "apparel_dataset/dickies/short-sleeve-work-shirt-dk0015740ch/9256991654076/image_1_cropped.jpg",
+      "apparel_dataset/dickies/short-sleeve-work-shirt-dk0015740ch/9256991654076/image_2_cropped.jpg",
+      "apparel_dataset/dickies/short-sleeve-work-shirt-dk0015740ch/9256991654076/image_3_cropped.jpg",
+      "apparel_dataset/dickies/short-sleeve-work-shirt-dk0015740ch/9256991654076/image_4_cropped.jpg",
+      "apparel_dataset/dickies/short-sleeve-work-shirt-dk0015740ch/9256991654076/image_5_cropped.jpg",
+      "apparel_dataset/dickies/short-sleeve-work-shirt-dk0015740ch/9256991654076/image_6_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -250031,7 +250724,13 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/heavyweight-heathered-long-sleeve-pocket-t-shirt-dkwl450hcth/8984563679420/image_0_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-heathered-long-sleeve-pocket-t-shirt-dkwl450hcth/8984563679420/image_1_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-heathered-long-sleeve-pocket-t-shirt-dkwl450hcth/8984563679420/image_2_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-heathered-long-sleeve-pocket-t-shirt-dkwl450hcth/8984563679420/image_3.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -250116,7 +250815,17 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/short-sleeve-work-shirt-dk0015740dn/9257014722748/image_0_cropped.jpg",
+      "apparel_dataset/dickies/short-sleeve-work-shirt-dk0015740dn/9257014722748/image_1_cropped.jpg",
+      "apparel_dataset/dickies/short-sleeve-work-shirt-dk0015740dn/9257014722748/image_2_cropped.jpg",
+      "apparel_dataset/dickies/short-sleeve-work-shirt-dk0015740dn/9257014722748/image_3.jpg",
+      "apparel_dataset/dickies/short-sleeve-work-shirt-dk0015740dn/9257014722748/image_4_cropped.jpg",
+      "apparel_dataset/dickies/short-sleeve-work-shirt-dk0015740dn/9257014722748/image_5_cropped.jpg",
+      "apparel_dataset/dickies/short-sleeve-work-shirt-dk0015740dn/9257014722748/image_6_cropped.jpg",
+      "apparel_dataset/dickies/short-sleeve-work-shirt-dk0015740dn/9257014722748/image_7_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -250190,7 +250899,12 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/heavyweight-heathered-long-sleeve-pocket-t-shirt-dkwl450hmld/8984563777724/image_0_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-heathered-long-sleeve-pocket-t-shirt-dkwl450hmld/8984563777724/image_1_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-heathered-long-sleeve-pocket-t-shirt-dkwl450hmld/8984563777724/image_2.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -250262,7 +250976,13 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500bv/8984558436540/image_0_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500bv/8984558436540/image_1_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500bv/8984558436540/image_2_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500bv/8984558436540/image_3.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -250334,7 +251054,13 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/cooling-short-sleeve-pocket-t-shirt-dk0ss6000bk/8984562565308/image_0_cropped.jpg",
+      "apparel_dataset/dickies/cooling-short-sleeve-pocket-t-shirt-dk0ss6000bk/8984562565308/image_1_cropped.jpg",
+      "apparel_dataset/dickies/cooling-short-sleeve-pocket-t-shirt-dk0ss6000bk/8984562565308/image_2_cropped.jpg",
+      "apparel_dataset/dickies/cooling-short-sleeve-pocket-t-shirt-dk0ss6000bk/8984562565308/image_3.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -250412,7 +251138,13 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/heavyweight-heathered-short-sleeve-pocket-t-shirt-dkws450hbdh/8984560697532/image_0_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-heathered-short-sleeve-pocket-t-shirt-dkws450hbdh/8984560697532/image_1_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-heathered-short-sleeve-pocket-t-shirt-dkws450hbdh/8984560697532/image_2_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-heathered-short-sleeve-pocket-t-shirt-dkws450hbdh/8984560697532/image_3.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -250485,7 +251217,13 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/heavyweight-neon-short-sleeve-pocket-t-shirt-dkws450nbwd/8984593989820/image_0_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-neon-short-sleeve-pocket-t-shirt-dkws450nbwd/8984593989820/image_1_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-neon-short-sleeve-pocket-t-shirt-dkws450nbwd/8984593989820/image_2_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-neon-short-sleeve-pocket-t-shirt-dkws450nbwd/8984593989820/image_3.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -250556,7 +251294,12 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500bd/8984558665916/image_0_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500bd/8984558665916/image_1_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500bd/8984558665916/image_2.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -250635,7 +251378,16 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500bm/8984558698684/image_0_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500bm/8984558698684/image_1_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500bm/8984558698684/image_2_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500bm/8984558698684/image_3_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500bm/8984558698684/image_4.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500bm/8984558698684/image_5.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500bm/8984558698684/image_6_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -250719,7 +251471,13 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/heavyweight-long-sleeve-pocket-t-shirt-dk0wl4500dn/8984563220668/image_0_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-long-sleeve-pocket-t-shirt-dk0wl4500dn/8984563220668/image_1_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-long-sleeve-pocket-t-shirt-dk0wl4500dn/8984563220668/image_2_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-long-sleeve-pocket-t-shirt-dk0wl4500dn/8984563220668/image_3.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -250765,7 +251523,11 @@
           "cotton"
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/short-sleeve-t-shirt-dk0ws4800bk/8984593727676/image_0_cropped.jpg",
+      "apparel_dataset/dickies/short-sleeve-t-shirt-dk0ws4800bk/8984593727676/image_1_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -250828,7 +251590,11 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/heavyweight-neon-long-sleeve-pocket-t-shirt-dkwl450nbod/8984620794044/image_0_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-neon-long-sleeve-pocket-t-shirt-dkwl450nbod/8984620794044/image_1_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -250907,7 +251673,13 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/heavyweight-long-sleeve-pocket-t-shirt-dk0wl4500ch/8984563286204/image_0_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-long-sleeve-pocket-t-shirt-dk0wl4500ch/8984563286204/image_1_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-long-sleeve-pocket-t-shirt-dk0wl4500ch/8984563286204/image_2_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-long-sleeve-pocket-t-shirt-dk0wl4500ch/8984563286204/image_3_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -250974,7 +251746,13 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/heavyweight-neon-long-sleeve-pocket-t-shirt-dkwl450nbwd/8984620662972/image_0_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-neon-long-sleeve-pocket-t-shirt-dkwl450nbwd/8984620662972/image_1_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-neon-long-sleeve-pocket-t-shirt-dkwl450nbwd/8984620662972/image_2_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-neon-long-sleeve-pocket-t-shirt-dkwl450nbwd/8984620662972/image_3_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -251062,7 +251840,21 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/short-sleeve-performance-polo-shirt-dkws247fbkx/8984557879484/image_0_cropped.jpg",
+      "apparel_dataset/dickies/short-sleeve-performance-polo-shirt-dkws247fbkx/8984557879484/image_1_cropped.jpg",
+      "apparel_dataset/dickies/short-sleeve-performance-polo-shirt-dkws247fbkx/8984557879484/image_2_cropped.jpg",
+      "apparel_dataset/dickies/short-sleeve-performance-polo-shirt-dkws247fbkx/8984557879484/image_3.jpg",
+      "apparel_dataset/dickies/short-sleeve-performance-polo-shirt-dkws247fbkx/8984557879484/image_4.jpg",
+      "apparel_dataset/dickies/short-sleeve-performance-polo-shirt-dkws247fbkx/8984557879484/image_5.jpg",
+      "apparel_dataset/dickies/short-sleeve-performance-polo-shirt-dkws247fbkx/8984557879484/image_6_cropped.jpg",
+      "apparel_dataset/dickies/short-sleeve-performance-polo-shirt-dkws247fbkx/8984557879484/image_7_cropped.jpg",
+      "apparel_dataset/dickies/short-sleeve-performance-polo-shirt-dkws247fbkx/8984557879484/image_8_cropped.jpg",
+      "apparel_dataset/dickies/short-sleeve-performance-polo-shirt-dkws247fbkx/8984557879484/image_9.jpg",
+      "apparel_dataset/dickies/short-sleeve-performance-polo-shirt-dkws247fbkx/8984557879484/image_10.jpg",
+      "apparel_dataset/dickies/short-sleeve-performance-polo-shirt-dkws247fbkx/8984557879484/image_11.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -251139,7 +251931,15 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500er/8984558796988/image_0_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500er/8984558796988/image_1_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500er/8984558796988/image_2_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500er/8984558796988/image_3_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500er/8984558796988/image_4_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws4500er/8984558796988/image_5_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -251227,7 +252027,17 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/short-sleeve-work-shirt-dk0015740kh/9256991293628/image_0_cropped.jpg",
+      "apparel_dataset/dickies/short-sleeve-work-shirt-dk0015740kh/9256991293628/image_1_cropped.jpg",
+      "apparel_dataset/dickies/short-sleeve-work-shirt-dk0015740kh/9256991293628/image_2_cropped.jpg",
+      "apparel_dataset/dickies/short-sleeve-work-shirt-dk0015740kh/9256991293628/image_3_cropped.jpg",
+      "apparel_dataset/dickies/short-sleeve-work-shirt-dk0015740kh/9256991293628/image_4.jpg",
+      "apparel_dataset/dickies/short-sleeve-work-shirt-dk0015740kh/9256991293628/image_5_cropped.jpg",
+      "apparel_dataset/dickies/short-sleeve-work-shirt-dk0015740kh/9256991293628/image_6_cropped.jpg",
+      "apparel_dataset/dickies/short-sleeve-work-shirt-dk0015740kh/9256991293628/image_7.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -251296,7 +252106,13 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/heavyweight-heathered-short-sleeve-pocket-t-shirt-dkws450heh2/8984561090748/image_0_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-heathered-short-sleeve-pocket-t-shirt-dkws450heh2/8984561090748/image_1_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-heathered-short-sleeve-pocket-t-shirt-dkws450heh2/8984561090748/image_2_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-heathered-short-sleeve-pocket-t-shirt-dkws450heh2/8984561090748/image_3.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -251365,7 +252181,13 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/cooling-short-sleeve-pocket-t-shirt-dk0ss6000dn/8984562991292/image_0_cropped.jpg",
+      "apparel_dataset/dickies/cooling-short-sleeve-pocket-t-shirt-dk0ss6000dn/8984562991292/image_1_cropped.jpg",
+      "apparel_dataset/dickies/cooling-short-sleeve-pocket-t-shirt-dk0ss6000dn/8984562991292/image_2.jpg",
+      "apparel_dataset/dickies/cooling-short-sleeve-pocket-t-shirt-dk0ss6000dn/8984562991292/image_3.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -251440,7 +252262,14 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws450l37/9255424295100/image_0_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws450l37/9255424295100/image_1_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws450l37/9255424295100/image_2_cropped.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws450l37/9255424295100/image_3.jpg",
+      "apparel_dataset/dickies/heavyweight-short-sleeve-pocket-t-shirt-dk0ws450l37/9255424295100/image_4_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -251520,7 +252349,17 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/short-sleeve-work-shirt-dk0015740og/9256991490236/image_0_cropped.jpg",
+      "apparel_dataset/dickies/short-sleeve-work-shirt-dk0015740og/9256991490236/image_1_cropped.jpg",
+      "apparel_dataset/dickies/short-sleeve-work-shirt-dk0015740og/9256991490236/image_2_cropped.jpg",
+      "apparel_dataset/dickies/short-sleeve-work-shirt-dk0015740og/9256991490236/image_3_cropped.jpg",
+      "apparel_dataset/dickies/short-sleeve-work-shirt-dk0015740og/9256991490236/image_4.jpg",
+      "apparel_dataset/dickies/short-sleeve-work-shirt-dk0015740og/9256991490236/image_5.jpg",
+      "apparel_dataset/dickies/short-sleeve-work-shirt-dk0015740og/9256991490236/image_6.jpg",
+      "apparel_dataset/dickies/short-sleeve-work-shirt-dk0015740og/9256991490236/image_7_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -251587,7 +252426,13 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/pro-series-work-shirt-dk0a886wblk/9134370881724/image_0_cropped.jpg",
+      "apparel_dataset/dickies/pro-series-work-shirt-dk0a886wblk/9134370881724/image_1_cropped.jpg",
+      "apparel_dataset/dickies/pro-series-work-shirt-dk0a886wblk/9134370881724/image_2_cropped.jpg",
+      "apparel_dataset/dickies/pro-series-work-shirt-dk0a886wblk/9134370881724/image_3.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -251675,7 +252520,21 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/short-sleeve-performance-polo-shirt-dkws247fin2/8984558403772/image_0_cropped.jpg",
+      "apparel_dataset/dickies/short-sleeve-performance-polo-shirt-dkws247fin2/8984558403772/image_1_cropped.jpg",
+      "apparel_dataset/dickies/short-sleeve-performance-polo-shirt-dkws247fin2/8984558403772/image_2_cropped.jpg",
+      "apparel_dataset/dickies/short-sleeve-performance-polo-shirt-dkws247fin2/8984558403772/image_3.jpg",
+      "apparel_dataset/dickies/short-sleeve-performance-polo-shirt-dkws247fin2/8984558403772/image_4.jpg",
+      "apparel_dataset/dickies/short-sleeve-performance-polo-shirt-dkws247fin2/8984558403772/image_5_cropped.jpg",
+      "apparel_dataset/dickies/short-sleeve-performance-polo-shirt-dkws247fin2/8984558403772/image_6_cropped.jpg",
+      "apparel_dataset/dickies/short-sleeve-performance-polo-shirt-dkws247fin2/8984558403772/image_7_cropped.jpg",
+      "apparel_dataset/dickies/short-sleeve-performance-polo-shirt-dkws247fin2/8984558403772/image_8_cropped.jpg",
+      "apparel_dataset/dickies/short-sleeve-performance-polo-shirt-dkws247fin2/8984558403772/image_9.jpg",
+      "apparel_dataset/dickies/short-sleeve-performance-polo-shirt-dkws247fin2/8984558403772/image_10.jpg",
+      "apparel_dataset/dickies/short-sleeve-performance-polo-shirt-dkws247fin2/8984558403772/image_11_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -251739,7 +252598,15 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/958-loose-short-jeans-13-dk0a88jprin/9255880458428/image_0_cropped.jpg",
+      "apparel_dataset/dickies/958-loose-short-jeans-13-dk0a88jprin/9255880458428/image_1_cropped.jpg",
+      "apparel_dataset/dickies/958-loose-short-jeans-13-dk0a88jprin/9255880458428/image_2_cropped.jpg",
+      "apparel_dataset/dickies/958-loose-short-jeans-13-dk0a88jprin/9255880458428/image_3.jpg",
+      "apparel_dataset/dickies/958-loose-short-jeans-13-dk0a88jprin/9255880458428/image_4_cropped.jpg",
+      "apparel_dataset/dickies/958-loose-short-jeans-13-dk0a88jprin/9255880458428/image_5_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -251840,7 +252707,18 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/loose-fit-flat-front-work-shorts-13-dk0422830bk/9257000206524/image_0_cropped.jpg",
+      "apparel_dataset/dickies/loose-fit-flat-front-work-shorts-13-dk0422830bk/9257000206524/image_1_cropped.jpg",
+      "apparel_dataset/dickies/loose-fit-flat-front-work-shorts-13-dk0422830bk/9257000206524/image_2_cropped.jpg",
+      "apparel_dataset/dickies/loose-fit-flat-front-work-shorts-13-dk0422830bk/9257000206524/image_3.jpg",
+      "apparel_dataset/dickies/loose-fit-flat-front-work-shorts-13-dk0422830bk/9257000206524/image_4.jpg",
+      "apparel_dataset/dickies/loose-fit-flat-front-work-shorts-13-dk0422830bk/9257000206524/image_5_cropped.jpg",
+      "apparel_dataset/dickies/loose-fit-flat-front-work-shorts-13-dk0422830bk/9257000206524/image_6.jpg",
+      "apparel_dataset/dickies/loose-fit-flat-front-work-shorts-13-dk0422830bk/9257000206524/image_7.jpg",
+      "apparel_dataset/dickies/loose-fit-flat-front-work-shorts-13-dk0422830bk/9257000206524/image_8_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -251914,7 +252792,15 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/pro-series-work-shorts-13-dk0a88hdblk/9134371242172/image_0_cropped.jpg",
+      "apparel_dataset/dickies/pro-series-work-shorts-13-dk0a88hdblk/9134371242172/image_1_cropped.jpg",
+      "apparel_dataset/dickies/pro-series-work-shorts-13-dk0a88hdblk/9134371242172/image_2_cropped.jpg",
+      "apparel_dataset/dickies/pro-series-work-shorts-13-dk0a88hdblk/9134371242172/image_3.jpg",
+      "apparel_dataset/dickies/pro-series-work-shorts-13-dk0a88hdblk/9134371242172/image_4_cropped.jpg",
+      "apparel_dataset/dickies/pro-series-work-shorts-13-dk0a88hdblk/9134371242172/image_5_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -251990,7 +252876,15 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/874-work-shorts-11-dk0a8619blk/8984620826812/image_0_cropped.jpg",
+      "apparel_dataset/dickies/874-work-shorts-11-dk0a8619blk/8984620826812/image_1_cropped.jpg",
+      "apparel_dataset/dickies/874-work-shorts-11-dk0a8619blk/8984620826812/image_2.jpg",
+      "apparel_dataset/dickies/874-work-shorts-11-dk0a8619blk/8984620826812/image_3_cropped.jpg",
+      "apparel_dataset/dickies/874-work-shorts-11-dk0a8619blk/8984620826812/image_4_cropped.jpg",
+      "apparel_dataset/dickies/874-work-shorts-11-dk0a8619blk/8984620826812/image_5_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -252065,7 +252959,15 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/tradebuilt-cargo-shorts-11-dk0a88li0sl/9203732971708/image_0_cropped.jpg",
+      "apparel_dataset/dickies/tradebuilt-cargo-shorts-11-dk0a88li0sl/9203732971708/image_1_cropped.jpg",
+      "apparel_dataset/dickies/tradebuilt-cargo-shorts-11-dk0a88li0sl/9203732971708/image_2.jpg",
+      "apparel_dataset/dickies/tradebuilt-cargo-shorts-11-dk0a88li0sl/9203732971708/image_3.jpg",
+      "apparel_dataset/dickies/tradebuilt-cargo-shorts-11-dk0a88li0sl/9203732971708/image_4_cropped.jpg",
+      "apparel_dataset/dickies/tradebuilt-cargo-shorts-11-dk0a88li0sl/9203732971708/image_5_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -252133,7 +253035,15 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/hickory-carpenter-shorts-11-dk0a88qtri2/9275636383932/image_0_cropped.jpg",
+      "apparel_dataset/dickies/hickory-carpenter-shorts-11-dk0a88qtri2/9275636383932/image_1_cropped.jpg",
+      "apparel_dataset/dickies/hickory-carpenter-shorts-11-dk0a88qtri2/9275636383932/image_2_cropped.jpg",
+      "apparel_dataset/dickies/hickory-carpenter-shorts-11-dk0a88qtri2/9275636383932/image_3.jpg",
+      "apparel_dataset/dickies/hickory-carpenter-shorts-11-dk0a88qtri2/9275636383932/image_4_cropped.jpg",
+      "apparel_dataset/dickies/hickory-carpenter-shorts-11-dk0a88qtri2/9275636383932/image_5.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -252207,7 +253117,15 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/denim-utility-short-13-dk0a88a4j75/9144278417596/image_0_cropped.jpg",
+      "apparel_dataset/dickies/denim-utility-short-13-dk0a88a4j75/9144278417596/image_1_cropped.jpg",
+      "apparel_dataset/dickies/denim-utility-short-13-dk0a88a4j75/9144278417596/image_2_cropped.jpg",
+      "apparel_dataset/dickies/denim-utility-short-13-dk0a88a4j75/9144278417596/image_3.jpg",
+      "apparel_dataset/dickies/denim-utility-short-13-dk0a88a4j75/9144278417596/image_4_cropped.jpg",
+      "apparel_dataset/dickies/denim-utility-short-13-dk0a88a4j75/9144278417596/image_5.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -252274,7 +253192,15 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/canvas-carpenter-shorts-11-dk0a888g0ds/9283128557756/image_0_cropped.jpg",
+      "apparel_dataset/dickies/canvas-carpenter-shorts-11-dk0a888g0ds/9283128557756/image_1_cropped.jpg",
+      "apparel_dataset/dickies/canvas-carpenter-shorts-11-dk0a888g0ds/9283128557756/image_2_cropped.jpg",
+      "apparel_dataset/dickies/canvas-carpenter-shorts-11-dk0a888g0ds/9283128557756/image_3.jpg",
+      "apparel_dataset/dickies/canvas-carpenter-shorts-11-dk0a888g0ds/9283128557756/image_4_cropped.jpg",
+      "apparel_dataset/dickies/canvas-carpenter-shorts-11-dk0a888g0ds/9283128557756/image_5_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -252349,7 +253275,18 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/flex-relaxed-fit-cargo-shorts-13-dk0wr5570bk/9256989622460/image_0_cropped.jpg",
+      "apparel_dataset/dickies/flex-relaxed-fit-cargo-shorts-13-dk0wr5570bk/9256989622460/image_1_cropped.jpg",
+      "apparel_dataset/dickies/flex-relaxed-fit-cargo-shorts-13-dk0wr5570bk/9256989622460/image_2_cropped.jpg",
+      "apparel_dataset/dickies/flex-relaxed-fit-cargo-shorts-13-dk0wr5570bk/9256989622460/image_3_cropped.jpg",
+      "apparel_dataset/dickies/flex-relaxed-fit-cargo-shorts-13-dk0wr5570bk/9256989622460/image_4.jpg",
+      "apparel_dataset/dickies/flex-relaxed-fit-cargo-shorts-13-dk0wr5570bk/9256989622460/image_5.jpg",
+      "apparel_dataset/dickies/flex-relaxed-fit-cargo-shorts-13-dk0wr5570bk/9256989622460/image_6_cropped.jpg",
+      "apparel_dataset/dickies/flex-relaxed-fit-cargo-shorts-13-dk0wr5570bk/9256989622460/image_7.jpg",
+      "apparel_dataset/dickies/flex-relaxed-fit-cargo-shorts-13-dk0wr5570bk/9256989622460/image_8.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -252436,7 +253373,17 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/flex-relaxed-fit-work-shorts-11-dk0wr8520bk/9256999485628/image_0_cropped.jpg",
+      "apparel_dataset/dickies/flex-relaxed-fit-work-shorts-11-dk0wr8520bk/9256999485628/image_1_cropped.jpg",
+      "apparel_dataset/dickies/flex-relaxed-fit-work-shorts-11-dk0wr8520bk/9256999485628/image_2.jpg",
+      "apparel_dataset/dickies/flex-relaxed-fit-work-shorts-11-dk0wr8520bk/9256999485628/image_3.jpg",
+      "apparel_dataset/dickies/flex-relaxed-fit-work-shorts-11-dk0wr8520bk/9256999485628/image_4.jpg",
+      "apparel_dataset/dickies/flex-relaxed-fit-work-shorts-11-dk0wr8520bk/9256999485628/image_5.jpg",
+      "apparel_dataset/dickies/flex-relaxed-fit-work-shorts-11-dk0wr8520bk/9256999485628/image_6.jpg",
+      "apparel_dataset/dickies/flex-relaxed-fit-work-shorts-11-dk0wr8520bk/9256999485628/image_7_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -252508,7 +253455,13 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/874-work-shorts-11-dk0a86190ch/8984620957884/image_0_cropped.jpg",
+      "apparel_dataset/dickies/874-work-shorts-11-dk0a86190ch/8984620957884/image_1_cropped.jpg",
+      "apparel_dataset/dickies/874-work-shorts-11-dk0a86190ch/8984620957884/image_2.jpg",
+      "apparel_dataset/dickies/874-work-shorts-11-dk0a86190ch/8984620957884/image_3_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -252582,7 +253535,15 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/pro-series-work-shorts-13-dk0a88hd0ds/9134371176636/image_0_cropped.jpg",
+      "apparel_dataset/dickies/pro-series-work-shorts-13-dk0a88hd0ds/9134371176636/image_1_cropped.jpg",
+      "apparel_dataset/dickies/pro-series-work-shorts-13-dk0a88hd0ds/9134371176636/image_2_cropped.jpg",
+      "apparel_dataset/dickies/pro-series-work-shorts-13-dk0a88hd0ds/9134371176636/image_3.jpg",
+      "apparel_dataset/dickies/pro-series-work-shorts-13-dk0a88hd0ds/9134371176636/image_4_cropped.jpg",
+      "apparel_dataset/dickies/pro-series-work-shorts-13-dk0a88hd0ds/9134371176636/image_5_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -252671,7 +253632,18 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/874-pro-series-work-shorts-11-dk0a85zgblk/8984597987516/image_0_cropped.jpg",
+      "apparel_dataset/dickies/874-pro-series-work-shorts-11-dk0a85zgblk/8984597987516/image_1_cropped.jpg",
+      "apparel_dataset/dickies/874-pro-series-work-shorts-11-dk0a85zgblk/8984597987516/image_2.jpg",
+      "apparel_dataset/dickies/874-pro-series-work-shorts-11-dk0a85zgblk/8984597987516/image_3_cropped.jpg",
+      "apparel_dataset/dickies/874-pro-series-work-shorts-11-dk0a85zgblk/8984597987516/image_4.jpg",
+      "apparel_dataset/dickies/874-pro-series-work-shorts-11-dk0a85zgblk/8984597987516/image_5.jpg",
+      "apparel_dataset/dickies/874-pro-series-work-shorts-11-dk0a85zgblk/8984597987516/image_6.jpg",
+      "apparel_dataset/dickies/874-pro-series-work-shorts-11-dk0a85zgblk/8984597987516/image_7_cropped.jpg",
+      "apparel_dataset/dickies/874-pro-series-work-shorts-11-dk0a85zgblk/8984597987516/image_8.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -252738,7 +253710,15 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/worn-in-relaxed-carpenter-denim-shorts-13-dk0a89tdj77/9203733004476/image_0_cropped.jpg",
+      "apparel_dataset/dickies/worn-in-relaxed-carpenter-denim-shorts-13-dk0a89tdj77/9203733004476/image_1_cropped.jpg",
+      "apparel_dataset/dickies/worn-in-relaxed-carpenter-denim-shorts-13-dk0a89tdj77/9203733004476/image_2_cropped.jpg",
+      "apparel_dataset/dickies/worn-in-relaxed-carpenter-denim-shorts-13-dk0a89tdj77/9203733004476/image_3.jpg",
+      "apparel_dataset/dickies/worn-in-relaxed-carpenter-denim-shorts-13-dk0a89tdj77/9203733004476/image_4_cropped.jpg",
+      "apparel_dataset/dickies/worn-in-relaxed-carpenter-denim-shorts-13-dk0a89tdj77/9203733004476/image_5_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -252814,7 +253794,15 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/874-work-shorts-11-dk0a8619khk/8984620892348/image_0_cropped.jpg",
+      "apparel_dataset/dickies/874-work-shorts-11-dk0a8619khk/8984620892348/image_1_cropped.jpg",
+      "apparel_dataset/dickies/874-work-shorts-11-dk0a8619khk/8984620892348/image_2.jpg",
+      "apparel_dataset/dickies/874-work-shorts-11-dk0a8619khk/8984620892348/image_3_cropped.jpg",
+      "apparel_dataset/dickies/874-work-shorts-11-dk0a8619khk/8984620892348/image_4_cropped.jpg",
+      "apparel_dataset/dickies/874-work-shorts-11-dk0a8619khk/8984620892348/image_5_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -252893,7 +253881,15 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/874-pro-series-work-shorts-11-dk0a85zg0ds/8984598151356/image_0_cropped.jpg",
+      "apparel_dataset/dickies/874-pro-series-work-shorts-11-dk0a85zg0ds/8984598151356/image_1_cropped.jpg",
+      "apparel_dataset/dickies/874-pro-series-work-shorts-11-dk0a85zg0ds/8984598151356/image_2.jpg",
+      "apparel_dataset/dickies/874-pro-series-work-shorts-11-dk0a85zg0ds/8984598151356/image_3_cropped.jpg",
+      "apparel_dataset/dickies/874-pro-series-work-shorts-11-dk0a85zg0ds/8984598151356/image_4_cropped.jpg",
+      "apparel_dataset/dickies/874-pro-series-work-shorts-11-dk0a85zg0ds/8984598151356/image_5_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -252979,7 +253975,15 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/874-pro-series-work-shorts-11-dk0a85zg0ch/9134841823420/image_0_cropped.jpg",
+      "apparel_dataset/dickies/874-pro-series-work-shorts-11-dk0a85zg0ch/9134841823420/image_1_cropped.jpg",
+      "apparel_dataset/dickies/874-pro-series-work-shorts-11-dk0a85zg0ch/9134841823420/image_2_cropped.jpg",
+      "apparel_dataset/dickies/874-pro-series-work-shorts-11-dk0a85zg0ch/9134841823420/image_3.jpg",
+      "apparel_dataset/dickies/874-pro-series-work-shorts-11-dk0a85zg0ch/9134841823420/image_4_cropped.jpg",
+      "apparel_dataset/dickies/874-pro-series-work-shorts-11-dk0a85zg0ch/9134841823420/image_5.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -253059,7 +254063,17 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/874-work-shorts-11-dk0a86190db/8984621023420/image_0_cropped.jpg",
+      "apparel_dataset/dickies/874-work-shorts-11-dk0a86190db/8984621023420/image_1_cropped.jpg",
+      "apparel_dataset/dickies/874-work-shorts-11-dk0a86190db/8984621023420/image_2_cropped.jpg",
+      "apparel_dataset/dickies/874-work-shorts-11-dk0a86190db/8984621023420/image_3.jpg",
+      "apparel_dataset/dickies/874-work-shorts-11-dk0a86190db/8984621023420/image_4.jpg",
+      "apparel_dataset/dickies/874-work-shorts-11-dk0a86190db/8984621023420/image_5.jpg",
+      "apparel_dataset/dickies/874-work-shorts-11-dk0a86190db/8984621023420/image_6_cropped.jpg",
+      "apparel_dataset/dickies/874-work-shorts-11-dk0a86190db/8984621023420/image_7.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -253133,7 +254147,15 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/pro-series-work-shorts-13-dk0a88hd0dn/9134371209404/image_0_cropped.jpg",
+      "apparel_dataset/dickies/pro-series-work-shorts-13-dk0a88hd0dn/9134371209404/image_1_cropped.jpg",
+      "apparel_dataset/dickies/pro-series-work-shorts-13-dk0a88hd0dn/9134371209404/image_2_cropped.jpg",
+      "apparel_dataset/dickies/pro-series-work-shorts-13-dk0a88hd0dn/9134371209404/image_3.jpg",
+      "apparel_dataset/dickies/pro-series-work-shorts-13-dk0a88hd0dn/9134371209404/image_4_cropped.jpg",
+      "apparel_dataset/dickies/pro-series-work-shorts-13-dk0a88hd0dn/9134371209404/image_5_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -253219,7 +254241,15 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/874-pro-series-work-shorts-11-dk0a85zg0dn/8984598020284/image_0_cropped.jpg",
+      "apparel_dataset/dickies/874-pro-series-work-shorts-11-dk0a85zg0dn/8984598020284/image_1_cropped.jpg",
+      "apparel_dataset/dickies/874-pro-series-work-shorts-11-dk0a85zg0dn/8984598020284/image_2.jpg",
+      "apparel_dataset/dickies/874-pro-series-work-shorts-11-dk0a85zg0dn/8984598020284/image_3_cropped.jpg",
+      "apparel_dataset/dickies/874-pro-series-work-shorts-11-dk0a85zg0dn/8984598020284/image_4_cropped.jpg",
+      "apparel_dataset/dickies/874-pro-series-work-shorts-11-dk0a85zg0dn/8984598020284/image_5_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -253321,7 +254351,19 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/loose-fit-flat-front-work-shorts-13-dk0422830ch/9257000009916/image_0_cropped.jpg",
+      "apparel_dataset/dickies/loose-fit-flat-front-work-shorts-13-dk0422830ch/9257000009916/image_1_cropped.jpg",
+      "apparel_dataset/dickies/loose-fit-flat-front-work-shorts-13-dk0422830ch/9257000009916/image_2_cropped.jpg",
+      "apparel_dataset/dickies/loose-fit-flat-front-work-shorts-13-dk0422830ch/9257000009916/image_3.jpg",
+      "apparel_dataset/dickies/loose-fit-flat-front-work-shorts-13-dk0422830ch/9257000009916/image_4.jpg",
+      "apparel_dataset/dickies/loose-fit-flat-front-work-shorts-13-dk0422830ch/9257000009916/image_5.jpg",
+      "apparel_dataset/dickies/loose-fit-flat-front-work-shorts-13-dk0422830ch/9257000009916/image_6_cropped.jpg",
+      "apparel_dataset/dickies/loose-fit-flat-front-work-shorts-13-dk0422830ch/9257000009916/image_7.jpg",
+      "apparel_dataset/dickies/loose-fit-flat-front-work-shorts-13-dk0422830ch/9257000009916/image_8.jpg",
+      "apparel_dataset/dickies/loose-fit-flat-front-work-shorts-13-dk0422830ch/9257000009916/image_9.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -253397,7 +254439,15 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/874-work-shorts-11-dk0a86190dn/8984620925116/image_0_cropped.jpg",
+      "apparel_dataset/dickies/874-work-shorts-11-dk0a86190dn/8984620925116/image_1_cropped.jpg",
+      "apparel_dataset/dickies/874-work-shorts-11-dk0a86190dn/8984620925116/image_2.jpg",
+      "apparel_dataset/dickies/874-work-shorts-11-dk0a86190dn/8984620925116/image_3_cropped.jpg",
+      "apparel_dataset/dickies/874-work-shorts-11-dk0a86190dn/8984620925116/image_4_cropped.jpg",
+      "apparel_dataset/dickies/874-work-shorts-11-dk0a86190dn/8984620925116/image_5_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -253483,7 +254533,15 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/flex-cooling-regular-fit-utility-shorts-11-dk0sr6010bk/8984593399996/image_0_cropped.jpg",
+      "apparel_dataset/dickies/flex-cooling-regular-fit-utility-shorts-11-dk0sr6010bk/8984593399996/image_1_cropped.jpg",
+      "apparel_dataset/dickies/flex-cooling-regular-fit-utility-shorts-11-dk0sr6010bk/8984593399996/image_2.jpg",
+      "apparel_dataset/dickies/flex-cooling-regular-fit-utility-shorts-11-dk0sr6010bk/8984593399996/image_3.jpg",
+      "apparel_dataset/dickies/flex-cooling-regular-fit-utility-shorts-11-dk0sr6010bk/8984593399996/image_4_cropped.jpg",
+      "apparel_dataset/dickies/flex-cooling-regular-fit-utility-shorts-11-dk0sr6010bk/8984593399996/image_5.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -253549,7 +254607,14 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/denim-utility-short-13-dk0a88a4j76/9144278515900/image_0_cropped.jpg",
+      "apparel_dataset/dickies/denim-utility-short-13-dk0a88a4j76/9144278515900/image_1_cropped.jpg",
+      "apparel_dataset/dickies/denim-utility-short-13-dk0a88a4j76/9144278515900/image_2.jpg",
+      "apparel_dataset/dickies/denim-utility-short-13-dk0a88a4j76/9144278515900/image_3_cropped.jpg",
+      "apparel_dataset/dickies/denim-utility-short-13-dk0a88a4j76/9144278515900/image_4_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -253617,7 +254682,15 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/worn-in-relaxed-carpenter-denim-shorts-13-dk0a89tdvnt/9203733168316/image_0_cropped.jpg",
+      "apparel_dataset/dickies/worn-in-relaxed-carpenter-denim-shorts-13-dk0a89tdvnt/9203733168316/image_1_cropped.jpg",
+      "apparel_dataset/dickies/worn-in-relaxed-carpenter-denim-shorts-13-dk0a89tdvnt/9203733168316/image_2_cropped.jpg",
+      "apparel_dataset/dickies/worn-in-relaxed-carpenter-denim-shorts-13-dk0a89tdvnt/9203733168316/image_3.jpg",
+      "apparel_dataset/dickies/worn-in-relaxed-carpenter-denim-shorts-13-dk0a89tdvnt/9203733168316/image_4_cropped.jpg",
+      "apparel_dataset/dickies/worn-in-relaxed-carpenter-denim-shorts-13-dk0a89tdvnt/9203733168316/image_5_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -253689,7 +254762,13 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/flex-regular-fit-duck-carpenter-shorts-11-dk0dx802ssl/8984622629052/image_0_cropped.jpg",
+      "apparel_dataset/dickies/flex-regular-fit-duck-carpenter-shorts-11-dk0dx802ssl/8984622629052/image_1_cropped.jpg",
+      "apparel_dataset/dickies/flex-regular-fit-duck-carpenter-shorts-11-dk0dx802ssl/8984622629052/image_2_cropped.jpg",
+      "apparel_dataset/dickies/flex-regular-fit-duck-carpenter-shorts-11-dk0dx802ssl/8984622629052/image_3_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -253791,7 +254870,19 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/loose-fit-flat-front-work-shorts-13-dk0422830kh/9257001287868/image_0_cropped.jpg",
+      "apparel_dataset/dickies/loose-fit-flat-front-work-shorts-13-dk0422830kh/9257001287868/image_1_cropped.jpg",
+      "apparel_dataset/dickies/loose-fit-flat-front-work-shorts-13-dk0422830kh/9257001287868/image_2_cropped.jpg",
+      "apparel_dataset/dickies/loose-fit-flat-front-work-shorts-13-dk0422830kh/9257001287868/image_3_cropped.jpg",
+      "apparel_dataset/dickies/loose-fit-flat-front-work-shorts-13-dk0422830kh/9257001287868/image_4.jpg",
+      "apparel_dataset/dickies/loose-fit-flat-front-work-shorts-13-dk0422830kh/9257001287868/image_5.jpg",
+      "apparel_dataset/dickies/loose-fit-flat-front-work-shorts-13-dk0422830kh/9257001287868/image_6.jpg",
+      "apparel_dataset/dickies/loose-fit-flat-front-work-shorts-13-dk0422830kh/9257001287868/image_7.jpg",
+      "apparel_dataset/dickies/loose-fit-flat-front-work-shorts-13-dk0422830kh/9257001287868/image_8_cropped.jpg",
+      "apparel_dataset/dickies/loose-fit-flat-front-work-shorts-13-dk0422830kh/9257001287868/image_9_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -253868,7 +254959,17 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/denim-utility-shorts-11-dk0dx601mwi/8984590418108/image_0_cropped.jpg",
+      "apparel_dataset/dickies/denim-utility-shorts-11-dk0dx601mwi/8984590418108/image_1_cropped.jpg",
+      "apparel_dataset/dickies/denim-utility-shorts-11-dk0dx601mwi/8984590418108/image_2_cropped.jpg",
+      "apparel_dataset/dickies/denim-utility-shorts-11-dk0dx601mwi/8984590418108/image_3_cropped.jpg",
+      "apparel_dataset/dickies/denim-utility-shorts-11-dk0dx601mwi/8984590418108/image_4.jpg",
+      "apparel_dataset/dickies/denim-utility-shorts-11-dk0dx601mwi/8984590418108/image_5.jpg",
+      "apparel_dataset/dickies/denim-utility-shorts-11-dk0dx601mwi/8984590418108/image_6_cropped.jpg",
+      "apparel_dataset/dickies/denim-utility-shorts-11-dk0dx601mwi/8984590418108/image_7_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -253963,7 +255064,14 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/flex-cooling-regular-fit-utility-shorts-13-dk0sr6020bk/8984613617852/image_0_cropped.jpg",
+      "apparel_dataset/dickies/flex-cooling-regular-fit-utility-shorts-13-dk0sr6020bk/8984613617852/image_1_cropped.jpg",
+      "apparel_dataset/dickies/flex-cooling-regular-fit-utility-shorts-13-dk0sr6020bk/8984613617852/image_2.jpg",
+      "apparel_dataset/dickies/flex-cooling-regular-fit-utility-shorts-13-dk0sr6020bk/8984613617852/image_3.jpg",
+      "apparel_dataset/dickies/flex-cooling-regular-fit-utility-shorts-13-dk0sr6020bk/8984613617852/image_4_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -254039,7 +255147,15 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/flex-relaxed-fit-duck-cargo-shorts-11-dk0dx902ssl/8984585502908/image_0_cropped.jpg",
+      "apparel_dataset/dickies/flex-relaxed-fit-duck-cargo-shorts-11-dk0dx902ssl/8984585502908/image_1_cropped.jpg",
+      "apparel_dataset/dickies/flex-relaxed-fit-duck-cargo-shorts-11-dk0dx902ssl/8984585502908/image_2.jpg",
+      "apparel_dataset/dickies/flex-relaxed-fit-duck-cargo-shorts-11-dk0dx902ssl/8984585502908/image_3.jpg",
+      "apparel_dataset/dickies/flex-relaxed-fit-duck-cargo-shorts-11-dk0dx902ssl/8984585502908/image_4.jpg",
+      "apparel_dataset/dickies/flex-relaxed-fit-duck-cargo-shorts-11-dk0dx902ssl/8984585502908/image_5.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -254135,7 +255251,15 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/pro-series-cargo-shorts-11-dk0a85zhblk/8984578162876/image_0_cropped.jpg",
+      "apparel_dataset/dickies/pro-series-cargo-shorts-11-dk0a85zhblk/8984578162876/image_1_cropped.jpg",
+      "apparel_dataset/dickies/pro-series-cargo-shorts-11-dk0a85zhblk/8984578162876/image_2_cropped.jpg",
+      "apparel_dataset/dickies/pro-series-cargo-shorts-11-dk0a85zhblk/8984578162876/image_3.jpg",
+      "apparel_dataset/dickies/pro-series-cargo-shorts-11-dk0a85zhblk/8984578162876/image_4_cropped.jpg",
+      "apparel_dataset/dickies/pro-series-cargo-shorts-11-dk0a85zhblk/8984578162876/image_5.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -254236,7 +255360,18 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/loose-fit-multi-use-pocket-work-shorts-15-dk0412830ch/9256989229244/image_0_cropped.jpg",
+      "apparel_dataset/dickies/loose-fit-multi-use-pocket-work-shorts-15-dk0412830ch/9256989229244/image_1_cropped.jpg",
+      "apparel_dataset/dickies/loose-fit-multi-use-pocket-work-shorts-15-dk0412830ch/9256989229244/image_2_cropped.jpg",
+      "apparel_dataset/dickies/loose-fit-multi-use-pocket-work-shorts-15-dk0412830ch/9256989229244/image_3.jpg",
+      "apparel_dataset/dickies/loose-fit-multi-use-pocket-work-shorts-15-dk0412830ch/9256989229244/image_4.jpg",
+      "apparel_dataset/dickies/loose-fit-multi-use-pocket-work-shorts-15-dk0412830ch/9256989229244/image_5.jpg",
+      "apparel_dataset/dickies/loose-fit-multi-use-pocket-work-shorts-15-dk0412830ch/9256989229244/image_6_cropped.jpg",
+      "apparel_dataset/dickies/loose-fit-multi-use-pocket-work-shorts-15-dk0412830ch/9256989229244/image_7.jpg",
+      "apparel_dataset/dickies/loose-fit-multi-use-pocket-work-shorts-15-dk0412830ch/9256989229244/image_8_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -254308,7 +255443,13 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/flex-regular-fit-duck-carpenter-shorts-11-dk0dx802sbk/8984622432444/image_0_cropped.jpg",
+      "apparel_dataset/dickies/flex-regular-fit-duck-carpenter-shorts-11-dk0dx802sbk/8984622432444/image_1_cropped.jpg",
+      "apparel_dataset/dickies/flex-regular-fit-duck-carpenter-shorts-11-dk0dx802sbk/8984622432444/image_2_cropped.jpg",
+      "apparel_dataset/dickies/flex-regular-fit-duck-carpenter-shorts-11-dk0dx802sbk/8984622432444/image_3_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -254373,7 +255514,11 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/flex-regular-fit-duck-carpenter-shorts-11-dk0dx802sms/8984622366908/image_0_cropped.jpg",
+      "apparel_dataset/dickies/flex-regular-fit-duck-carpenter-shorts-11-dk0dx802sms/8984622366908/image_1.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -254450,7 +255595,17 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/denim-utility-shorts-11-dk0dx601lwi/8984590024892/image_0_cropped.jpg",
+      "apparel_dataset/dickies/denim-utility-shorts-11-dk0dx601lwi/8984590024892/image_1_cropped.jpg",
+      "apparel_dataset/dickies/denim-utility-shorts-11-dk0dx601lwi/8984590024892/image_2_cropped.jpg",
+      "apparel_dataset/dickies/denim-utility-shorts-11-dk0dx601lwi/8984590024892/image_3_cropped.jpg",
+      "apparel_dataset/dickies/denim-utility-shorts-11-dk0dx601lwi/8984590024892/image_4.jpg",
+      "apparel_dataset/dickies/denim-utility-shorts-11-dk0dx601lwi/8984590024892/image_5.jpg",
+      "apparel_dataset/dickies/denim-utility-shorts-11-dk0dx601lwi/8984590024892/image_6_cropped.jpg",
+      "apparel_dataset/dickies/denim-utility-shorts-11-dk0dx601lwi/8984590024892/image_7_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -254536,7 +255691,15 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/flex-cooling-regular-fit-utility-shorts-11-dk0sr6010ch/8984593498300/image_0_cropped.jpg",
+      "apparel_dataset/dickies/flex-cooling-regular-fit-utility-shorts-11-dk0sr6010ch/8984593498300/image_1_cropped.jpg",
+      "apparel_dataset/dickies/flex-cooling-regular-fit-utility-shorts-11-dk0sr6010ch/8984593498300/image_2.jpg",
+      "apparel_dataset/dickies/flex-cooling-regular-fit-utility-shorts-11-dk0sr6010ch/8984593498300/image_3.jpg",
+      "apparel_dataset/dickies/flex-cooling-regular-fit-utility-shorts-11-dk0sr6010ch/8984593498300/image_4_cropped.jpg",
+      "apparel_dataset/dickies/flex-cooling-regular-fit-utility-shorts-11-dk0sr6010ch/8984593498300/image_5.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -254589,7 +255752,15 @@
           "polyester-cotton"
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/union-twill-short-17-dk0a88joblk/9134082687164/image_0_cropped.jpg",
+      "apparel_dataset/dickies/union-twill-short-17-dk0a88joblk/9134082687164/image_1_cropped.jpg",
+      "apparel_dataset/dickies/union-twill-short-17-dk0a88joblk/9134082687164/image_2_cropped.jpg",
+      "apparel_dataset/dickies/union-twill-short-17-dk0a88joblk/9134082687164/image_3.jpg",
+      "apparel_dataset/dickies/union-twill-short-17-dk0a88joblk/9134082687164/image_4_cropped.jpg",
+      "apparel_dataset/dickies/union-twill-short-17-dk0a88joblk/9134082687164/image_5_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -254666,7 +255837,15 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/flex-5-pocket-duck-canvas-shorts-11-dk0a87lpblk/8984615682236/image_0_cropped.jpg",
+      "apparel_dataset/dickies/flex-5-pocket-duck-canvas-shorts-11-dk0a87lpblk/8984615682236/image_1_cropped.jpg",
+      "apparel_dataset/dickies/flex-5-pocket-duck-canvas-shorts-11-dk0a87lpblk/8984615682236/image_2.jpg",
+      "apparel_dataset/dickies/flex-5-pocket-duck-canvas-shorts-11-dk0a87lpblk/8984615682236/image_3_cropped.jpg",
+      "apparel_dataset/dickies/flex-5-pocket-duck-canvas-shorts-11-dk0a87lpblk/8984615682236/image_4.jpg",
+      "apparel_dataset/dickies/flex-5-pocket-duck-canvas-shorts-11-dk0a87lpblk/8984615682236/image_5_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -254764,7 +255943,14 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/flex-cooling-regular-fit-utility-shorts-13-dk0sr6020ch/8984613519548/image_0_cropped.jpg",
+      "apparel_dataset/dickies/flex-cooling-regular-fit-utility-shorts-13-dk0sr6020ch/8984613519548/image_1_cropped.jpg",
+      "apparel_dataset/dickies/flex-cooling-regular-fit-utility-shorts-13-dk0sr6020ch/8984613519548/image_2.jpg",
+      "apparel_dataset/dickies/flex-cooling-regular-fit-utility-shorts-13-dk0sr6020ch/8984613519548/image_3.jpg",
+      "apparel_dataset/dickies/flex-cooling-regular-fit-utility-shorts-13-dk0sr6020ch/8984613519548/image_4_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -254866,7 +256052,14 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/flex-cooling-regular-fit-utility-shorts-13-dk0sr602mr1/8984613748924/image_0_cropped.jpg",
+      "apparel_dataset/dickies/flex-cooling-regular-fit-utility-shorts-13-dk0sr602mr1/8984613748924/image_1_cropped.jpg",
+      "apparel_dataset/dickies/flex-cooling-regular-fit-utility-shorts-13-dk0sr602mr1/8984613748924/image_2.jpg",
+      "apparel_dataset/dickies/flex-cooling-regular-fit-utility-shorts-13-dk0sr602mr1/8984613748924/image_3.jpg",
+      "apparel_dataset/dickies/flex-cooling-regular-fit-utility-shorts-13-dk0sr602mr1/8984613748924/image_4_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -254939,7 +256132,18 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/flex-relaxed-fit-cargo-shorts-13-dk0wr5570ch/9256989950140/image_0_cropped.jpg",
+      "apparel_dataset/dickies/flex-relaxed-fit-cargo-shorts-13-dk0wr5570ch/9256989950140/image_1_cropped.jpg",
+      "apparel_dataset/dickies/flex-relaxed-fit-cargo-shorts-13-dk0wr5570ch/9256989950140/image_2_cropped.jpg",
+      "apparel_dataset/dickies/flex-relaxed-fit-cargo-shorts-13-dk0wr5570ch/9256989950140/image_3_cropped.jpg",
+      "apparel_dataset/dickies/flex-relaxed-fit-cargo-shorts-13-dk0wr5570ch/9256989950140/image_4.jpg",
+      "apparel_dataset/dickies/flex-relaxed-fit-cargo-shorts-13-dk0wr5570ch/9256989950140/image_5.jpg",
+      "apparel_dataset/dickies/flex-relaxed-fit-cargo-shorts-13-dk0wr5570ch/9256989950140/image_6_cropped.jpg",
+      "apparel_dataset/dickies/flex-relaxed-fit-cargo-shorts-13-dk0wr5570ch/9256989950140/image_7_cropped.jpg",
+      "apparel_dataset/dickies/flex-relaxed-fit-cargo-shorts-13-dk0wr5570ch/9256989950140/image_8_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -255015,7 +256219,18 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/utility-painters-shorts-11-dk0a861j0wh/8984608768188/image_0_cropped.jpg",
+      "apparel_dataset/dickies/utility-painters-shorts-11-dk0a861j0wh/8984608768188/image_1_cropped.jpg",
+      "apparel_dataset/dickies/utility-painters-shorts-11-dk0a861j0wh/8984608768188/image_2_cropped.jpg",
+      "apparel_dataset/dickies/utility-painters-shorts-11-dk0a861j0wh/8984608768188/image_3.jpg",
+      "apparel_dataset/dickies/utility-painters-shorts-11-dk0a861j0wh/8984608768188/image_4.jpg",
+      "apparel_dataset/dickies/utility-painters-shorts-11-dk0a861j0wh/8984608768188/image_5.jpg",
+      "apparel_dataset/dickies/utility-painters-shorts-11-dk0a861j0wh/8984608768188/image_6_cropped.jpg",
+      "apparel_dataset/dickies/utility-painters-shorts-11-dk0a861j0wh/8984608768188/image_7_cropped.jpg",
+      "apparel_dataset/dickies/utility-painters-shorts-11-dk0a861j0wh/8984608768188/image_8_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -255096,7 +256311,15 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/flex-cooling-regular-fit-utility-shorts-11-dk0sr6010ik/8984593563836/image_0_cropped.jpg",
+      "apparel_dataset/dickies/flex-cooling-regular-fit-utility-shorts-11-dk0sr6010ik/8984593563836/image_1_cropped.jpg",
+      "apparel_dataset/dickies/flex-cooling-regular-fit-utility-shorts-11-dk0sr6010ik/8984593563836/image_2.jpg",
+      "apparel_dataset/dickies/flex-cooling-regular-fit-utility-shorts-11-dk0sr6010ik/8984593563836/image_3.jpg",
+      "apparel_dataset/dickies/flex-cooling-regular-fit-utility-shorts-11-dk0sr6010ik/8984593563836/image_4_cropped.jpg",
+      "apparel_dataset/dickies/flex-cooling-regular-fit-utility-shorts-11-dk0sr6010ik/8984593563836/image_5_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -255170,7 +256393,15 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/flex-5-pocket-denim-shorts-11-dk0a87lodwi/8984588910780/image_0_cropped.jpg",
+      "apparel_dataset/dickies/flex-5-pocket-denim-shorts-11-dk0a87lodwi/8984588910780/image_1_cropped.jpg",
+      "apparel_dataset/dickies/flex-5-pocket-denim-shorts-11-dk0a87lodwi/8984588910780/image_2.jpg",
+      "apparel_dataset/dickies/flex-5-pocket-denim-shorts-11-dk0a87lodwi/8984588910780/image_3_cropped.jpg",
+      "apparel_dataset/dickies/flex-5-pocket-denim-shorts-11-dk0a87lodwi/8984588910780/image_4.jpg",
+      "apparel_dataset/dickies/flex-5-pocket-denim-shorts-11-dk0a87lodwi/8984588910780/image_5_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -255241,7 +256472,15 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/flex-5-pocket-denim-shorts-11-dk0a87lolwi/8984588943548/image_0_cropped.jpg",
+      "apparel_dataset/dickies/flex-5-pocket-denim-shorts-11-dk0a87lolwi/8984588943548/image_1_cropped.jpg",
+      "apparel_dataset/dickies/flex-5-pocket-denim-shorts-11-dk0a87lolwi/8984588943548/image_2.jpg",
+      "apparel_dataset/dickies/flex-5-pocket-denim-shorts-11-dk0a87lolwi/8984588943548/image_3_cropped.jpg",
+      "apparel_dataset/dickies/flex-5-pocket-denim-shorts-11-dk0a87lolwi/8984588943548/image_4_cropped.jpg",
+      "apparel_dataset/dickies/flex-5-pocket-denim-shorts-11-dk0a87lolwi/8984588943548/image_5_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -255319,7 +256558,13 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/flex-cooling-regular-fit-cargo-shorts-11-dk0sr6070bk/8984579735740/image_0_cropped.jpg",
+      "apparel_dataset/dickies/flex-cooling-regular-fit-cargo-shorts-11-dk0sr6070bk/8984579735740/image_1_cropped.jpg",
+      "apparel_dataset/dickies/flex-cooling-regular-fit-cargo-shorts-11-dk0sr6070bk/8984579735740/image_2.jpg",
+      "apparel_dataset/dickies/flex-cooling-regular-fit-cargo-shorts-11-dk0sr6070bk/8984579735740/image_3.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -255418,7 +256663,17 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/loose-fit-multi-use-pocket-work-shorts-15-dk0412830kh/9256989425852/image_0_cropped.jpg",
+      "apparel_dataset/dickies/loose-fit-multi-use-pocket-work-shorts-15-dk0412830kh/9256989425852/image_1_cropped.jpg",
+      "apparel_dataset/dickies/loose-fit-multi-use-pocket-work-shorts-15-dk0412830kh/9256989425852/image_2_cropped.jpg",
+      "apparel_dataset/dickies/loose-fit-multi-use-pocket-work-shorts-15-dk0412830kh/9256989425852/image_3_cropped.jpg",
+      "apparel_dataset/dickies/loose-fit-multi-use-pocket-work-shorts-15-dk0412830kh/9256989425852/image_4.jpg",
+      "apparel_dataset/dickies/loose-fit-multi-use-pocket-work-shorts-15-dk0412830kh/9256989425852/image_5.jpg",
+      "apparel_dataset/dickies/loose-fit-multi-use-pocket-work-shorts-15-dk0412830kh/9256989425852/image_6_cropped.jpg",
+      "apparel_dataset/dickies/loose-fit-multi-use-pocket-work-shorts-15-dk0412830kh/9256989425852/image_7_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -255490,7 +256745,11 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/relaxed-fit-multi-use-pocket-work-shorts-13-dk0wr6400dn/9256998699196/image_0_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-multi-use-pocket-work-shorts-13-dk0wr6400dn/9256998699196/image_1_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -255585,7 +256844,14 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/loose-fit-flat-front-work-shorts-13-dk0422830sv/9257000599740/image_0_cropped.jpg",
+      "apparel_dataset/dickies/loose-fit-flat-front-work-shorts-13-dk0422830sv/9257000599740/image_1_cropped.jpg",
+      "apparel_dataset/dickies/loose-fit-flat-front-work-shorts-13-dk0422830sv/9257000599740/image_2.jpg",
+      "apparel_dataset/dickies/loose-fit-flat-front-work-shorts-13-dk0422830sv/9257000599740/image_3.jpg",
+      "apparel_dataset/dickies/loose-fit-flat-front-work-shorts-13-dk0422830sv/9257000599740/image_4.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -255656,7 +256922,15 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/flex-5-pocket-denim-shorts-11-dk0a87lomwi/8984588878012/image_0_cropped.jpg",
+      "apparel_dataset/dickies/flex-5-pocket-denim-shorts-11-dk0a87lomwi/8984588878012/image_1_cropped.jpg",
+      "apparel_dataset/dickies/flex-5-pocket-denim-shorts-11-dk0a87lomwi/8984588878012/image_2.jpg",
+      "apparel_dataset/dickies/flex-5-pocket-denim-shorts-11-dk0a87lomwi/8984588878012/image_3_cropped.jpg",
+      "apparel_dataset/dickies/flex-5-pocket-denim-shorts-11-dk0a87lomwi/8984588878012/image_4_cropped.jpg",
+      "apparel_dataset/dickies/flex-5-pocket-denim-shorts-11-dk0a87lomwi/8984588878012/image_5_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -255738,7 +257012,18 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/insulated-eisenhower-jacket-dk00tj150bk/9256982282428/image_0_cropped.jpg",
+      "apparel_dataset/dickies/insulated-eisenhower-jacket-dk00tj150bk/9256982282428/image_1_cropped.jpg",
+      "apparel_dataset/dickies/insulated-eisenhower-jacket-dk00tj150bk/9256982282428/image_2_cropped.jpg",
+      "apparel_dataset/dickies/insulated-eisenhower-jacket-dk00tj150bk/9256982282428/image_3_cropped.jpg",
+      "apparel_dataset/dickies/insulated-eisenhower-jacket-dk00tj150bk/9256982282428/image_4.jpg",
+      "apparel_dataset/dickies/insulated-eisenhower-jacket-dk00tj150bk/9256982282428/image_5_cropped.jpg",
+      "apparel_dataset/dickies/insulated-eisenhower-jacket-dk00tj150bk/9256982282428/image_6_cropped.jpg",
+      "apparel_dataset/dickies/insulated-eisenhower-jacket-dk00tj150bk/9256982282428/image_7_cropped.jpg",
+      "apparel_dataset/dickies/insulated-eisenhower-jacket-dk00tj150bk/9256982282428/image_8_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -255818,7 +257103,13 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/water-repellent-duck-hooded-shirt-jacket-dk0tj2130bk/8984601362620/image_0_cropped.jpg",
+      "apparel_dataset/dickies/water-repellent-duck-hooded-shirt-jacket-dk0tj2130bk/8984601362620/image_1_cropped.jpg",
+      "apparel_dataset/dickies/water-repellent-duck-hooded-shirt-jacket-dk0tj2130bk/8984601362620/image_2_cropped.jpg",
+      "apparel_dataset/dickies/water-repellent-duck-hooded-shirt-jacket-dk0tj2130bk/8984601362620/image_3_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -255903,7 +257194,19 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/unlined-eisenhower-jacket-dk00jt750bk/9256984772796/image_0_cropped.jpg",
+      "apparel_dataset/dickies/unlined-eisenhower-jacket-dk00jt750bk/9256984772796/image_1_cropped.jpg",
+      "apparel_dataset/dickies/unlined-eisenhower-jacket-dk00jt750bk/9256984772796/image_2_cropped.jpg",
+      "apparel_dataset/dickies/unlined-eisenhower-jacket-dk00jt750bk/9256984772796/image_3_cropped.jpg",
+      "apparel_dataset/dickies/unlined-eisenhower-jacket-dk00jt750bk/9256984772796/image_4.jpg",
+      "apparel_dataset/dickies/unlined-eisenhower-jacket-dk00jt750bk/9256984772796/image_5_cropped.jpg",
+      "apparel_dataset/dickies/unlined-eisenhower-jacket-dk00jt750bk/9256984772796/image_6_cropped.jpg",
+      "apparel_dataset/dickies/unlined-eisenhower-jacket-dk00jt750bk/9256984772796/image_7.jpg",
+      "apparel_dataset/dickies/unlined-eisenhower-jacket-dk00jt750bk/9256984772796/image_8_cropped.jpg",
+      "apparel_dataset/dickies/unlined-eisenhower-jacket-dk00jt750bk/9256984772796/image_9_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -255970,7 +257273,13 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/diamond-quilted-jacket-dk0612420bk/8984581931196/image_0_cropped.jpg",
+      "apparel_dataset/dickies/diamond-quilted-jacket-dk0612420bk/8984581931196/image_1_cropped.jpg",
+      "apparel_dataset/dickies/diamond-quilted-jacket-dk0612420bk/8984581931196/image_2_cropped.jpg",
+      "apparel_dataset/dickies/diamond-quilted-jacket-dk0612420bk/8984581931196/image_3.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -256068,7 +257377,22 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/water-repellent-duck-hooded-shirt-jacket-dk0tj2130dn/8984601526460/image_0_cropped.jpg",
+      "apparel_dataset/dickies/water-repellent-duck-hooded-shirt-jacket-dk0tj2130dn/8984601526460/image_1_cropped.jpg",
+      "apparel_dataset/dickies/water-repellent-duck-hooded-shirt-jacket-dk0tj2130dn/8984601526460/image_2_cropped.jpg",
+      "apparel_dataset/dickies/water-repellent-duck-hooded-shirt-jacket-dk0tj2130dn/8984601526460/image_3_cropped.jpg",
+      "apparel_dataset/dickies/water-repellent-duck-hooded-shirt-jacket-dk0tj2130dn/8984601526460/image_4_cropped.jpg",
+      "apparel_dataset/dickies/water-repellent-duck-hooded-shirt-jacket-dk0tj2130dn/8984601526460/image_5_cropped.jpg",
+      "apparel_dataset/dickies/water-repellent-duck-hooded-shirt-jacket-dk0tj2130dn/8984601526460/image_6.jpg",
+      "apparel_dataset/dickies/water-repellent-duck-hooded-shirt-jacket-dk0tj2130dn/8984601526460/image_7.jpg",
+      "apparel_dataset/dickies/water-repellent-duck-hooded-shirt-jacket-dk0tj2130dn/8984601526460/image_8_cropped.jpg",
+      "apparel_dataset/dickies/water-repellent-duck-hooded-shirt-jacket-dk0tj2130dn/8984601526460/image_9_cropped.jpg",
+      "apparel_dataset/dickies/water-repellent-duck-hooded-shirt-jacket-dk0tj2130dn/8984601526460/image_10_cropped.jpg",
+      "apparel_dataset/dickies/water-repellent-duck-hooded-shirt-jacket-dk0tj2130dn/8984601526460/image_11_cropped.jpg",
+      "apparel_dataset/dickies/water-repellent-duck-hooded-shirt-jacket-dk0tj2130dn/8984601526460/image_12_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -256160,7 +257484,19 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/water-repellent-flannel-hooded-shirt-jacket-dk0tj2110ch/8984612110524/image_0_cropped.jpg",
+      "apparel_dataset/dickies/water-repellent-flannel-hooded-shirt-jacket-dk0tj2110ch/8984612110524/image_1_cropped.jpg",
+      "apparel_dataset/dickies/water-repellent-flannel-hooded-shirt-jacket-dk0tj2110ch/8984612110524/image_2_cropped.jpg",
+      "apparel_dataset/dickies/water-repellent-flannel-hooded-shirt-jacket-dk0tj2110ch/8984612110524/image_3.jpg",
+      "apparel_dataset/dickies/water-repellent-flannel-hooded-shirt-jacket-dk0tj2110ch/8984612110524/image_4_cropped.jpg",
+      "apparel_dataset/dickies/water-repellent-flannel-hooded-shirt-jacket-dk0tj2110ch/8984612110524/image_5.jpg",
+      "apparel_dataset/dickies/water-repellent-flannel-hooded-shirt-jacket-dk0tj2110ch/8984612110524/image_6_cropped.jpg",
+      "apparel_dataset/dickies/water-repellent-flannel-hooded-shirt-jacket-dk0tj2110ch/8984612110524/image_7_cropped.jpg",
+      "apparel_dataset/dickies/water-repellent-flannel-hooded-shirt-jacket-dk0tj2110ch/8984612110524/image_8_cropped.jpg",
+      "apparel_dataset/dickies/water-repellent-flannel-hooded-shirt-jacket-dk0tj2110ch/8984612110524/image_9_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -256255,7 +257591,21 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/water-repellent-duck-hooded-shirt-jacket-dk0tj2130sl/8984601395388/image_0_cropped.jpg",
+      "apparel_dataset/dickies/water-repellent-duck-hooded-shirt-jacket-dk0tj2130sl/8984601395388/image_1_cropped.jpg",
+      "apparel_dataset/dickies/water-repellent-duck-hooded-shirt-jacket-dk0tj2130sl/8984601395388/image_2_cropped.jpg",
+      "apparel_dataset/dickies/water-repellent-duck-hooded-shirt-jacket-dk0tj2130sl/8984601395388/image_3.jpg",
+      "apparel_dataset/dickies/water-repellent-duck-hooded-shirt-jacket-dk0tj2130sl/8984601395388/image_4_cropped.jpg",
+      "apparel_dataset/dickies/water-repellent-duck-hooded-shirt-jacket-dk0tj2130sl/8984601395388/image_5.jpg",
+      "apparel_dataset/dickies/water-repellent-duck-hooded-shirt-jacket-dk0tj2130sl/8984601395388/image_6.jpg",
+      "apparel_dataset/dickies/water-repellent-duck-hooded-shirt-jacket-dk0tj2130sl/8984601395388/image_7.jpg",
+      "apparel_dataset/dickies/water-repellent-duck-hooded-shirt-jacket-dk0tj2130sl/8984601395388/image_8_cropped.jpg",
+      "apparel_dataset/dickies/water-repellent-duck-hooded-shirt-jacket-dk0tj2130sl/8984601395388/image_9_cropped.jpg",
+      "apparel_dataset/dickies/water-repellent-duck-hooded-shirt-jacket-dk0tj2130sl/8984601395388/image_10_cropped.jpg",
+      "apparel_dataset/dickies/water-repellent-duck-hooded-shirt-jacket-dk0tj2130sl/8984601395388/image_11_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -256339,7 +257689,15 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/blanket-lined-duck-canvas-jacket-dk0a8devblk/8984602738876/image_0_cropped.jpg",
+      "apparel_dataset/dickies/blanket-lined-duck-canvas-jacket-dk0a8devblk/8984602738876/image_1_cropped.jpg",
+      "apparel_dataset/dickies/blanket-lined-duck-canvas-jacket-dk0a8devblk/8984602738876/image_2_cropped.jpg",
+      "apparel_dataset/dickies/blanket-lined-duck-canvas-jacket-dk0a8devblk/8984602738876/image_3.jpg",
+      "apparel_dataset/dickies/blanket-lined-duck-canvas-jacket-dk0a8devblk/8984602738876/image_4.jpg",
+      "apparel_dataset/dickies/blanket-lined-duck-canvas-jacket-dk0a8devblk/8984602738876/image_5.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -256429,7 +257787,18 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/water-repellent-duck-hooded-shirt-jacket-dk0tj2130bd/8984601493692/image_0_cropped.jpg",
+      "apparel_dataset/dickies/water-repellent-duck-hooded-shirt-jacket-dk0tj2130bd/8984601493692/image_1_cropped.jpg",
+      "apparel_dataset/dickies/water-repellent-duck-hooded-shirt-jacket-dk0tj2130bd/8984601493692/image_2_cropped.jpg",
+      "apparel_dataset/dickies/water-repellent-duck-hooded-shirt-jacket-dk0tj2130bd/8984601493692/image_3.jpg",
+      "apparel_dataset/dickies/water-repellent-duck-hooded-shirt-jacket-dk0tj2130bd/8984601493692/image_4_cropped.jpg",
+      "apparel_dataset/dickies/water-repellent-duck-hooded-shirt-jacket-dk0tj2130bd/8984601493692/image_5.jpg",
+      "apparel_dataset/dickies/water-repellent-duck-hooded-shirt-jacket-dk0tj2130bd/8984601493692/image_6_cropped.jpg",
+      "apparel_dataset/dickies/water-repellent-duck-hooded-shirt-jacket-dk0tj2130bd/8984601493692/image_7.jpg",
+      "apparel_dataset/dickies/water-repellent-duck-hooded-shirt-jacket-dk0tj2130bd/8984601493692/image_8.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -256523,7 +257892,20 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/water-repellent-duck-hooded-shirt-jacket-dk0tj213hrc/8984601329852/image_0_cropped.jpg",
+      "apparel_dataset/dickies/water-repellent-duck-hooded-shirt-jacket-dk0tj213hrc/8984601329852/image_1_cropped.jpg",
+      "apparel_dataset/dickies/water-repellent-duck-hooded-shirt-jacket-dk0tj213hrc/8984601329852/image_2_cropped.jpg",
+      "apparel_dataset/dickies/water-repellent-duck-hooded-shirt-jacket-dk0tj213hrc/8984601329852/image_3_cropped.jpg",
+      "apparel_dataset/dickies/water-repellent-duck-hooded-shirt-jacket-dk0tj213hrc/8984601329852/image_4_cropped.jpg",
+      "apparel_dataset/dickies/water-repellent-duck-hooded-shirt-jacket-dk0tj213hrc/8984601329852/image_5_cropped.jpg",
+      "apparel_dataset/dickies/water-repellent-duck-hooded-shirt-jacket-dk0tj213hrc/8984601329852/image_6_cropped.jpg",
+      "apparel_dataset/dickies/water-repellent-duck-hooded-shirt-jacket-dk0tj213hrc/8984601329852/image_7.jpg",
+      "apparel_dataset/dickies/water-repellent-duck-hooded-shirt-jacket-dk0tj213hrc/8984601329852/image_8.jpg",
+      "apparel_dataset/dickies/water-repellent-duck-hooded-shirt-jacket-dk0tj213hrc/8984601329852/image_9_cropped.jpg",
+      "apparel_dataset/dickies/water-repellent-duck-hooded-shirt-jacket-dk0tj213hrc/8984601329852/image_10_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -256600,7 +257982,19 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/insulated-eisenhower-jacket-dk00tj150dn/9256982773948/image_0_cropped.jpg",
+      "apparel_dataset/dickies/insulated-eisenhower-jacket-dk00tj150dn/9256982773948/image_1_cropped.jpg",
+      "apparel_dataset/dickies/insulated-eisenhower-jacket-dk00tj150dn/9256982773948/image_2_cropped.jpg",
+      "apparel_dataset/dickies/insulated-eisenhower-jacket-dk00tj150dn/9256982773948/image_3_cropped.jpg",
+      "apparel_dataset/dickies/insulated-eisenhower-jacket-dk00tj150dn/9256982773948/image_4.jpg",
+      "apparel_dataset/dickies/insulated-eisenhower-jacket-dk00tj150dn/9256982773948/image_5_cropped.jpg",
+      "apparel_dataset/dickies/insulated-eisenhower-jacket-dk00tj150dn/9256982773948/image_6.jpg",
+      "apparel_dataset/dickies/insulated-eisenhower-jacket-dk00tj150dn/9256982773948/image_7_cropped.jpg",
+      "apparel_dataset/dickies/insulated-eisenhower-jacket-dk00tj150dn/9256982773948/image_8_cropped.jpg",
+      "apparel_dataset/dickies/insulated-eisenhower-jacket-dk00tj150dn/9256982773948/image_9_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -256688,7 +258082,24 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/fleece-lined-nylon-hooded-jacket-dk0332370bk/8984581603516/image_0_cropped.jpg",
+      "apparel_dataset/dickies/fleece-lined-nylon-hooded-jacket-dk0332370bk/8984581603516/image_1_cropped.jpg",
+      "apparel_dataset/dickies/fleece-lined-nylon-hooded-jacket-dk0332370bk/8984581603516/image_2_cropped.jpg",
+      "apparel_dataset/dickies/fleece-lined-nylon-hooded-jacket-dk0332370bk/8984581603516/image_3_cropped.jpg",
+      "apparel_dataset/dickies/fleece-lined-nylon-hooded-jacket-dk0332370bk/8984581603516/image_4_cropped.jpg",
+      "apparel_dataset/dickies/fleece-lined-nylon-hooded-jacket-dk0332370bk/8984581603516/image_5_cropped.jpg",
+      "apparel_dataset/dickies/fleece-lined-nylon-hooded-jacket-dk0332370bk/8984581603516/image_6_cropped.jpg",
+      "apparel_dataset/dickies/fleece-lined-nylon-hooded-jacket-dk0332370bk/8984581603516/image_7_cropped.jpg",
+      "apparel_dataset/dickies/fleece-lined-nylon-hooded-jacket-dk0332370bk/8984581603516/image_8_cropped.jpg",
+      "apparel_dataset/dickies/fleece-lined-nylon-hooded-jacket-dk0332370bk/8984581603516/image_9.jpg",
+      "apparel_dataset/dickies/fleece-lined-nylon-hooded-jacket-dk0332370bk/8984581603516/image_10_cropped.jpg",
+      "apparel_dataset/dickies/fleece-lined-nylon-hooded-jacket-dk0332370bk/8984581603516/image_11_cropped.jpg",
+      "apparel_dataset/dickies/fleece-lined-nylon-hooded-jacket-dk0332370bk/8984581603516/image_12_cropped.jpg",
+      "apparel_dataset/dickies/fleece-lined-nylon-hooded-jacket-dk0332370bk/8984581603516/image_13_cropped.jpg",
+      "apparel_dataset/dickies/fleece-lined-nylon-hooded-jacket-dk0332370bk/8984581603516/image_14_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -256780,7 +258191,19 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/duck-canvas-high-pile-fleece-lined-jacket-dk0tj360rbkx/8984601460924/image_0_cropped.jpg",
+      "apparel_dataset/dickies/duck-canvas-high-pile-fleece-lined-jacket-dk0tj360rbkx/8984601460924/image_1_cropped.jpg",
+      "apparel_dataset/dickies/duck-canvas-high-pile-fleece-lined-jacket-dk0tj360rbkx/8984601460924/image_2_cropped.jpg",
+      "apparel_dataset/dickies/duck-canvas-high-pile-fleece-lined-jacket-dk0tj360rbkx/8984601460924/image_3_cropped.jpg",
+      "apparel_dataset/dickies/duck-canvas-high-pile-fleece-lined-jacket-dk0tj360rbkx/8984601460924/image_4_cropped.jpg",
+      "apparel_dataset/dickies/duck-canvas-high-pile-fleece-lined-jacket-dk0tj360rbkx/8984601460924/image_5_cropped.jpg",
+      "apparel_dataset/dickies/duck-canvas-high-pile-fleece-lined-jacket-dk0tj360rbkx/8984601460924/image_6_cropped.jpg",
+      "apparel_dataset/dickies/duck-canvas-high-pile-fleece-lined-jacket-dk0tj360rbkx/8984601460924/image_7_cropped.jpg",
+      "apparel_dataset/dickies/duck-canvas-high-pile-fleece-lined-jacket-dk0tj360rbkx/8984601460924/image_8.jpg",
+      "apparel_dataset/dickies/duck-canvas-high-pile-fleece-lined-jacket-dk0tj360rbkx/8984601460924/image_9_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -256847,7 +258270,13 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/diamond-quilted-jacket-dk0612420dn/8984582029500/image_0_cropped.jpg",
+      "apparel_dataset/dickies/diamond-quilted-jacket-dk0612420dn/8984582029500/image_1_cropped.jpg",
+      "apparel_dataset/dickies/diamond-quilted-jacket-dk0612420dn/8984582029500/image_2_cropped.jpg",
+      "apparel_dataset/dickies/diamond-quilted-jacket-dk0612420dn/8984582029500/image_3_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -256937,7 +258366,18 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/water-repellent-flannel-hooded-shirt-jacket-dk0tj211a49/8984612012220/image_0_cropped.jpg",
+      "apparel_dataset/dickies/water-repellent-flannel-hooded-shirt-jacket-dk0tj211a49/8984612012220/image_1_cropped.jpg",
+      "apparel_dataset/dickies/water-repellent-flannel-hooded-shirt-jacket-dk0tj211a49/8984612012220/image_2_cropped.jpg",
+      "apparel_dataset/dickies/water-repellent-flannel-hooded-shirt-jacket-dk0tj211a49/8984612012220/image_3_cropped.jpg",
+      "apparel_dataset/dickies/water-repellent-flannel-hooded-shirt-jacket-dk0tj211a49/8984612012220/image_4_cropped.jpg",
+      "apparel_dataset/dickies/water-repellent-flannel-hooded-shirt-jacket-dk0tj211a49/8984612012220/image_5_cropped.jpg",
+      "apparel_dataset/dickies/water-repellent-flannel-hooded-shirt-jacket-dk0tj211a49/8984612012220/image_6.jpg",
+      "apparel_dataset/dickies/water-repellent-flannel-hooded-shirt-jacket-dk0tj211a49/8984612012220/image_7_cropped.jpg",
+      "apparel_dataset/dickies/water-repellent-flannel-hooded-shirt-jacket-dk0tj211a49/8984612012220/image_8_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -257021,7 +258461,15 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/water-repellent-flannel-hooded-shirt-jacket-dk0tj2110dn/8984612241596/image_0_cropped.jpg",
+      "apparel_dataset/dickies/water-repellent-flannel-hooded-shirt-jacket-dk0tj2110dn/8984612241596/image_1_cropped.jpg",
+      "apparel_dataset/dickies/water-repellent-flannel-hooded-shirt-jacket-dk0tj2110dn/8984612241596/image_2_cropped.jpg",
+      "apparel_dataset/dickies/water-repellent-flannel-hooded-shirt-jacket-dk0tj2110dn/8984612241596/image_3_cropped.jpg",
+      "apparel_dataset/dickies/water-repellent-flannel-hooded-shirt-jacket-dk0tj2110dn/8984612241596/image_4_cropped.jpg",
+      "apparel_dataset/dickies/water-repellent-flannel-hooded-shirt-jacket-dk0tj2110dn/8984612241596/image_5_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -257110,7 +258558,19 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/unlined-eisenhower-jacket-dk00jt750dn/9256984838332/image_0_cropped.jpg",
+      "apparel_dataset/dickies/unlined-eisenhower-jacket-dk00jt750dn/9256984838332/image_1_cropped.jpg",
+      "apparel_dataset/dickies/unlined-eisenhower-jacket-dk00jt750dn/9256984838332/image_2_cropped.jpg",
+      "apparel_dataset/dickies/unlined-eisenhower-jacket-dk00jt750dn/9256984838332/image_3_cropped.jpg",
+      "apparel_dataset/dickies/unlined-eisenhower-jacket-dk00jt750dn/9256984838332/image_4.jpg",
+      "apparel_dataset/dickies/unlined-eisenhower-jacket-dk00jt750dn/9256984838332/image_5_cropped.jpg",
+      "apparel_dataset/dickies/unlined-eisenhower-jacket-dk00jt750dn/9256984838332/image_6.jpg",
+      "apparel_dataset/dickies/unlined-eisenhower-jacket-dk00jt750dn/9256984838332/image_7.jpg",
+      "apparel_dataset/dickies/unlined-eisenhower-jacket-dk00jt750dn/9256984838332/image_8_cropped.jpg",
+      "apparel_dataset/dickies/unlined-eisenhower-jacket-dk00jt750dn/9256984838332/image_9_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -257190,7 +258650,15 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/tradebuilt-shirt-jacket-dk0a8791blk/8984611553468/image_0_cropped.jpg",
+      "apparel_dataset/dickies/tradebuilt-shirt-jacket-dk0a8791blk/8984611553468/image_1_cropped.jpg",
+      "apparel_dataset/dickies/tradebuilt-shirt-jacket-dk0a8791blk/8984611553468/image_2_cropped.jpg",
+      "apparel_dataset/dickies/tradebuilt-shirt-jacket-dk0a8791blk/8984611553468/image_3_cropped.jpg",
+      "apparel_dataset/dickies/tradebuilt-shirt-jacket-dk0a8791blk/8984611553468/image_4.jpg",
+      "apparel_dataset/dickies/tradebuilt-shirt-jacket-dk0a8791blk/8984611553468/image_5_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -257268,7 +258736,19 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/relaxed-fit-shirt-jacket-dk0a85x50sl/8984611291324/image_0_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-shirt-jacket-dk0a85x50sl/8984611291324/image_1_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-shirt-jacket-dk0a85x50sl/8984611291324/image_2_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-shirt-jacket-dk0a85x50sl/8984611291324/image_3.jpg",
+      "apparel_dataset/dickies/relaxed-fit-shirt-jacket-dk0a85x50sl/8984611291324/image_4_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-shirt-jacket-dk0a85x50sl/8984611291324/image_5.jpg",
+      "apparel_dataset/dickies/relaxed-fit-shirt-jacket-dk0a85x50sl/8984611291324/image_6.jpg",
+      "apparel_dataset/dickies/relaxed-fit-shirt-jacket-dk0a85x50sl/8984611291324/image_7_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-shirt-jacket-dk0a85x50sl/8984611291324/image_8_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-shirt-jacket-dk0a85x50sl/8984611291324/image_9_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -257351,7 +258831,19 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/insulated-eisenhower-jacket-dk00tj150db/9256982675644/image_0_cropped.jpg",
+      "apparel_dataset/dickies/insulated-eisenhower-jacket-dk00tj150db/9256982675644/image_1_cropped.jpg",
+      "apparel_dataset/dickies/insulated-eisenhower-jacket-dk00tj150db/9256982675644/image_2_cropped.jpg",
+      "apparel_dataset/dickies/insulated-eisenhower-jacket-dk00tj150db/9256982675644/image_3.jpg",
+      "apparel_dataset/dickies/insulated-eisenhower-jacket-dk00tj150db/9256982675644/image_4.jpg",
+      "apparel_dataset/dickies/insulated-eisenhower-jacket-dk00tj150db/9256982675644/image_5.jpg",
+      "apparel_dataset/dickies/insulated-eisenhower-jacket-dk00tj150db/9256982675644/image_6_cropped.jpg",
+      "apparel_dataset/dickies/insulated-eisenhower-jacket-dk00tj150db/9256982675644/image_7_cropped.jpg",
+      "apparel_dataset/dickies/insulated-eisenhower-jacket-dk00tj150db/9256982675644/image_8_cropped.jpg",
+      "apparel_dataset/dickies/insulated-eisenhower-jacket-dk00tj150db/9256982675644/image_9.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -257436,7 +258928,15 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/dickies-x-thrasher-jacket-dk0a88ceblk/9015428382908/image_0_cropped.jpg",
+      "apparel_dataset/dickies/dickies-x-thrasher-jacket-dk0a88ceblk/9015428382908/image_1_cropped.jpg",
+      "apparel_dataset/dickies/dickies-x-thrasher-jacket-dk0a88ceblk/9015428382908/image_2_cropped.jpg",
+      "apparel_dataset/dickies/dickies-x-thrasher-jacket-dk0a88ceblk/9015428382908/image_3.jpg",
+      "apparel_dataset/dickies/dickies-x-thrasher-jacket-dk0a88ceblk/9015428382908/image_4_cropped.jpg",
+      "apparel_dataset/dickies/dickies-x-thrasher-jacket-dk0a88ceblk/9015428382908/image_5_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -257520,7 +259020,15 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/water-repellent-flannel-hooded-shirt-jacket-dk0tj211k74/8984612077756/image_0_cropped.jpg",
+      "apparel_dataset/dickies/water-repellent-flannel-hooded-shirt-jacket-dk0tj211k74/8984612077756/image_1_cropped.jpg",
+      "apparel_dataset/dickies/water-repellent-flannel-hooded-shirt-jacket-dk0tj211k74/8984612077756/image_2_cropped.jpg",
+      "apparel_dataset/dickies/water-repellent-flannel-hooded-shirt-jacket-dk0tj211k74/8984612077756/image_3_cropped.jpg",
+      "apparel_dataset/dickies/water-repellent-flannel-hooded-shirt-jacket-dk0tj211k74/8984612077756/image_4_cropped.jpg",
+      "apparel_dataset/dickies/water-repellent-flannel-hooded-shirt-jacket-dk0tj211k74/8984612077756/image_5.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -257605,7 +259113,18 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/water-repellent-fleece-lined-flannel-shirt-jacket-dk0tj210k65/8984601198780/image_0_cropped.jpg",
+      "apparel_dataset/dickies/water-repellent-fleece-lined-flannel-shirt-jacket-dk0tj210k65/8984601198780/image_1_cropped.jpg",
+      "apparel_dataset/dickies/water-repellent-fleece-lined-flannel-shirt-jacket-dk0tj210k65/8984601198780/image_2_cropped.jpg",
+      "apparel_dataset/dickies/water-repellent-fleece-lined-flannel-shirt-jacket-dk0tj210k65/8984601198780/image_3.jpg",
+      "apparel_dataset/dickies/water-repellent-fleece-lined-flannel-shirt-jacket-dk0tj210k65/8984601198780/image_4_cropped.jpg",
+      "apparel_dataset/dickies/water-repellent-fleece-lined-flannel-shirt-jacket-dk0tj210k65/8984601198780/image_5.jpg",
+      "apparel_dataset/dickies/water-repellent-fleece-lined-flannel-shirt-jacket-dk0tj210k65/8984601198780/image_6.jpg",
+      "apparel_dataset/dickies/water-repellent-fleece-lined-flannel-shirt-jacket-dk0tj210k65/8984601198780/image_7_cropped.jpg",
+      "apparel_dataset/dickies/water-repellent-fleece-lined-flannel-shirt-jacket-dk0tj210k65/8984601198780/image_8_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -257705,7 +259224,17 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/hilham-canvas-bomber-jacket-dk0a87o50ds/9005861372092/image_0_cropped.jpg",
+      "apparel_dataset/dickies/hilham-canvas-bomber-jacket-dk0a87o50ds/9005861372092/image_1_cropped.jpg",
+      "apparel_dataset/dickies/hilham-canvas-bomber-jacket-dk0a87o50ds/9005861372092/image_2.jpg",
+      "apparel_dataset/dickies/hilham-canvas-bomber-jacket-dk0a87o50ds/9005861372092/image_3.jpg",
+      "apparel_dataset/dickies/hilham-canvas-bomber-jacket-dk0a87o50ds/9005861372092/image_4_cropped.jpg",
+      "apparel_dataset/dickies/hilham-canvas-bomber-jacket-dk0a87o50ds/9005861372092/image_5.jpg",
+      "apparel_dataset/dickies/hilham-canvas-bomber-jacket-dk0a87o50ds/9005861372092/image_6_cropped.jpg",
+      "apparel_dataset/dickies/hilham-canvas-bomber-jacket-dk0a87o50ds/9005861372092/image_7_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -257793,7 +259322,18 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/utility-service-jacket-dk00jt950bk/8984598610108/image_0_cropped.jpg",
+      "apparel_dataset/dickies/utility-service-jacket-dk00jt950bk/8984598610108/image_1_cropped.jpg",
+      "apparel_dataset/dickies/utility-service-jacket-dk00jt950bk/8984598610108/image_2_cropped.jpg",
+      "apparel_dataset/dickies/utility-service-jacket-dk00jt950bk/8984598610108/image_3_cropped.jpg",
+      "apparel_dataset/dickies/utility-service-jacket-dk00jt950bk/8984598610108/image_4.jpg",
+      "apparel_dataset/dickies/utility-service-jacket-dk00jt950bk/8984598610108/image_5.jpg",
+      "apparel_dataset/dickies/utility-service-jacket-dk00jt950bk/8984598610108/image_6.jpg",
+      "apparel_dataset/dickies/utility-service-jacket-dk00jt950bk/8984598610108/image_7.jpg",
+      "apparel_dataset/dickies/utility-service-jacket-dk00jt950bk/8984598610108/image_8.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -257870,7 +259410,19 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/insulated-eisenhower-jacket-dk00tj150ch/9256982741180/image_0_cropped.jpg",
+      "apparel_dataset/dickies/insulated-eisenhower-jacket-dk00tj150ch/9256982741180/image_1_cropped.jpg",
+      "apparel_dataset/dickies/insulated-eisenhower-jacket-dk00tj150ch/9256982741180/image_2_cropped.jpg",
+      "apparel_dataset/dickies/insulated-eisenhower-jacket-dk00tj150ch/9256982741180/image_3_cropped.jpg",
+      "apparel_dataset/dickies/insulated-eisenhower-jacket-dk00tj150ch/9256982741180/image_4.jpg",
+      "apparel_dataset/dickies/insulated-eisenhower-jacket-dk00tj150ch/9256982741180/image_5_cropped.jpg",
+      "apparel_dataset/dickies/insulated-eisenhower-jacket-dk00tj150ch/9256982741180/image_6.jpg",
+      "apparel_dataset/dickies/insulated-eisenhower-jacket-dk00tj150ch/9256982741180/image_7_cropped.jpg",
+      "apparel_dataset/dickies/insulated-eisenhower-jacket-dk00tj150ch/9256982741180/image_8_cropped.jpg",
+      "apparel_dataset/dickies/insulated-eisenhower-jacket-dk00tj150ch/9256982741180/image_9_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -257932,7 +259484,13 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/denim-chore-coat-dk0tcr09snb/8984590778556/image_0_cropped.jpg",
+      "apparel_dataset/dickies/denim-chore-coat-dk0tcr09snb/8984590778556/image_1_cropped.jpg",
+      "apparel_dataset/dickies/denim-chore-coat-dk0tcr09snb/8984590778556/image_2_cropped.jpg",
+      "apparel_dataset/dickies/denim-chore-coat-dk0tcr09snb/8984590778556/image_3_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -258016,7 +259574,15 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/blanket-lined-duck-canvas-jacket-dk0a8dev0bd/8984602575036/image_0_cropped.jpg",
+      "apparel_dataset/dickies/blanket-lined-duck-canvas-jacket-dk0a8dev0bd/8984602575036/image_1_cropped.jpg",
+      "apparel_dataset/dickies/blanket-lined-duck-canvas-jacket-dk0a8dev0bd/8984602575036/image_2_cropped.jpg",
+      "apparel_dataset/dickies/blanket-lined-duck-canvas-jacket-dk0a8dev0bd/8984602575036/image_3.jpg",
+      "apparel_dataset/dickies/blanket-lined-duck-canvas-jacket-dk0a8dev0bd/8984602575036/image_4_cropped.jpg",
+      "apparel_dataset/dickies/blanket-lined-duck-canvas-jacket-dk0a8dev0bd/8984602575036/image_5_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -258097,7 +259663,15 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/tradebuilt-shirt-jacket-dk0a87910sl/8984611782844/image_0_cropped.jpg",
+      "apparel_dataset/dickies/tradebuilt-shirt-jacket-dk0a87910sl/8984611782844/image_1_cropped.jpg",
+      "apparel_dataset/dickies/tradebuilt-shirt-jacket-dk0a87910sl/8984611782844/image_2_cropped.jpg",
+      "apparel_dataset/dickies/tradebuilt-shirt-jacket-dk0a87910sl/8984611782844/image_3_cropped.jpg",
+      "apparel_dataset/dickies/tradebuilt-shirt-jacket-dk0a87910sl/8984611782844/image_4.jpg",
+      "apparel_dataset/dickies/tradebuilt-shirt-jacket-dk0a87910sl/8984611782844/image_5_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -258183,7 +259757,18 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/unlined-eisenhower-jacket-dk00jt750af/9256984608956/image_0_cropped.jpg",
+      "apparel_dataset/dickies/unlined-eisenhower-jacket-dk00jt750af/9256984608956/image_1_cropped.jpg",
+      "apparel_dataset/dickies/unlined-eisenhower-jacket-dk00jt750af/9256984608956/image_2_cropped.jpg",
+      "apparel_dataset/dickies/unlined-eisenhower-jacket-dk00jt750af/9256984608956/image_3_cropped.jpg",
+      "apparel_dataset/dickies/unlined-eisenhower-jacket-dk00jt750af/9256984608956/image_4.jpg",
+      "apparel_dataset/dickies/unlined-eisenhower-jacket-dk00jt750af/9256984608956/image_5.jpg",
+      "apparel_dataset/dickies/unlined-eisenhower-jacket-dk00jt750af/9256984608956/image_6_cropped.jpg",
+      "apparel_dataset/dickies/unlined-eisenhower-jacket-dk00jt750af/9256984608956/image_7.jpg",
+      "apparel_dataset/dickies/unlined-eisenhower-jacket-dk00jt750af/9256984608956/image_8_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -258258,7 +259843,18 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/fleece-lined-nylon-hooded-jacket-dk0332370dn/8984581865660/image_0_cropped.jpg",
+      "apparel_dataset/dickies/fleece-lined-nylon-hooded-jacket-dk0332370dn/8984581865660/image_1_cropped.jpg",
+      "apparel_dataset/dickies/fleece-lined-nylon-hooded-jacket-dk0332370dn/8984581865660/image_2_cropped.jpg",
+      "apparel_dataset/dickies/fleece-lined-nylon-hooded-jacket-dk0332370dn/8984581865660/image_3_cropped.jpg",
+      "apparel_dataset/dickies/fleece-lined-nylon-hooded-jacket-dk0332370dn/8984581865660/image_4_cropped.jpg",
+      "apparel_dataset/dickies/fleece-lined-nylon-hooded-jacket-dk0332370dn/8984581865660/image_5_cropped.jpg",
+      "apparel_dataset/dickies/fleece-lined-nylon-hooded-jacket-dk0332370dn/8984581865660/image_6_cropped.jpg",
+      "apparel_dataset/dickies/fleece-lined-nylon-hooded-jacket-dk0332370dn/8984581865660/image_7_cropped.jpg",
+      "apparel_dataset/dickies/fleece-lined-nylon-hooded-jacket-dk0332370dn/8984581865660/image_8.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -258351,7 +259947,18 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/duck-canvas-high-pile-fleece-lined-jacket-dk0tj360rbd/8984601067708/image_0_cropped.jpg",
+      "apparel_dataset/dickies/duck-canvas-high-pile-fleece-lined-jacket-dk0tj360rbd/8984601067708/image_1_cropped.jpg",
+      "apparel_dataset/dickies/duck-canvas-high-pile-fleece-lined-jacket-dk0tj360rbd/8984601067708/image_2_cropped.jpg",
+      "apparel_dataset/dickies/duck-canvas-high-pile-fleece-lined-jacket-dk0tj360rbd/8984601067708/image_3_cropped.jpg",
+      "apparel_dataset/dickies/duck-canvas-high-pile-fleece-lined-jacket-dk0tj360rbd/8984601067708/image_4.jpg",
+      "apparel_dataset/dickies/duck-canvas-high-pile-fleece-lined-jacket-dk0tj360rbd/8984601067708/image_5_cropped.jpg",
+      "apparel_dataset/dickies/duck-canvas-high-pile-fleece-lined-jacket-dk0tj360rbd/8984601067708/image_6_cropped.jpg",
+      "apparel_dataset/dickies/duck-canvas-high-pile-fleece-lined-jacket-dk0tj360rbd/8984601067708/image_7_cropped.jpg",
+      "apparel_dataset/dickies/duck-canvas-high-pile-fleece-lined-jacket-dk0tj360rbd/8984601067708/image_8_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -258437,7 +260044,18 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/unlined-eisenhower-jacket-dk00jt750ch/9256984412348/image_0_cropped.jpg",
+      "apparel_dataset/dickies/unlined-eisenhower-jacket-dk00jt750ch/9256984412348/image_1_cropped.jpg",
+      "apparel_dataset/dickies/unlined-eisenhower-jacket-dk00jt750ch/9256984412348/image_2_cropped.jpg",
+      "apparel_dataset/dickies/unlined-eisenhower-jacket-dk00jt750ch/9256984412348/image_3_cropped.jpg",
+      "apparel_dataset/dickies/unlined-eisenhower-jacket-dk00jt750ch/9256984412348/image_4_cropped.jpg",
+      "apparel_dataset/dickies/unlined-eisenhower-jacket-dk00jt750ch/9256984412348/image_5_cropped.jpg",
+      "apparel_dataset/dickies/unlined-eisenhower-jacket-dk00jt750ch/9256984412348/image_6_cropped.jpg",
+      "apparel_dataset/dickies/unlined-eisenhower-jacket-dk00jt750ch/9256984412348/image_7_cropped.jpg",
+      "apparel_dataset/dickies/unlined-eisenhower-jacket-dk00jt750ch/9256984412348/image_8.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -258520,7 +260138,17 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/water-repellent-fleece-lined-flannel-shirt-jacket-dk0tj2100gc/8984601297084/image_0_cropped.jpg",
+      "apparel_dataset/dickies/water-repellent-fleece-lined-flannel-shirt-jacket-dk0tj2100gc/8984601297084/image_1_cropped.jpg",
+      "apparel_dataset/dickies/water-repellent-fleece-lined-flannel-shirt-jacket-dk0tj2100gc/8984601297084/image_2_cropped.jpg",
+      "apparel_dataset/dickies/water-repellent-fleece-lined-flannel-shirt-jacket-dk0tj2100gc/8984601297084/image_3_cropped.jpg",
+      "apparel_dataset/dickies/water-repellent-fleece-lined-flannel-shirt-jacket-dk0tj2100gc/8984601297084/image_4_cropped.jpg",
+      "apparel_dataset/dickies/water-repellent-fleece-lined-flannel-shirt-jacket-dk0tj2100gc/8984601297084/image_5.jpg",
+      "apparel_dataset/dickies/water-repellent-fleece-lined-flannel-shirt-jacket-dk0tj2100gc/8984601297084/image_6.jpg",
+      "apparel_dataset/dickies/water-repellent-fleece-lined-flannel-shirt-jacket-dk0tj2100gc/8984601297084/image_7_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -258610,7 +260238,15 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/blanket-lined-duck-canvas-jacket-dk0a8dev0sl/8984602902716/image_0_cropped.jpg",
+      "apparel_dataset/dickies/blanket-lined-duck-canvas-jacket-dk0a8dev0sl/8984602902716/image_1_cropped.jpg",
+      "apparel_dataset/dickies/blanket-lined-duck-canvas-jacket-dk0a8dev0sl/8984602902716/image_2_cropped.jpg",
+      "apparel_dataset/dickies/blanket-lined-duck-canvas-jacket-dk0a8dev0sl/8984602902716/image_3.jpg",
+      "apparel_dataset/dickies/blanket-lined-duck-canvas-jacket-dk0a8dev0sl/8984602902716/image_4.jpg",
+      "apparel_dataset/dickies/blanket-lined-duck-canvas-jacket-dk0a8dev0sl/8984602902716/image_5_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -258686,7 +260322,18 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/relaxed-fit-shirt-jacket-dk0a85x5k63/8984611160252/image_0_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-shirt-jacket-dk0a85x5k63/8984611160252/image_1_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-shirt-jacket-dk0a85x5k63/8984611160252/image_2_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-shirt-jacket-dk0a85x5k63/8984611160252/image_3.jpg",
+      "apparel_dataset/dickies/relaxed-fit-shirt-jacket-dk0a85x5k63/8984611160252/image_4_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-shirt-jacket-dk0a85x5k63/8984611160252/image_5.jpg",
+      "apparel_dataset/dickies/relaxed-fit-shirt-jacket-dk0a85x5k63/8984611160252/image_6.jpg",
+      "apparel_dataset/dickies/relaxed-fit-shirt-jacket-dk0a85x5k63/8984611160252/image_7_cropped.jpg",
+      "apparel_dataset/dickies/relaxed-fit-shirt-jacket-dk0a85x5k63/8984611160252/image_8_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -258741,7 +260388,15 @@
           "elastane"
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/wellsville-twill-jacket-dk0a88pfri2/9134082261180/image_0_cropped.jpg",
+      "apparel_dataset/dickies/wellsville-twill-jacket-dk0a88pfri2/9134082261180/image_1_cropped.jpg",
+      "apparel_dataset/dickies/wellsville-twill-jacket-dk0a88pfri2/9134082261180/image_2_cropped.jpg",
+      "apparel_dataset/dickies/wellsville-twill-jacket-dk0a88pfri2/9134082261180/image_3.jpg",
+      "apparel_dataset/dickies/wellsville-twill-jacket-dk0a88pfri2/9134082261180/image_4_cropped.jpg",
+      "apparel_dataset/dickies/wellsville-twill-jacket-dk0a88pfri2/9134082261180/image_5.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -258812,7 +260467,15 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/denim-painter-jacket-dk0a88egl23/9134081999036/image_0_cropped.jpg",
+      "apparel_dataset/dickies/denim-painter-jacket-dk0a88egl23/9134081999036/image_1_cropped.jpg",
+      "apparel_dataset/dickies/denim-painter-jacket-dk0a88egl23/9134081999036/image_2_cropped.jpg",
+      "apparel_dataset/dickies/denim-painter-jacket-dk0a88egl23/9134081999036/image_3.jpg",
+      "apparel_dataset/dickies/denim-painter-jacket-dk0a88egl23/9134081999036/image_4_cropped.jpg",
+      "apparel_dataset/dickies/denim-painter-jacket-dk0a88egl23/9134081999036/image_5.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -258891,7 +260554,15 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/water-repellent-fleece-lined-flannel-shirt-jacket-dk0tj210d06/8984601264316/image_0_cropped.jpg",
+      "apparel_dataset/dickies/water-repellent-fleece-lined-flannel-shirt-jacket-dk0tj210d06/8984601264316/image_1_cropped.jpg",
+      "apparel_dataset/dickies/water-repellent-fleece-lined-flannel-shirt-jacket-dk0tj210d06/8984601264316/image_2_cropped.jpg",
+      "apparel_dataset/dickies/water-repellent-fleece-lined-flannel-shirt-jacket-dk0tj210d06/8984601264316/image_3.jpg",
+      "apparel_dataset/dickies/water-repellent-fleece-lined-flannel-shirt-jacket-dk0tj210d06/8984601264316/image_4.jpg",
+      "apparel_dataset/dickies/water-repellent-fleece-lined-flannel-shirt-jacket-dk0tj210d06/8984601264316/image_5_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -258956,7 +260627,14 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/denim-chore-coat-dk0tcr09ltd/8984590745788/image_0_cropped.jpg",
+      "apparel_dataset/dickies/denim-chore-coat-dk0tcr09ltd/8984590745788/image_1_cropped.jpg",
+      "apparel_dataset/dickies/denim-chore-coat-dk0tcr09ltd/8984590745788/image_2_cropped.jpg",
+      "apparel_dataset/dickies/denim-chore-coat-dk0tcr09ltd/8984590745788/image_3_cropped.jpg",
+      "apparel_dataset/dickies/denim-chore-coat-dk0tcr09ltd/8984590745788/image_4_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -259047,7 +260725,18 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/fort-smith-jacket-dk0a87oeblk/8984564891836/image_0_cropped.jpg",
+      "apparel_dataset/dickies/fort-smith-jacket-dk0a87oeblk/8984564891836/image_1_cropped.jpg",
+      "apparel_dataset/dickies/fort-smith-jacket-dk0a87oeblk/8984564891836/image_2_cropped.jpg",
+      "apparel_dataset/dickies/fort-smith-jacket-dk0a87oeblk/8984564891836/image_3.jpg",
+      "apparel_dataset/dickies/fort-smith-jacket-dk0a87oeblk/8984564891836/image_4.jpg",
+      "apparel_dataset/dickies/fort-smith-jacket-dk0a87oeblk/8984564891836/image_5_cropped.jpg",
+      "apparel_dataset/dickies/fort-smith-jacket-dk0a87oeblk/8984564891836/image_6.jpg",
+      "apparel_dataset/dickies/fort-smith-jacket-dk0a87oeblk/8984564891836/image_7.jpg",
+      "apparel_dataset/dickies/fort-smith-jacket-dk0a87oeblk/8984564891836/image_8_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -259140,7 +260829,19 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/dickies-x-harley-davidson-r-boxy-denim-jacket-dk0a881rrnb/9280004915388/image_0_cropped.jpg",
+      "apparel_dataset/dickies/dickies-x-harley-davidson-r-boxy-denim-jacket-dk0a881rrnb/9280004915388/image_1_cropped.jpg",
+      "apparel_dataset/dickies/dickies-x-harley-davidson-r-boxy-denim-jacket-dk0a881rrnb/9280004915388/image_2.jpg",
+      "apparel_dataset/dickies/dickies-x-harley-davidson-r-boxy-denim-jacket-dk0a881rrnb/9280004915388/image_3_cropped.jpg",
+      "apparel_dataset/dickies/dickies-x-harley-davidson-r-boxy-denim-jacket-dk0a881rrnb/9280004915388/image_4.jpg",
+      "apparel_dataset/dickies/dickies-x-harley-davidson-r-boxy-denim-jacket-dk0a881rrnb/9280004915388/image_5_cropped.jpg",
+      "apparel_dataset/dickies/dickies-x-harley-davidson-r-boxy-denim-jacket-dk0a881rrnb/9280004915388/image_6_cropped.jpg",
+      "apparel_dataset/dickies/dickies-x-harley-davidson-r-boxy-denim-jacket-dk0a881rrnb/9280004915388/image_7_cropped.jpg",
+      "apparel_dataset/dickies/dickies-x-harley-davidson-r-boxy-denim-jacket-dk0a881rrnb/9280004915388/image_8_cropped.jpg",
+      "apparel_dataset/dickies/dickies-x-harley-davidson-r-boxy-denim-jacket-dk0a881rrnb/9280004915388/image_9_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -259225,7 +260926,18 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/water-repellent-fleece-lined-flannel-shirt-jacket-dk0tj210blk/8984600969404/image_0_cropped.jpg",
+      "apparel_dataset/dickies/water-repellent-fleece-lined-flannel-shirt-jacket-dk0tj210blk/8984600969404/image_1_cropped.jpg",
+      "apparel_dataset/dickies/water-repellent-fleece-lined-flannel-shirt-jacket-dk0tj210blk/8984600969404/image_2_cropped.jpg",
+      "apparel_dataset/dickies/water-repellent-fleece-lined-flannel-shirt-jacket-dk0tj210blk/8984600969404/image_3_cropped.jpg",
+      "apparel_dataset/dickies/water-repellent-fleece-lined-flannel-shirt-jacket-dk0tj210blk/8984600969404/image_4_cropped.jpg",
+      "apparel_dataset/dickies/water-repellent-fleece-lined-flannel-shirt-jacket-dk0tj210blk/8984600969404/image_5.jpg",
+      "apparel_dataset/dickies/water-repellent-fleece-lined-flannel-shirt-jacket-dk0tj210blk/8984600969404/image_6.jpg",
+      "apparel_dataset/dickies/water-repellent-fleece-lined-flannel-shirt-jacket-dk0tj210blk/8984600969404/image_7.jpg",
+      "apparel_dataset/dickies/water-repellent-fleece-lined-flannel-shirt-jacket-dk0tj210blk/8984600969404/image_8.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -259302,7 +261014,19 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/insulated-eisenhower-jacket-dk00tj150kh/9256982937788/image_0_cropped.jpg",
+      "apparel_dataset/dickies/insulated-eisenhower-jacket-dk00tj150kh/9256982937788/image_1_cropped.jpg",
+      "apparel_dataset/dickies/insulated-eisenhower-jacket-dk00tj150kh/9256982937788/image_2_cropped.jpg",
+      "apparel_dataset/dickies/insulated-eisenhower-jacket-dk00tj150kh/9256982937788/image_3_cropped.jpg",
+      "apparel_dataset/dickies/insulated-eisenhower-jacket-dk00tj150kh/9256982937788/image_4.jpg",
+      "apparel_dataset/dickies/insulated-eisenhower-jacket-dk00tj150kh/9256982937788/image_5_cropped.jpg",
+      "apparel_dataset/dickies/insulated-eisenhower-jacket-dk00tj150kh/9256982937788/image_6.jpg",
+      "apparel_dataset/dickies/insulated-eisenhower-jacket-dk00tj150kh/9256982937788/image_7_cropped.jpg",
+      "apparel_dataset/dickies/insulated-eisenhower-jacket-dk00tj150kh/9256982937788/image_8_cropped.jpg",
+      "apparel_dataset/dickies/insulated-eisenhower-jacket-dk00tj150kh/9256982937788/image_9_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -259366,7 +261090,14 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/duck-canvas-high-pile-fleece-jacket-dk0tjr04sbk/8984618762428/image_0_cropped.jpg",
+      "apparel_dataset/dickies/duck-canvas-high-pile-fleece-jacket-dk0tjr04sbk/8984618762428/image_1_cropped.jpg",
+      "apparel_dataset/dickies/duck-canvas-high-pile-fleece-jacket-dk0tjr04sbk/8984618762428/image_2_cropped.jpg",
+      "apparel_dataset/dickies/duck-canvas-high-pile-fleece-jacket-dk0tjr04sbk/8984618762428/image_3_cropped.jpg",
+      "apparel_dataset/dickies/duck-canvas-high-pile-fleece-jacket-dk0tjr04sbk/8984618762428/image_4_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -259438,7 +261169,11 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/oakport-coaches-jacket-dk0tjr310kh/8984613355708/image_0_cropped.jpg",
+      "apparel_dataset/dickies/oakport-coaches-jacket-dk0tjr310kh/8984613355708/image_1_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -259519,7 +261254,18 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/utility-service-jacket-dk00jt950dn/8984598642876/image_0_cropped.jpg",
+      "apparel_dataset/dickies/utility-service-jacket-dk00jt950dn/8984598642876/image_1_cropped.jpg",
+      "apparel_dataset/dickies/utility-service-jacket-dk00jt950dn/8984598642876/image_2_cropped.jpg",
+      "apparel_dataset/dickies/utility-service-jacket-dk00jt950dn/8984598642876/image_3_cropped.jpg",
+      "apparel_dataset/dickies/utility-service-jacket-dk00jt950dn/8984598642876/image_4.jpg",
+      "apparel_dataset/dickies/utility-service-jacket-dk00jt950dn/8984598642876/image_5_cropped.jpg",
+      "apparel_dataset/dickies/utility-service-jacket-dk00jt950dn/8984598642876/image_6_cropped.jpg",
+      "apparel_dataset/dickies/utility-service-jacket-dk00jt950dn/8984598642876/image_7.jpg",
+      "apparel_dataset/dickies/utility-service-jacket-dk00jt950dn/8984598642876/image_8.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -259593,7 +261339,14 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/insulated-eisenhower-jacket-dk00tj150ms/9256982479036/image_0_cropped.jpg",
+      "apparel_dataset/dickies/insulated-eisenhower-jacket-dk00tj150ms/9256982479036/image_1_cropped.jpg",
+      "apparel_dataset/dickies/insulated-eisenhower-jacket-dk00tj150ms/9256982479036/image_2_cropped.jpg",
+      "apparel_dataset/dickies/insulated-eisenhower-jacket-dk00tj150ms/9256982479036/image_3.jpg",
+      "apparel_dataset/dickies/insulated-eisenhower-jacket-dk00tj150ms/9256982479036/image_4_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -259671,7 +261424,14 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/oakport-coaches-jacket-dk0tjr31bkx/8984613388476/image_0_cropped.jpg",
+      "apparel_dataset/dickies/oakport-coaches-jacket-dk0tjr31bkx/8984613388476/image_1_cropped.jpg",
+      "apparel_dataset/dickies/oakport-coaches-jacket-dk0tjr31bkx/8984613388476/image_2.jpg",
+      "apparel_dataset/dickies/oakport-coaches-jacket-dk0tjr31bkx/8984613388476/image_3.jpg",
+      "apparel_dataset/dickies/oakport-coaches-jacket-dk0tjr31bkx/8984613388476/image_4_cropped.jpg"
+    ]
   },
   {
     "brand": "dickies",
@@ -259759,6 +261519,18 @@
           }
         ]
       }
-    }
+    },
+    "cropped_images": [
+      "apparel_dataset/dickies/fully-waxed-canvas-chore-coat-dktjwax1ac2/8984613978300/image_0_cropped.jpg",
+      "apparel_dataset/dickies/fully-waxed-canvas-chore-coat-dktjwax1ac2/8984613978300/image_1_cropped.jpg",
+      "apparel_dataset/dickies/fully-waxed-canvas-chore-coat-dktjwax1ac2/8984613978300/image_2.jpg",
+      "apparel_dataset/dickies/fully-waxed-canvas-chore-coat-dktjwax1ac2/8984613978300/image_3.jpg",
+      "apparel_dataset/dickies/fully-waxed-canvas-chore-coat-dktjwax1ac2/8984613978300/image_4_cropped.jpg",
+      "apparel_dataset/dickies/fully-waxed-canvas-chore-coat-dktjwax1ac2/8984613978300/image_5.jpg",
+      "apparel_dataset/dickies/fully-waxed-canvas-chore-coat-dktjwax1ac2/8984613978300/image_6_cropped.jpg",
+      "apparel_dataset/dickies/fully-waxed-canvas-chore-coat-dktjwax1ac2/8984613978300/image_7_cropped.jpg",
+      "apparel_dataset/dickies/fully-waxed-canvas-chore-coat-dktjwax1ac2/8984613978300/image_8_cropped.jpg",
+      "apparel_dataset/dickies/fully-waxed-canvas-chore-coat-dktjwax1ac2/8984613978300/image_9.jpg"
+    ]
   }
 ]
