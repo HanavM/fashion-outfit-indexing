@@ -296,7 +296,15 @@ if DEVICE == "cuda":
 ENCODE_BATCH_SIZE = int(os.environ.get("ENCODE_BATCH_SIZE", "64" if DEVICE == "cuda" else "16"))
 # Decode/EXIF-transpose threads feeding the GPU. PIL releases the GIL in
 # its C decoders, so threads (not processes) are enough and cost no IPC.
-IMAGE_LOADER_WORKERS = int(os.environ.get("IMAGE_LOADER_WORKERS", "8" if DEVICE == "cuda" else "4"))
+#
+# 16 on CUDA rather than a core-count-ish number: measured on a Modal T4
+# (2026-08-03) the encode loop ran at ~3.2 images/s, which is nowhere near
+# what a T4 does with a ViT-B at fp16 -- the images live on a network
+# filesystem (Modal Volume there, Google Drive FUSE on Colab) and the GPU
+# spends the batch waiting on per-file round trips. That is latency, not
+# bandwidth or CPU, so oversubscribing threads is the right response.
+# Raise it further (IMAGE_LOADER_WORKERS=32) on especially slow mounts.
+IMAGE_LOADER_WORKERS = int(os.environ.get("IMAGE_LOADER_WORKERS", "16" if DEVICE == "cuda" else "4"))
 
 
 def load_images_parallel(paths, workers=None):
