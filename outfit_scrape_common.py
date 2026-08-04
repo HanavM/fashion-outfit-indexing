@@ -28,6 +28,16 @@ MIN_IMAGE_BYTES = 15_000
 MIN_IMAGE_SIDE = 320
 IMAGE_SLEEP = 0.35
 
+# Longest side kept on disk. Reddit serves original phone camera files --
+# measured 1.3 MB/image average across the first 1,200 collected, i.e. 1.6 GB,
+# which on a machine with 17 GiB free would not survive a run into the tens of
+# thousands of images. Nothing downstream can use that resolution: the
+# segmentation and embedding models here take 224-512px inputs, so anything
+# above ~1.5k on the long side is storage cost with no modelling benefit.
+# Applied AFTER the MIN_IMAGE_SIDE check, so it never turns a passing image
+# into a failing one, and before hashing so the hash matches the stored file.
+MAX_IMAGE_SIDE = 1536
+
 USER_AGENT = (
     "fashion-tests-outfit-research/1.0 "
     "(non-commercial dataset research; contact hanavmw13@gmail.com)"
@@ -97,6 +107,8 @@ def _fetch_first_usable(candidates, headers, sleep, stats):
             if url is candidates[-1]:
                 stats["too_small"] += 1
             continue
+        if max(image.size) > MAX_IMAGE_SIDE:
+            image.thumbnail((MAX_IMAGE_SIDE, MAX_IMAGE_SIDE), Image.LANCZOS)
         return url, image
     return None, None
 
