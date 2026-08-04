@@ -258,6 +258,29 @@ HSC_THRESHOLD = 0.5     # default confidence threshold to climb to; higher = bro
 
 VAL_IMAGES_PER_PRODUCT = 1
 TEST_IMAGES_PER_PRODUCT = 1
+
+# How many gallery views are averaged into each product's DINOv3 prototype.
+#
+# Was a hardcoded 2 with no rationale recorded. That leaves most of the
+# gallery unused: the median catalog product has 5 images and the mean is
+# 5.6, so a cap of 2 embeds 4,729 of 13,419 available images -- 65% of the
+# imagery is discarded, and 2,139 products are truncated.
+#
+# Worth testing rather than just raising, because more is not obviously
+# better: product galleries mix front views with detail crops, flat lays
+# and back shots, so averaging more views could sharpen the prototype
+# (more angles, less per-shot noise) or blur it (unrelated close-ups
+# pulling the mean off the garment). This is now the cheapest open lever
+# on rerank quality -- conditional R@1 sits at 54.6% (docs/eval_log.md,
+# 2026-08-03) and it needs no retraining, just a re-encode.
+#
+# Changing this correctly invalidates cached embeddings per product via
+# `gallery_signature`, which records the exact image paths behind each
+# vector -- so a product with only 2 images is reused untouched while a
+# product that gains views gets re-embedded. That is why this is NOT in
+# the index fingerprint's `core`: it does not change what an embedding
+# means, only which images back it.
+GALLERY_IMAGES_PER_PRODUCT = int(os.environ.get("GALLERY_IMAGES_PER_PRODUCT", "2"))
 SPLIT_SEED = 42  # matches dino_identity_finetune.py's split exactly, so eval here is apples-to-apples
 
 DEVICE = "cuda" if torch.cuda.is_available() else ("mps" if torch.backends.mps.is_available() else "cpu")
@@ -1105,8 +1128,11 @@ def build_or_load_identity_index(backbone, projection_head, use_projection, proc
     # product on load so a product whose gallery images CHANGED (recrop,
     # rescrape, different split) gets re-embedded even though its code is
     # unchanged -- a code-only check would silently keep a stale vector.
-    # Sliced [:2] to match exactly what actually gets embedded below.
-    signature = {code: list(gallery_images_by_product[code][:2]) for code in product_codes}
+    # Sliced identically to what actually gets embedded below -- if these
+    # two ever disagree, cached vectors silently stop matching the images
+    # they claim to represent.
+    signature = {code: list(gallery_images_by_product[code][:GALLERY_IMAGES_PER_PRODUCT])
+                 for code in product_codes}
 
     reusable = {}
     if config_path.is_file():
@@ -1144,10 +1170,11 @@ def build_or_load_identity_index(backbone, projection_head, use_projection, proc
         print(f"Identity index: ENROLLING {len(to_embed):,} new/changed products, reusing {len(reusable):,} cached embeddings "
               f"(no re-encode of the existing catalog).")
     else:
-        print("Identity index: (re)building (this re-encodes up to 2 gallery images per product)...")
+        print(f"Identity index: (re)building (up to {GALLERY_IMAGES_PER_PRODUCT} "
+              f"gallery images per product)...")
     flat_paths, owners = [], []
     for code in to_embed:
-        for path in gallery_images_by_product[code][:2]:
+        for path in gallery_images_by_product[code][:GALLERY_IMAGES_PER_PRODUCT]:
             flat_paths.append(path)
             owners.append(code)
 
