@@ -67,6 +67,7 @@ Usage:
 
 from pathlib import Path
 from collections import defaultdict
+from concurrent.futures import ThreadPoolExecutor
 from contextlib import nullcontext
 
 import argparse
@@ -265,6 +266,70 @@ USE_AMP = DEVICE == "cuda"  # torch.autocast(device_type="mps") is still flaky a
 
 def autocast_context():
     return torch.autocast(device_type="cuda", dtype=torch.float16) if USE_AMP else nullcontext()
+
+
+# ---- GPU throughput knobs (tuned for a Colab T4) --------------------
+#
+# The T4 is Turing (sm_75): it HAS fp16 tensor cores but no bf16 and no
+# TF32, so float16 autocast above is the right and only fast path -- do
+# not "upgrade" it to bfloat16, which Turing emulates in software.
+#
+# Why these exist at all: profiling on 2026-08-03 found the GPU nearly
+# idle during evaluation. Two causes, both fixed below rather than here:
+#   1. Every index (semantic, HSC leaf, DINOv3 gallery) was loaded with
+#      map_location="cpu", and every embed_* helper returned .cpu(), so
+#      the entire per-query scoring path -- softmax over leaves, identity
+#      shortlist matmul, topk, gallery rerank matmul, argsort -- ran on
+#      the CPU. On Colab's 2-vCPU runtime that is the whole bottleneck.
+#      Indexes are now moved to DEVICE once, in HierarchicalRetriever.
+#   2. Image decode + processor resize is single-threaded CPU work that
+#      the GPU sits waiting on. Now overlapped via load_images_parallel.
+if DEVICE == "cuda":
+    # Fixed input resolution across every batch, so autotuned kernels are
+    # picked once and reused rather than re-searched.
+    torch.backends.cudnn.benchmark = True
+
+# A T4's 16GB fits far more than the old hardcoded 32 at 224px for these
+# ViT-B-class encoders; batch size is the single biggest lever on encode
+# throughput. Env-overridable so a smaller GPU can dial it back without
+# editing code.
+ENCODE_BATCH_SIZE = int(os.environ.get("ENCODE_BATCH_SIZE", "64" if DEVICE == "cuda" else "16"))
+# Decode/EXIF-transpose threads feeding the GPU. PIL releases the GIL in
+# its C decoders, so threads (not processes) are enough and cost no IPC.
+IMAGE_LOADER_WORKERS = int(os.environ.get("IMAGE_LOADER_WORKERS", "8" if DEVICE == "cuda" else "4"))
+
+
+def load_images_parallel(paths, workers=None):
+    """Decode images concurrently, preserving input order.
+
+    Returns (images, kept_positions) where kept_positions holds the INDEX
+    into `paths` of each surviving image. Positions rather than paths on
+    purpose: callers align these against a parallel list (owners, query
+    records), and a path-keyed mapping would silently collapse if the same
+    file ever backed two entries. Unreadable files are skipped, not fatal
+    -- the same policy the identity index build has always used.
+    """
+    workers = workers or IMAGE_LOADER_WORKERS
+    if not paths:
+        return [], []
+
+    def safe_load(path):
+        try:
+            return load_rgb_image(path), None
+        except Exception as error:  # unreadable/corrupt file
+            return None, error
+
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        loaded = list(pool.map(safe_load, paths))
+
+    images, kept_positions = [], []
+    for position, (path, (image, error)) in enumerate(zip(paths, loaded)):
+        if image is None:
+            print(f"Skipped (unreadable): {path} ({error})")
+            continue
+        images.append(image)
+        kept_positions.append(position)
+    return images, kept_positions
 
 
 # ============================================================
@@ -586,18 +651,32 @@ def dino_pooled_features(outputs):
 
 
 @torch.inference_mode()
-def embed_images_dino(backbone, projection_head, use_projection, processor, pil_images, batch_size=32):
+def embed_images_dino(backbone, projection_head, use_projection, processor, pil_images,
+                      batch_size=None, keep_on_device=False):
+    """keep_on_device=True skips the per-batch .cpu() copy.
+
+    That copy is a hard GPU->CPU sync every batch, and for the query path
+    the embeddings are only ever used in GPU matmuls against a
+    device-resident index -- so rounddtripping them through host memory
+    both stalls the pipeline and forces the scoring that follows onto the
+    CPU. Index BUILDING still wants CPU tensors (they get torch.save'd),
+    hence the default stays False.
+    """
+    batch_size = batch_size or ENCODE_BATCH_SIZE
     embeddings = []
     for start in range(0, len(pil_images), batch_size):
         batch = pil_images[start:start + batch_size]
         inputs = processor(images=batch, return_tensors="pt")
-        inputs = {k: v.to(DEVICE) for k, v in inputs.items()}
+        inputs = {k: v.to(DEVICE, non_blocking=True) for k, v in inputs.items()}
         with autocast_context():
             outputs = backbone(**inputs)
             raw = dino_pooled_features(outputs).float()
             batch_embeddings = projection_head(raw) if (use_projection and projection_head is not None) else F.normalize(raw, dim=-1)
-        embeddings.append(batch_embeddings.cpu())
-    return torch.cat(embeddings, dim=0) if embeddings else torch.empty(0, DINOV3_PROJECTION_DIM)
+        embeddings.append(batch_embeddings if keep_on_device else batch_embeddings.cpu())
+    if not embeddings:
+        empty = torch.empty(0, DINOV3_PROJECTION_DIM)
+        return empty.to(DEVICE) if keep_on_device else empty
+    return torch.cat(embeddings, dim=0)
 
 
 @torch.inference_mode()
@@ -681,16 +760,23 @@ def embed_texts_siglip(model, processor, texts, batch_size=128, max_length=64):
 
 
 @torch.inference_mode()
-def embed_images_siglip(model, processor, pil_images, batch_size=32):
+def embed_images_siglip(model, processor, pil_images, batch_size=None, keep_on_device=False):
+    """keep_on_device=True skips the per-batch .cpu() sync -- see
+    embed_images_dino for why that matters on the query path."""
+    batch_size = batch_size or ENCODE_BATCH_SIZE
     embeddings = []
     for start in range(0, len(pil_images), batch_size):
         batch = pil_images[start:start + batch_size]
         inputs = processor(images=batch, return_tensors="pt")
-        inputs = {k: v.to(DEVICE) for k, v in inputs.items()}
+        inputs = {k: v.to(DEVICE, non_blocking=True) for k, v in inputs.items()}
         with autocast_context():
             batch_embeddings = extract_siglip_embeddings(model.get_image_features(**inputs)).float()
-        embeddings.append(F.normalize(batch_embeddings, dim=-1).cpu())
-    return torch.cat(embeddings, dim=0) if embeddings else torch.empty(0, model.config.text_config.hidden_size)
+        normalized = F.normalize(batch_embeddings, dim=-1)
+        embeddings.append(normalized if keep_on_device else normalized.cpu())
+    if not embeddings:
+        empty = torch.empty(0, model.config.text_config.hidden_size)
+        return empty.to(DEVICE) if keep_on_device else empty
+    return torch.cat(embeddings, dim=0)
 
 
 # ============================================================
@@ -880,25 +966,22 @@ def build_or_load_identity_index(backbone, projection_head, use_projection, proc
 
     all_embeddings = []
     valid_owners = []
-    batch_size = 32
-    for start in range(0, len(flat_paths), batch_size):
+    batch_size = ENCODE_BATCH_SIZE
+    for start in tqdm(range(0, len(flat_paths), batch_size), desc="Encoding gallery", unit="batch"):
         batch_paths = flat_paths[start:start + batch_size]
         batch_owners = owners[start:start + batch_size]
-        images, kept_owners = [], []
-        for path, owner in zip(batch_paths, batch_owners):
-            try:
-                images.append(load_rgb_image(path))
-                kept_owners.append(owner)
-            except Exception as error:
-                # Belt-and-suspenders: the catalog build already verify()s
-                # every image, but that doesn't catch every corruption
-                # mode -- skip rather than crash the whole index build over
-                # one bad file.
-                print(f"Skipped (unreadable): {path} ({error})")
+        # Threaded decode: the GPU was previously idle through a serial
+        # PIL open/EXIF-transpose of every image in the batch. Unreadable
+        # files are still skipped rather than crashing the build --
+        # load_images_parallel drops them from images AND kept together,
+        # so owner alignment survives (the catalog build verify()s images,
+        # but that doesn't catch every corruption mode).
+        images, kept_positions = load_images_parallel(batch_paths)
         if not images:
             continue
-        all_embeddings.append(embed_images_dino(backbone, projection_head, use_projection, processor, images, batch_size=batch_size))
-        valid_owners.extend(kept_owners)
+        all_embeddings.append(embed_images_dino(backbone, projection_head, use_projection,
+                                                processor, images, batch_size=batch_size))
+        valid_owners.extend(batch_owners[position] for position in kept_positions)
     all_embeddings = torch.cat(all_embeddings, dim=0) if all_embeddings else torch.empty(0, DINOV3_PROJECTION_DIM)
 
     embeddings_by_product = defaultdict(list)
@@ -1025,10 +1108,79 @@ class HierarchicalRetriever:
         )
         self.gallery_index_by_code = {code: i for i, code in enumerate(self.gallery_product_codes)}
 
+        # ---- Move every index onto the GPU, once -------------------
+        # These are built/loaded as CPU tensors (they get torch.save'd, and
+        # a CPU artifact stays portable across machines), but every read of
+        # them afterwards is a matmul against a query embedding. Leaving
+        # them on the host meant the whole scoring path ran on Colab's 2
+        # vCPUs while the T4 sat idle -- the actual reason evaluation was
+        # slow while "barely using compute units". They are small (a few
+        # thousand rows), so this costs a few MB of VRAM.
+        self.identity_embeddings = self.identity_embeddings.to(DEVICE)
+        self.hsc_leaf_embeddings = self.hsc_leaf_embeddings.to(DEVICE)
+        self.gallery_embeddings = self.gallery_embeddings.to(DEVICE)
+
+        # ---- Precomputed shortlist masks ---------------------------
+        # shortlist_identities used to rebuild its candidate list with a
+        # Python comprehension over every identity on EVERY query, then
+        # gather a fresh sub-matrix from identity_embeddings -- an O(N*D)
+        # host copy per query (~4MB x 1,190 queries per eval arm). The set
+        # of distinct `allowed_categories` values is tiny (bounded by the
+        # HSC tree's nodes), so both are cached by that set instead.
+        self._shortlist_cache = {}
+        self._identity_index_by_name = {name: i for i, name in enumerate(self.identities)}
+        self._open_set_identity_positions = torch.tensor(
+            [i for i, identity in enumerate(self.identities) if identity in self.open_set_identities],
+            dtype=torch.long,
+        )
+        # Cached embedding row -> product codes, so the shortlist expansion
+        # below doesn't re-hash IDENTITY_TO_PRODUCT_CODES per query.
+        self._codes_by_identity_index = [
+            list(IDENTITY_TO_PRODUCT_CODES[identity]) for identity in self.identities
+        ]
+
+    def _candidate_set(self, allowed_categories):
+        """(indices, sub_embeddings) for a given category gate, cached.
+
+        Keyed on the frozenset of allowed categories -- `None` (no gate)
+        is its own key and is by far the hottest one.
+        """
+        key = None if allowed_categories is None else frozenset(allowed_categories)
+        cached = self._shortlist_cache.get(key)
+        if cached is not None:
+            return cached
+
+        excluded = self.open_set_identities
+        if key is None:
+            candidate_indices = [i for i, identity in enumerate(self.identities) if identity not in excluded]
+        else:
+            candidate_indices = [i for i, identity in enumerate(self.identities)
+                                 if self.identity_category.get(identity) in key and identity not in excluded]
+        if not candidate_indices:
+            # Same fallback as before: an empty gate degrades to ungated
+            # rather than returning nothing.
+            return self._candidate_set(None)
+
+        # Device taken from the tensor being indexed, not the global
+        # DEVICE: torch requires the index to sit on the same device as
+        # the indexed tensor, and hardcoding DEVICE breaks the moment the
+        # two disagree.
+        index_tensor = torch.tensor(candidate_indices, dtype=torch.long,
+                                    device=self.identity_embeddings.device)
+        sub_embeddings = self.identity_embeddings[index_tensor].contiguous()
+        entry = (candidate_indices, sub_embeddings)
+        self._shortlist_cache[key] = entry
+        return entry
+
     def hsc_predict(self, siglip_image_embedding, threshold=HSC_THRESHOLD):
-        similarity = (siglip_image_embedding @ self.hsc_leaf_embeddings.T).squeeze(0)
+        similarity = (siglip_image_embedding.to(self.hsc_leaf_embeddings.device)
+                      @ self.hsc_leaf_embeddings.T).squeeze(0)
         leaf_probabilities = F.softmax(similarity / HSC_TEMPERATURE, dim=0)
-        return hsc_climb(leaf_probabilities, self.hsc_leaf_ids, threshold)
+        # Brought back to the host as one transfer: hsc_climb walks the
+        # tree in Python and reads individual leaf probabilities, so
+        # leaving this on the GPU turns each read into its own sync. The
+        # tensor is ~42 floats, so the copy is free next to that.
+        return hsc_climb(leaf_probabilities.cpu(), self.hsc_leaf_ids, threshold)
 
     def shortlist_identities(self, siglip_image_embedding, allowed_categories, top_k):
         # Open-set holdout has to be applied HERE too, not just in the
@@ -1038,20 +1190,14 @@ class HierarchicalRetriever:
         # consume top_k slots that then silently evaporate, shrinking the
         # effective shortlist size and confounding the very parameter
         # (--top-identity-candidates) this project has tuned most.
-        excluded = self.open_set_identities
-        if allowed_categories is not None:
-            candidate_indices = [i for i, identity in enumerate(self.identities)
-                                 if self.identity_category.get(identity) in allowed_categories and identity not in excluded]
-        else:
-            candidate_indices = [i for i, identity in enumerate(self.identities) if identity not in excluded]
-        if not candidate_indices:
-            candidate_indices = [i for i, identity in enumerate(self.identities) if identity not in excluded]
-
-        index_tensor = torch.tensor(candidate_indices, dtype=torch.long)
-        sub_embeddings = self.identity_embeddings[index_tensor]
-        similarity = (siglip_image_embedding @ sub_embeddings.T).squeeze(0)
+        candidate_indices, sub_embeddings = self._candidate_set(allowed_categories)
+        similarity = (siglip_image_embedding.to(sub_embeddings.device) @ sub_embeddings.T).squeeze(0)
         k = min(top_k, len(candidate_indices))
-        top_local = torch.topk(similarity, k).indices.tolist()
+        top_scores, top_indices = torch.topk(similarity, k)
+        # One device->host transfer for the whole top-k, instead of a
+        # separate float(similarity[i]) sync inside the loop below.
+        top_local = top_indices.tolist()
+        top_score_values = top_scores.tolist()
 
         # product_code -> SigLIP2 identity-level score, for optional score
         # fusion in rerank_by_identity. Every colorway sibling of the same
@@ -1059,10 +1205,9 @@ class HierarchicalRetriever:
         # comment) -- that's inherent to what SigLIP2 was trained to
         # distinguish, not a bug in this expansion step.
         siglip_score_by_code = {}
-        for local_index in top_local:
+        for local_index, identity_score in zip(top_local, top_score_values):
             global_index = candidate_indices[local_index]
-            identity_score = float(similarity[local_index])
-            for code in IDENTITY_TO_PRODUCT_CODES[self.identities[global_index]]:
+            for code in self._codes_by_identity_index[global_index]:
                 siglip_score_by_code[code] = identity_score
         return siglip_score_by_code
 
@@ -1070,11 +1215,14 @@ class HierarchicalRetriever:
         available = [code for code in siglip_score_by_code if code in self.gallery_index_by_code]
         if not available:
             return []
-        indices = torch.tensor([self.gallery_index_by_code[code] for code in available], dtype=torch.long)
-        dino_similarity = (dino_image_embedding @ self.gallery_embeddings[indices].T).squeeze(0)
+        indices = torch.tensor([self.gallery_index_by_code[code] for code in available],
+                               dtype=torch.long, device=self.gallery_embeddings.device)
+        dino_similarity = (dino_image_embedding.to(self.gallery_embeddings.device)
+                           @ self.gallery_embeddings[indices].T).squeeze(0)
 
         if use_score_fusion and len(available) > 1:
-            siglip_similarity = torch.tensor([siglip_score_by_code[code] for code in available], dtype=torch.float32)
+            siglip_similarity = torch.tensor([siglip_score_by_code[code] for code in available],
+                                             dtype=torch.float32, device=dino_similarity.device)
             # z-score normalize each signal within this candidate set before
             # combining -- SigLIP2 and DINOv3 cosine similarities don't
             # share a comparable scale/spread, so mixing raw values would
@@ -1086,10 +1234,17 @@ class HierarchicalRetriever:
 
             fused = DINO_FUSION_WEIGHT * z_normalize(dino_similarity) + SIGLIP_FUSION_WEIGHT * z_normalize(siglip_similarity)
             order = torch.argsort(fused, descending=True)
-            ranked = [(available[i], float(dino_similarity[i])) for i in order.tolist()]
         else:
             order = torch.argsort(dino_similarity, descending=True)
-            ranked = [(available[i], float(dino_similarity[i])) for i in order.tolist()]
+
+        # Pull the scores across ONCE. The old form indexed the similarity
+        # tensor inside the comprehension -- `float(dino_similarity[i])`
+        # per element -- which on GPU is a separate device->host sync per
+        # candidate. evaluate() passes final_top_k = len(gallery), so that
+        # was up to ~1,272 syncs per query, on top of another per element
+        # from order.tolist(). Both are now single transfers.
+        dino_scores = dino_similarity.tolist()
+        ranked = [(available[i], dino_scores[i]) for i in order.tolist()]
         return ranked[:final_top_k]
 
     def patch_rerank(self, query_image, pooled_ranked, num_candidates=PATCH_RERANK_CANDIDATES):
@@ -1134,8 +1289,10 @@ class HierarchicalRetriever:
         # has real eval numbers rather than assuming HSC fixes it.
         image = load_rgb_image(image_path)
 
-        siglip_embedding = embed_images_siglip(self.siglip2_model, self.siglip2_processor, [image])
-        dino_embedding = embed_images_dino(self.dino_backbone, self.dino_head, self.dino_use_projection, self.dino_processor, [image])
+        siglip_embedding = embed_images_siglip(self.siglip2_model, self.siglip2_processor,
+                                               [image], keep_on_device=True)
+        dino_embedding = embed_images_dino(self.dino_backbone, self.dino_head, self.dino_use_projection,
+                                           self.dino_processor, [image], keep_on_device=True)
 
         hsc_result = self.hsc_predict(siglip_embedding, threshold=hsc_threshold)
         allowed_categories = hsc_result["allowed_categories"] if use_category_gate else None
@@ -1205,6 +1362,47 @@ class HierarchicalRetriever:
     # End-to-end held-out evaluation
     # --------------------------------------------------------
 
+    @torch.inference_mode()
+    def _query_embeddings(self, queries):
+        """SigLIP2 + DINOv3 embeddings for every query image, GPU-resident.
+
+        Cached on the instance -- see the call site in evaluate() for why
+        that is safe. Images are decoded CHUNK BY CHUNK, never all at
+        once: holding 1,190+ full-resolution photos in memory at the same
+        time is real pressure on a Colab runtime. Only the embeddings (a
+        few MB) are kept. Decoding inside each chunk is threaded so the
+        CPU stages the next batch while the GPU is still working on the
+        current one.
+        """
+        cache_key = tuple(path for _, path in queries)
+        if getattr(self, "_query_embedding_cache", (None,))[0] == cache_key:
+            return self._query_embedding_cache[1], self._query_embedding_cache[2]
+
+        chunk_size = max(ENCODE_BATCH_SIZE, 32)
+        siglip_chunks, dino_chunks = [], []
+        paths = [path for _, path in queries]
+        for start in tqdm(range(0, len(paths), chunk_size), desc="Embedding queries", unit="chunk"):
+            chunk_paths = paths[start:start + chunk_size]
+            chunk_images, kept_positions = load_images_parallel(chunk_paths)
+            if len(kept_positions) != len(chunk_paths):
+                # evaluate() indexes embeddings positionally against
+                # `queries`, so a silently dropped image would misalign
+                # every subsequent query with the wrong vector -- a
+                # corrupted R@K number rather than an error. Loud instead.
+                dropped = set(range(len(chunk_paths))) - set(kept_positions)
+                raise RuntimeError("Unreadable query image(s) would misalign the eval: "
+                                   f"{sorted(chunk_paths[i] for i in dropped)}")
+            siglip_chunks.append(embed_images_siglip(
+                self.siglip2_model, self.siglip2_processor, chunk_images, keep_on_device=True))
+            dino_chunks.append(embed_images_dino(
+                self.dino_backbone, self.dino_head, self.dino_use_projection,
+                self.dino_processor, chunk_images, keep_on_device=True))
+
+        all_siglip = torch.cat(siglip_chunks, dim=0)
+        all_dino = torch.cat(dino_chunks, dim=0)
+        self._query_embedding_cache = (cache_key, all_siglip, all_dino)
+        return all_siglip, all_dino
+
     def evaluate(self, use_category_gate=True, hsc_threshold=HSC_THRESHOLD, top_identity_candidates=TOP_IDENTITY_CANDIDATES, use_score_fusion=USE_SCORE_FUSION, use_patch_rerank=USE_PATCH_RERANK):
         queries = [(code, path) for code, paths in self.test_image_by_product.items() for path in paths]
         print(f"Evaluating {len(queries):,} held-out queries (category gate: {use_category_gate}, HSC threshold: {hsc_threshold}, score fusion: {use_score_fusion}, patch rerank: {use_patch_rerank})...")
@@ -1253,15 +1451,16 @@ class HierarchicalRetriever:
         # reloaded from disk on demand in the loop below rather than kept
         # in memory the whole time, a cheap disk read next to the model
         # forward passes this fix is actually targeting.
-        EVAL_EMBED_CHUNK_SIZE = 32
-        siglip_chunks, dino_chunks = [], []
-        for start in range(0, len(queries), EVAL_EMBED_CHUNK_SIZE):
-            chunk_paths = [path for _, path in queries[start:start + EVAL_EMBED_CHUNK_SIZE]]
-            chunk_images = [load_rgb_image(path) for path in chunk_paths]
-            siglip_chunks.append(embed_images_siglip(self.siglip2_model, self.siglip2_processor, chunk_images))
-            dino_chunks.append(embed_images_dino(self.dino_backbone, self.dino_head, self.dino_use_projection, self.dino_processor, chunk_images))
-        all_siglip_embeddings = torch.cat(siglip_chunks, dim=0)
-        all_dino_embeddings = torch.cat(dino_chunks, dim=0)
+        # Cached across evaluate() calls, keyed by the query set itself.
+        # The embeddings depend ONLY on the images and the (frozen)
+        # encoders -- not on use_category_gate, hsc_threshold,
+        # top_identity_candidates, score fusion or patch rerank. Every one
+        # of those is a pure post-processing choice over these vectors.
+        # Re-encoding per call meant a --top-identity-candidates sweep of
+        # S values paid the full encode cost 2*S times (gated + ungated
+        # per value) for bit-identical results. This makes a sweep cost
+        # one encode pass total.
+        all_siglip_embeddings, all_dino_embeddings = self._query_embeddings(queries)
 
         for query_index, (true_code, image_path) in enumerate(queries):
             siglip_embedding = all_siglip_embeddings[query_index:query_index + 1]
@@ -1371,12 +1570,21 @@ class HierarchicalRetriever:
         print(f"Scoring {len(self.open_set_queries):,} off-catalog (open-set) queries...")
 
         scores = []
-        CHUNK = 32
-        for start in range(0, len(self.open_set_queries), CHUNK):
-            chunk = self.open_set_queries[start:start + CHUNK]
-            images = [load_rgb_image(path) for _, path in chunk]
-            siglip_chunk = embed_images_siglip(self.siglip2_model, self.siglip2_processor, images)
-            dino_chunk = embed_images_dino(self.dino_backbone, self.dino_head, self.dino_use_projection, self.dino_processor, images)
+        chunk_size = max(ENCODE_BATCH_SIZE, 32)
+        for start in tqdm(range(0, len(self.open_set_queries), chunk_size),
+                          desc="Open-set queries", unit="chunk"):
+            chunk = self.open_set_queries[start:start + chunk_size]
+            images, kept_positions = load_images_parallel([path for _, path in chunk])
+            # Unlike the closed-set path this only appends scores (nothing
+            # is indexed positionally against `chunk` afterwards), so a
+            # dropped unreadable image is safe to skip rather than fatal.
+            chunk = [chunk[position] for position in kept_positions]
+            if not images:
+                continue
+            siglip_chunk = embed_images_siglip(self.siglip2_model, self.siglip2_processor,
+                                               images, keep_on_device=True)
+            dino_chunk = embed_images_dino(self.dino_backbone, self.dino_head, self.dino_use_projection,
+                                           self.dino_processor, images, keep_on_device=True)
             for i in range(len(chunk)):
                 siglip_embedding = siglip_chunk[i:i + 1]
                 dino_embedding = dino_chunk[i:i + 1]
