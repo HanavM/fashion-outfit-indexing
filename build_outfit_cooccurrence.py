@@ -122,7 +122,15 @@ CAVEATS = [
     "several angles and are NOT counted twice.",
     "Colours are a crude centre-of-bbox palette vote over the un-masked crop "
     "(index_outfits.dominant_color), not a colour model. Navy/black and "
-    "beige/white are expected to confuse.",
+    "beige/white are expected to confuse. Spot-checked visually on 4 real "
+    "crops 2026-08-04: all 4 CATEGORIES were plausible, but only ~2 colours "
+    "were usable -- a correctly-labelled 'loafer' had a bounding box "
+    "containing wall, ground and both legs, so its colour was read almost "
+    "entirely off the background. Colour is a re-ranking hint at best and "
+    "must never filter results.",
+    "Category labels survive a loose bounding box far better than colours do, "
+    "because FashionCLIP still scores the dominant garment in an oversized "
+    "crop while the colour vote just averages in whatever else is in frame.",
     "The corpus is Reddit/Pinterest/wear-site street style. It is not a "
     "representative sample of how anyone dresses; it is a sample of what gets "
     "posted.",
