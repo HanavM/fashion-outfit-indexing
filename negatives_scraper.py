@@ -254,7 +254,16 @@ def search_openverse(query, limit):
 
     out = []
     for item in payload.get("results", []):
-        urls = [u for u in (item.get("url"), item.get("thumbnail")) if u]
+        # Openverse's own thumbnail FIRST, the provider's original second.
+        # `url` points straight at the origin host (a museum, a Flickr mirror,
+        # someone's server), and a theme whose results happen to sit on dead or
+        # slow origins wedges the run: 20 candidates x 45s timeout x 2 URLs is
+        # half an hour to collect nothing. Measured -- the `documents` theme sat
+        # at zero new images for 15 minutes this way. The thumbnail comes off
+        # Openverse's CDN, is ~600px on the long side (above the 320px floor,
+        # and above anything downstream consumes, which is 224-512px), and the
+        # original stays as the fallback for when the thumbnail is too small.
+        urls = [u for u in (item.get("thumbnail"), item.get("url")) if u]
         if not urls:
             continue
         out.append({

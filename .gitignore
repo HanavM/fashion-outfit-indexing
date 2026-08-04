@@ -21,6 +21,8 @@ apparel_dataset_full/
 # Same rule for the real-outfit tree: images stay out of git, the
 # metadata.json manifest beside them stays tracked.
 outfit_dataset/*/
+negatives_dataset/*/
+negatives_dataset/.scraper.pid
 outfit_dataset/.metadata.lock
 outfit_dataset/metadata.json.tmp
 logs/
