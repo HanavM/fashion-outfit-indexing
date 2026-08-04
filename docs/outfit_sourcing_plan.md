@@ -60,6 +60,73 @@ produced a useless dataset:
    nothing.** Volume requires `--login` (one-time, session persists in a
    profile dir). Untested at scale as of this writing.
 
+## Revision — 2026-08-03, bulk-collection run: what actually ran
+
+Findings from the first at-scale collection run, all measured live.
+
+### Pinterest is still blocked, and the blocker is 60 seconds of a human
+
+`--login` requires a person to authenticate in a headed browser; an agent
+cannot. Checked whether a session already existed in
+`~/.cache/fashion-tests/browser-profile`: it does not. A headless load of
+`/search/pins/?q=streetwear outfit` through that profile lands on a page
+still serving "Log in" / "Sign up" and harvests **17 images**, matching
+the logged-out ceiling above. Nothing else about Pinterest changed —
+the ladder and the scraper are ready, they just need the session.
+
+**Explicitly not attempted, and should not be:** creating accounts,
+bypassing the login, or solving captchas.
+
+### The browser scraper is CPU-expensive and must be run deliberately
+
+Two headless Chromium instances (one scraping, one probing candidate
+sites) drove this machine to **load average 68** alongside the existing
+segmentation job, with the two browsers as the top CPU consumers at 96%
+and 64%. They were killed. This is a real operational constraint on a
+laptop that is also running model work, and it changes the tiering:
+
+**Reddit is not just the primary source, it is the cheap one.** It is a
+plain HTTP client against Arctic Shift at near-zero CPU, and it is ~37k
+posts deep. Browser-driven sources are a *supplement* to be run when the
+machine is otherwise idle, one at a time, never concurrently with GPU or
+segmentation work.
+
+### wear.jp — the best browser target found, and better on terms than Pinterest
+
+Probed six candidate non-login-walled sources. Results:
+
+| source | harvested images | usable? |
+|---|---:|---|
+| wear.jp `/coordinate/`, `/men-coordinate/`, `/women-coordinate/` | 120–121 per page | **yes** |
+| chictopia.com | 10 | no — site is dead, DOM serves web.archive.org copies at 300px |
+| thesartorialist.com | 0 | no |
+| pexels.com | 0 | no — nothing harvestable from the DOM; it has an official API instead |
+| unsplash.com | 0 | no — same, use the API |
+| lookbook.nu | — | timed out at 45s |
+
+wear.jp is a large Japanese outfit-posting community: every item is one
+real person wearing one full outfit, which is exactly the target, and it
+is **robots-clean** — its `robots.txt` Disallows only `/snapitem/`,
+`/login` and `/mypage` for `User-agent: *`, so the coordinate grids are
+explicitly crawlable and the run uses `--respect-robots` rather than
+overriding it. That makes it a *better* target than Pinterest on terms,
+not just on availability. Paginates with `?pageno=N`, ~120 items/page.
+
+Two properties needed handling before it produced anything usable:
+
+1. **It declares only `_276.jpg` in the grid** — 276×368, under the 320px
+   `MIN_IMAGE_SIDE` floor. Exactly the Pinterest trap: a DOM-faithful
+   scrape collects **zero** images. The width is a plain filename suffix,
+   so the ladder rewrites it — `_1000.jpg` returns 1000×1334 (verified),
+   `_750`/`_500` below it, `_org.jpg` is 403.
+2. **Permalinks are `/<handle>/<coordinate id>/`**, which supplies both a
+   stable `source_id` and the author. Before this, every browser-scraped
+   record had `author: ""`, violating provenance rule 3.
+
+Validated end to end: 12 records from one page, all images 1000×1334,
+author populated. `wear_targets.txt` holds 60 grid pages (~7k items) for
+when the machine is free.
+
 ## Pinterest — assessed, and why it doesn't work as a scrape target
 
 The intuition behind picking Pinterest is correct and worth stating
