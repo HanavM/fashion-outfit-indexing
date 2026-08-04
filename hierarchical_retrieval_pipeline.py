@@ -264,9 +264,12 @@ PATCH_RERANK_CANDIDATES = 10
 USE_BRAND_BOOST = False
 BRAND_BOOST_WEIGHT = float(os.environ.get("BRAND_BOOST_WEIGHT", "0.03"))
 # Minimum brand_evidence score to act on at all. Anything below is treated
-# as no evidence. Set from the measured precision/recall curve in
-# docs/eval_log.md, not guessed.
-BRAND_EVIDENCE_MIN_SCORE = float(os.environ.get("BRAND_EVIDENCE_MIN_SCORE", "0.30"))
+# as no evidence. Set from the measured precision/recall curve
+# (docs/eval_log.md 2026-08-04), not guessed: precision was 100.00% at
+# EVERY threshold from 0.00 to 0.90 over 1,186 real catalog images, so a
+# higher bar bought no precision and only threw recall away. Recall is the
+# scarce thing here (11.13%), not precision.
+BRAND_EVIDENCE_MIN_SCORE = float(os.environ.get("BRAND_EVIDENCE_MIN_SCORE", "0.10"))
 # Bare category name, not a "a photo of a {category}" template -- matches
 # what finetune_siglip2_v3.py's build_training_labels actually trained the
 # text tower on for taxonomy nodes (raw strings like "sneaker", "hoodie"

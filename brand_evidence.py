@@ -121,9 +121,22 @@ SHORT_ALIAS_LEN = 5
 MIN_SIM_SHORT = float(os.environ.get("BRAND_MIN_SIM_SHORT", "90"))
 MIN_SIM_LONG = float(os.environ.get("BRAND_MIN_SIM_LONG", "80"))
 
-# Default accept threshold on the combined score. Chosen from the sweep in
-# `brand_evidence_eval.py`, not guessed; see docs/eval_log.md.
-DEFAULT_ACCEPT_SCORE = float(os.environ.get("BRAND_ACCEPT_SCORE", "0.55"))
+# Default accept threshold on the combined score.
+#
+# Set to essentially "accept any match" from the measured sweep, not
+# guessed. Over 1,186 real catalog images across all 12 brands
+# (docs/eval_log.md, 2026-08-04) precision was **100.00% at every
+# threshold from 0.00 to 0.90** -- 132 assertions, zero wrong, a perfectly
+# diagonal confusion matrix. Raising the threshold therefore bought
+# nothing and only cost recall (11.13% at 0.10 down to 4.97% at 0.90), so
+# the only defensible operating point is the bottom of the curve.
+#
+# The reason this holds: the fuzzy matcher's own floors (MIN_SIM_SHORT 90
+# for short aliases, MIN_SIM_LONG 80) already do the rejecting, and OCR
+# confidence turns out to be a poor second gate -- it is low precisely on
+# the misread-but-still-matchable wordmarks ("CAFHARTT WIP" at conf 0.32)
+# that are this signal's best cases.
+DEFAULT_ACCEPT_SCORE = float(os.environ.get("BRAND_ACCEPT_SCORE", "0.10"))
 
 
 # --------------------------------------------------------------------------
