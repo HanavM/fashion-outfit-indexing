@@ -358,6 +358,23 @@ def main():
               f"{row['false_reject_rate']*100:>14.2f}%"
               f"{row['false_accept_rate']*100:>14.2f}%")
 
+    # Percentile rows are fitted to this exact sample, which is the wrong thing
+    # to ship: a threshold that lands on the 5th percentile of 600 photos moves
+    # the next time 600 different photos are drawn. Round numbers with their
+    # measured rates are what a config constant should actually be set from, and
+    # the per-group split says WHO gets refused -- studio product shots and worn
+    # outfits are not interchangeable, and rejecting the second is rejecting the
+    # real user.
+    print("\n=== round thresholds (what a config constant would actually hold) ===")
+    print(f"{'threshold':>10}{'false-reject':>14}{'  (apparel /':>14}{'outfit)':>10}"
+          f"{'false-accept':>15}")
+    for threshold in (0.000, 0.005, 0.010, 0.015, 0.020, 0.025):
+        print(f"{threshold:>10.3f}"
+              f"{np.mean(positive_scores < threshold)*100:>13.2f}%"
+              f"{np.mean(apparel_scores < threshold)*100:>13.2f}%"
+              f"{np.mean(outfit_scores < threshold)*100:>9.2f}%"
+              f"{np.mean(negative_scores >= threshold)*100:>14.2f}%")
+
     # Overlap is the headline for a gate, so state it rather than leaving it to
     # be inferred from the table: how many worlds does each side share.
     overlap_positives = float(np.mean(positive_scores < negative_scores.max()))
