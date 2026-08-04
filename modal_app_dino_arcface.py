@@ -94,16 +94,36 @@ def train(loss: str = "arcface"):
     }
 
     started = time.time()
-    result = subprocess.run([sys.executable, "/root/dino_identity_finetune.py"],
-                            cwd="/data", env=env)
+    # Tee rather than plain inherit: the child streams live (so a long run
+    # shows progress) AND the tail is retained, so a failure can be
+    # reported here instead of being knowable only from Modal's own log.
+    # The first run of this app failed with nothing but Modal's wrapper
+    # traceback -- the child's actual error had scrolled past the caller's
+    # output truncation and was effectively lost.
+    process = subprocess.Popen(
+        [sys.executable, "/root/dino_identity_finetune.py"],
+        cwd="/data", env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+        text=True, bufsize=1)
+    tail = []
+    for line in process.stdout:
+        print(line, end="", flush=True)
+        tail.append(line)
+        if len(tail) > 60:
+            tail.pop(0)
+    returncode = process.wait()
+
     elapsed = (time.time() - started) / 60
-    print(f"\n{loss}: exit={result.returncode} in {elapsed:.1f} min", flush=True)
+    print(f"\n{loss}: exit={returncode} in {elapsed:.1f} min", flush=True)
 
     # Commit even on failure -- the script checkpoints per stage, so a
     # partial run is resumable only if what it wrote actually persists.
     volume.commit()
-    if result.returncode != 0:
-        raise RuntimeError(f"dino_identity_finetune.py failed ({result.returncode})")
+    if returncode != 0:
+        print("\n" + "=" * 70)
+        print(f"LAST {len(tail)} LINES FROM dino_identity_finetune.py:")
+        print("=" * 70)
+        print("".join(tail))
+        raise RuntimeError(f"dino_identity_finetune.py failed ({returncode}) -- see tail above")
 
     out = Path(f"/data/apparel_dataset/finetuned_dinov3_identity_v1_{loss}")
     print(f"\nwrote: {sorted(p.name for p in out.iterdir()) if out.exists() else 'NOTHING'}")
