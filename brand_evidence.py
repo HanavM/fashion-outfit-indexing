@@ -70,9 +70,12 @@ from functools import lru_cache
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent
-METADATA_PATH = Path(
-    os.environ.get("APPAREL_METADATA", REPO_ROOT / "apparel_dataset" / "metadata.json")
-)
+# APPAREL_DATASET_ROOT is the same override hierarchical_retrieval_pipeline.py
+# uses, so a Modal/Colab run points both files at the same catalog without a
+# second environment variable to keep in sync. APPAREL_METADATA still wins if
+# set, for pointing the vocabulary at a catalog that isn't the active one.
+_DATASET_ROOT = Path(os.environ.get("APPAREL_DATASET_ROOT", REPO_ROOT / "apparel_dataset"))
+METADATA_PATH = Path(os.environ.get("APPAREL_METADATA", _DATASET_ROOT / "metadata.json"))
 
 # Image roots tried in order when resolving a metadata `images` entry. The
 # metadata stores paths like "shoe_dataset/nike/..." or

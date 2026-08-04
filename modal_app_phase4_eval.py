@@ -27,11 +27,20 @@ both silently deflate results rather than erroring:
   1. **It holds 6 brands** (adidas, gap, newbalance, nike, pacsun,
      skechers) against the catalog's current 12, with the matching old
      `metadata.json`.
-  2. **`finetuned_dinov3_identity_v1_supcon` is missing entirely.** The
-     pipeline's checkpoint auto-detection then falls back to frozen base
-     DINOv3 with a printed warning, so the identity-rerank stage -- the
-     stage that produces the headline R@1 -- is not the trained model.
-     (SigLIP2 v3 trained on Modal directly, so that one IS here.)
+  2. ~~`finetuned_dinov3_identity_v1_supcon` is missing entirely.~~
+     **Resolved.** As of 2026-08-04 `modal volume ls fashion-dataset
+     apparel_dataset` shows `finetuned_dinov3_identity_v1_supcon` present
+     (alongside the arcface checkpoint from that day's benchmark), so the
+     identity-rerank stage runs the real trained model, not frozen base
+     DINOv3. Verify with that same command before trusting a number --
+     the fallback is a printed warning, not an error.
+
+Note on (1): those six brands are exactly the 1,234-product catalog every
+Phase 4 row in docs/eval_log.md was measured on (adidas 90 + gap 296 +
+newbalance 173 + nike 319 + pacsun 176 + skechers 180 = 1,234). So the
+Volume being "stale" makes it MORE comparable to the existing baselines,
+not less -- a run here is directly against the 59.92% row, and it is the
+newer 12-brand local catalog that would not be.
 
 Neither is fixable from the dev machine: the local `apparel_dataset/` is
 itself only a partial copy (it has carhartt/champion/dickies/levis/
@@ -64,10 +73,23 @@ image = (
     .pip_install(
         "torch", "torchvision", "transformers", "pillow", "tqdm", "numpy",
         "accelerate", "safetensors", "sentencepiece",
+        # Spec 4.5 brand evidence (--brand-boost). Only imported when that
+        # flag is on, but the wheels have to be in the image either way.
+        "easyocr", "rapidfuzz",
+    )
+    # easyocr downloads its detector + recognizer (~100MB) on first use.
+    # Doing it at build time keeps it out of every container's cold start
+    # and off the critical path of a GPU-billed run.
+    .run_commands(
+        "python -c \"import easyocr; easyocr.Reader(['en'], gpu=False, verbose=False)\""
     )
     .add_local_file(
         str(Path(__file__).parent / "hierarchical_retrieval_pipeline.py"),
         "/root/hierarchical_retrieval_pipeline.py",
+    )
+    .add_local_file(
+        str(Path(__file__).parent / "brand_evidence.py"),
+        "/root/brand_evidence.py",
     )
     .add_local_file(
         str(Path(__file__).parent / "docs" / "hierarchy.json"),

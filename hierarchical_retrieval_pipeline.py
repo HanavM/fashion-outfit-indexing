@@ -242,6 +242,31 @@ SIGLIP_FUSION_WEIGHT = 0.2
 # destroy an already-good pooled ranking when used to reorder it.
 USE_PATCH_RERANK = False
 PATCH_RERANK_CANDIDATES = 10
+
+# Brand evidence (spec section 4.5's "Brand evidence" path, built
+# 2026-08-04 in brand_evidence.py -- OCR the query image, fuzzy-match the
+# text against the catalog's own brand vocabulary). Off by default.
+#
+# **This is a BOOST, never a filter, and that is deliberate.** A brand
+# filter is the same shape as the category gate, which has been measured
+# net-negative six independent times (docs/eval_log.md): excluding
+# candidates is unrecoverable, so a single wrong brand read costs a query
+# outright. A bonus added to same-brand candidates can only reorder --
+# every candidate the shortlist supplied is still reachable at some rank,
+# so the worst case is a ranking regression, the same failure shape as
+# score fusion rather than the gate's.
+#
+# The bonus is added to the DINOv3 cosine similarity, whose top-of-list
+# margins are small (AMBIGUITY_MARGIN is 0.03 for exactly that reason), so
+# the default weight is of that order: large enough to break near-ties in
+# favour of the OCR-confirmed brand, too small to overturn a confident
+# DINOv3 decision.
+USE_BRAND_BOOST = False
+BRAND_BOOST_WEIGHT = float(os.environ.get("BRAND_BOOST_WEIGHT", "0.03"))
+# Minimum brand_evidence score to act on at all. Anything below is treated
+# as no evidence. Set from the measured precision/recall curve in
+# docs/eval_log.md, not guessed.
+BRAND_EVIDENCE_MIN_SCORE = float(os.environ.get("BRAND_EVIDENCE_MIN_SCORE", "0.30"))
 # Bare category name, not a "a photo of a {category}" template -- matches
 # what finetune_siglip2_v3.py's build_training_labels actually trained the
 # text tower on for taxonomy nodes (raw strings like "sneaker", "hoodie"
@@ -436,6 +461,19 @@ def display_brand(brand):
         "pacsun": "PacSun", "skechers": "Skechers",
     }
     return known.get(brand.lower(), brand.title())
+
+
+def _brand_key(brand):
+    """Comparable form of a brand string.
+
+    CATALOG stores the display form ("New Balance", "PacSun") while
+    brand_evidence.py works in metadata.json's raw keys ("newbalance",
+    "pacsun"), so both sides get squashed to lowercase alphanumerics
+    before comparison. This is the same case/spacing mismatch that
+    silently produced zero products in unseen_product_enrollment_eval.py
+    (docs/eval_log.md, 2026-08-02) -- worth doing once, in one place.
+    """
+    return re.sub(r"[^a-z0-9]", "", (brand or "").lower())
 
 
 SKU_TEXT_PATTERN = re.compile(r"\bsku\b", re.IGNORECASE)
@@ -1303,6 +1341,10 @@ def open_set_threshold_table(correct_scores, open_set_scores):
 
 class HierarchicalRetriever:
     def __init__(self, open_set_holdout_fraction=OPEN_SET_HOLDOUT_FRACTION):
+        # Lazily constructed on first use so the OCR model is only paid for
+        # when --brand-boost is actually on.
+        self._brand_detector = None
+        self._brand_evidence_cache = {}
         self.siglip2_model, self.siglip2_processor, siglip2_checkpoint = load_siglip2()
         self.dino_backbone, self.dino_head, self.dino_use_projection, dino_checkpoint = load_dinov3()
         self.dino_processor = AutoImageProcessor.from_pretrained(DINOV3_MODEL_ID, token=os.environ.get("HF_TOKEN"))
@@ -1437,7 +1479,33 @@ class HierarchicalRetriever:
                 siglip_score_by_code[code] = identity_score
         return siglip_score_by_code
 
-    def rerank_by_identity(self, dino_image_embedding, siglip_score_by_code, final_top_k, use_score_fusion=USE_SCORE_FUSION):
+    def brand_evidence_for(self, image_path, min_score=BRAND_EVIDENCE_MIN_SCORE):
+        """OCR-derived brand for a query image, or None (spec 4.5).
+
+        Cached per path: an --evaluate sweep re-runs the same 1,190 query
+        images for every arm, and OCR is far more expensive per image than
+        the matmuls it feeds.
+        """
+        key = str(image_path)
+        if key not in self._brand_evidence_cache:
+            if self._brand_detector is None:
+                from brand_evidence import BrandDetector
+                self._brand_detector = BrandDetector()
+                print(f"Brand evidence: easyocr on {self._brand_detector.device}")
+            try:
+                evidence = self._brand_detector.detect(image_path)
+            except Exception as error:      # never let OCR break retrieval
+                print(f"Brand evidence: skipped {image_path} ({error})")
+                self._brand_evidence_cache[key] = None
+                return None
+            self._brand_evidence_cache[key] = (
+                _brand_key(evidence.brand) if evidence.brand and evidence.score >= min_score else None
+            )
+        return self._brand_evidence_cache[key]
+
+    def rerank_by_identity(self, dino_image_embedding, siglip_score_by_code, final_top_k,
+                           use_score_fusion=USE_SCORE_FUSION, evidence_brand=None,
+                           brand_boost_weight=BRAND_BOOST_WEIGHT):
         available = [code for code in siglip_score_by_code if code in self.gallery_index_by_code]
         if not available:
             return []
@@ -1459,9 +1527,24 @@ class HierarchicalRetriever:
                 return (values - values.mean()) / std if std > 1e-6 else torch.zeros_like(values)
 
             fused = DINO_FUSION_WEIGHT * z_normalize(dino_similarity) + SIGLIP_FUSION_WEIGHT * z_normalize(siglip_similarity)
-            order = torch.argsort(fused, descending=True)
+            ranking_score = fused
         else:
-            order = torch.argsort(dino_similarity, descending=True)
+            ranking_score = dino_similarity
+
+        # Brand evidence (spec 4.5): an ADDITIVE bonus on candidates whose
+        # catalog brand matches the brand OCR read off the query image.
+        # Additive-only by design -- see USE_BRAND_BOOST's comment. Nothing
+        # is removed from `available`, so a wrong brand read can at worst
+        # reorder, never make the true product unreachable the way the
+        # category gate does.
+        if evidence_brand and brand_boost_weight:
+            bonus = torch.tensor(
+                [brand_boost_weight if _brand_key(CATALOG[code]["brand"]) == evidence_brand else 0.0
+                 for code in available],
+                dtype=ranking_score.dtype, device=ranking_score.device)
+            ranking_score = ranking_score + bonus
+
+        order = torch.argsort(ranking_score, descending=True)
 
         # Pull the scores across ONCE. The old form indexed the similarity
         # tensor inside the comprehension -- `float(dino_similarity[i])`
@@ -1504,7 +1587,7 @@ class HierarchicalRetriever:
         rescored.sort(key=lambda entry: entry[2], reverse=True)
         return [(code, pooled_score) for code, pooled_score, _ in rescored] + rest
 
-    def retrieve(self, image_path, use_category_gate=False, hsc_threshold=HSC_THRESHOLD, top_identity_candidates=TOP_IDENTITY_CANDIDATES, final_top_k=FINAL_TOP_K, reject_threshold=REJECT_SIMILARITY_THRESHOLD, use_score_fusion=USE_SCORE_FUSION, use_patch_rerank=USE_PATCH_RERANK):
+    def retrieve(self, image_path, use_category_gate=False, hsc_threshold=HSC_THRESHOLD, top_identity_candidates=TOP_IDENTITY_CANDIDATES, final_top_k=FINAL_TOP_K, reject_threshold=REJECT_SIMILARITY_THRESHOLD, use_score_fusion=USE_SCORE_FUSION, use_patch_rerank=USE_PATCH_RERANK, use_brand_boost=USE_BRAND_BOOST, brand_boost_weight=BRAND_BOOST_WEIGHT):
         # Default flipped to off: the old flat (non-HSC) gate was confirmed
         # net-negative in two independent Phase 4 runs (docs/eval_log.md,
         # 2026-07-30) -- it excluded the true category ~30% of the time,
@@ -1528,7 +1611,11 @@ class HierarchicalRetriever:
         # patch_rerank needs candidates to re-sort AMONG, so truncating to
         # final_top_k before it runs would leave it nothing to work with.
         pooled_top_k = max(final_top_k, PATCH_RERANK_CANDIDATES) if use_patch_rerank else final_top_k
-        ranked = self.rerank_by_identity(dino_embedding, candidates, pooled_top_k, use_score_fusion=use_score_fusion)
+        evidence_brand = self.brand_evidence_for(image_path) if use_brand_boost else None
+        ranked = self.rerank_by_identity(dino_embedding, candidates, pooled_top_k,
+                                         use_score_fusion=use_score_fusion,
+                                         evidence_brand=evidence_brand,
+                                         brand_boost_weight=brand_boost_weight)
         if use_patch_rerank:
             ranked = self.patch_rerank(image, ranked)[:final_top_k]
 
@@ -1580,6 +1667,7 @@ class HierarchicalRetriever:
             "hsc_best_leaf": hsc_result["best_leaf"], "hsc_best_leaf_probability": hsc_result["best_leaf_probability"],
             "allowed_categories": sorted(hsc_result["allowed_categories"]),
             "num_identity_candidates": len(candidates), "results": results,
+            "brand_evidence": evidence_brand,
             "same_model_different_colorway_ambiguous": ambiguous,
             "rejected_open_set": rejected, "reject_threshold": reject_threshold,
         }
@@ -1624,13 +1712,20 @@ class HierarchicalRetriever:
         self._query_embedding_cache = (cache_key, all_siglip, all_dino)
         return all_siglip, all_dino
 
-    def evaluate(self, use_category_gate=True, hsc_threshold=HSC_THRESHOLD, top_identity_candidates=TOP_IDENTITY_CANDIDATES, use_score_fusion=USE_SCORE_FUSION, use_patch_rerank=USE_PATCH_RERANK):
+    def evaluate(self, use_category_gate=True, hsc_threshold=HSC_THRESHOLD, top_identity_candidates=TOP_IDENTITY_CANDIDATES, use_score_fusion=USE_SCORE_FUSION, use_patch_rerank=USE_PATCH_RERANK, use_brand_boost=USE_BRAND_BOOST, brand_boost_weight=BRAND_BOOST_WEIGHT):
         queries = [(code, path) for code, paths in self.test_image_by_product.items() for path in paths]
-        print(f"Evaluating {len(queries):,} held-out queries (category gate: {use_category_gate}, HSC threshold: {hsc_threshold}, score fusion: {use_score_fusion}, patch rerank: {use_patch_rerank})...")
+        print(f"Evaluating {len(queries):,} held-out queries (category gate: {use_category_gate}, HSC threshold: {hsc_threshold}, score fusion: {use_score_fusion}, patch rerank: {use_patch_rerank}, brand boost: {use_brand_boost})...")
 
         ranks = []
         gate_exclusions = 0
         identity_shortlist_misses = 0
+        # Brand evidence, measured in-run against ground truth rather than
+        # assumed from the standalone brand_evidence_eval.py numbers -- the
+        # query images here are the held-out view split, not that eval's
+        # sample, so the fire/correct rates have to be re-counted on the
+        # actual queries any reported R@1 delta is computed over.
+        brand_evidence_fired = 0
+        brand_evidence_correct = 0
         climb_level_counts = {"leaf": 0, "category": 0, "group": 0, "root": 0}
         # Top-1 DINOv3 score on every query where top-1 was actually
         # CORRECT -- used below to compute, for a range of candidate reject
@@ -1699,7 +1794,15 @@ class HierarchicalRetriever:
             if true_code not in candidates:
                 identity_shortlist_misses += 1
 
-            ranked = self.rerank_by_identity(dino_embedding, candidates, len(self.gallery_product_codes), use_score_fusion=use_score_fusion)
+            evidence_brand = self.brand_evidence_for(image_path) if use_brand_boost else None
+            if evidence_brand:
+                brand_evidence_fired += 1
+                if evidence_brand == _brand_key(CATALOG[true_code]["brand"]):
+                    brand_evidence_correct += 1
+            ranked = self.rerank_by_identity(dino_embedding, candidates, len(self.gallery_product_codes),
+                                             use_score_fusion=use_score_fusion,
+                                             evidence_brand=evidence_brand,
+                                             brand_boost_weight=brand_boost_weight)
             if use_patch_rerank:
                 # patch_rerank() only re-sorts its own top PATCH_RERANK_CANDIDATES
                 # window and leaves the rest of `ranked` untouched by design (see
@@ -1774,6 +1877,18 @@ class HierarchicalRetriever:
             "mean_rank": float(np.mean(ranks)),
             "reject_threshold_sweep": reject_threshold_sweep,
             "open_set": open_set_metrics,
+            "brand_evidence": {
+                "enabled": use_brand_boost,
+                "boost_weight": brand_boost_weight if use_brand_boost else None,
+                # Of all queries, how often OCR asserted any brand ...
+                "fire_rate": brand_evidence_fired / len(queries),
+                # ... and how often that assertion was the right brand.
+                # precision_when_fired is the number that decides whether
+                # this signal is safe to act on at all.
+                "correct_rate": brand_evidence_correct / len(queries),
+                "precision_when_fired": (brand_evidence_correct / brand_evidence_fired
+                                         if brand_evidence_fired else None),
+            } if use_brand_boost else None,
         }
         return metrics
 
@@ -1852,6 +1967,16 @@ def print_metrics(title, metrics):
     print(f"MRR:  {metrics['mrr'] * 100:.2f}%")
     print(f"Median rank: {metrics['median_rank']:.1f}")
     print(f"Mean rank: {metrics['mean_rank']:.2f}")
+    brand = metrics.get("brand_evidence")
+    if brand:
+        precision = brand["precision_when_fired"]
+        if precision is None:
+            print("Brand evidence (spec 4.5): never fired on any query")
+        else:
+            print(f"Brand evidence (spec 4.5, boost weight {brand['boost_weight']}): fired on "
+                  f"{brand['fire_rate']*100:.2f}% of queries, correct on "
+                  f"{brand['correct_rate']*100:.2f}% of all queries, "
+                  f"precision when fired {precision*100:.2f}%")
     if metrics["reject_threshold_sweep"]:
         print("Open-set reject-threshold sweep (false-reject rate against REAL correct top-1 answers only --")
         print("  not a true accept/reject rate, this eval set has no genuinely-unknown-product queries yet):")
@@ -1904,6 +2029,17 @@ if __name__ == "__main__":
                               "36.72%%->47.65%% jump, docs/eval_log.md 2026-07-31) -- sweeping past 25 (e.g. 35/50/75/100) "
                               "is the top-priority untested experiment per docs/roadmap.md's 2026-08-02 analysis. "
                               "Exposed as a flag so this can be swept without editing the module constant each time.")
+    parser.add_argument("--brand-boost", action="store_true",
+                         help="Spec 4.5 brand evidence: OCR the query image (brand_evidence.py), fuzzy-match "
+                              "the text against the catalog's brand vocabulary, and ADD --brand-boost-weight to "
+                              "the rerank score of every candidate with that brand. A boost, never a filter -- "
+                              "nothing is excluded, so a wrong brand read can only reorder, unlike the category "
+                              "gate (net-negative six times, docs/eval_log.md). Off by default; see the measured "
+                              "precision/recall and no-text rate before enabling.")
+    parser.add_argument("--brand-boost-weight", type=float, default=BRAND_BOOST_WEIGHT,
+                         help=f"Size of that bonus on the DINOv3 cosine scale (default {BRAND_BOOST_WEIGHT}). "
+                              f"AMBIGUITY_MARGIN is {AMBIGUITY_MARGIN}, so this order of magnitude breaks "
+                              "near-ties without overturning a confident DINOv3 decision.")
     parser.add_argument("--open-set-holdout-fraction", type=float, default=OPEN_SET_HOLDOUT_FRACTION,
                          help="Fraction of catalog IDENTITIES (0-1) to remove from the gallery entirely, turning all "
                               "their images into off-catalog queries with no correct answer -- spec section 8.1's "
@@ -1917,14 +2053,14 @@ if __name__ == "__main__":
     retriever = HierarchicalRetriever(open_set_holdout_fraction=args.open_set_holdout_fraction)
 
     if args.image:
-        result = retriever.retrieve(args.image, use_category_gate=args.category_gate, hsc_threshold=args.hsc_threshold, final_top_k=args.top_k, reject_threshold=args.reject_threshold, use_score_fusion=args.score_fusion, use_patch_rerank=args.patch_rerank, top_identity_candidates=args.top_identity_candidates)
+        result = retriever.retrieve(args.image, use_category_gate=args.category_gate, hsc_threshold=args.hsc_threshold, final_top_k=args.top_k, reject_threshold=args.reject_threshold, use_score_fusion=args.score_fusion, use_patch_rerank=args.patch_rerank, top_identity_candidates=args.top_identity_candidates, use_brand_boost=args.brand_boost, brand_boost_weight=args.brand_boost_weight)
         print_result(args.image, result)
 
     if args.evaluate:
-        gated_metrics = retriever.evaluate(use_category_gate=True, hsc_threshold=args.hsc_threshold, use_score_fusion=args.score_fusion, use_patch_rerank=args.patch_rerank, top_identity_candidates=args.top_identity_candidates)
+        gated_metrics = retriever.evaluate(use_category_gate=True, hsc_threshold=args.hsc_threshold, use_score_fusion=args.score_fusion, use_patch_rerank=args.patch_rerank, top_identity_candidates=args.top_identity_candidates, use_brand_boost=args.brand_boost, brand_boost_weight=args.brand_boost_weight)
         print_metrics("End-to-end held-out eval -- WITH HSC-based category gate", gated_metrics)
 
-        ungated_metrics = retriever.evaluate(use_category_gate=False, hsc_threshold=args.hsc_threshold, use_score_fusion=args.score_fusion, use_patch_rerank=args.patch_rerank, top_identity_candidates=args.top_identity_candidates)
+        ungated_metrics = retriever.evaluate(use_category_gate=False, hsc_threshold=args.hsc_threshold, use_score_fusion=args.score_fusion, use_patch_rerank=args.patch_rerank, top_identity_candidates=args.top_identity_candidates, use_brand_boost=args.brand_boost, brand_boost_weight=args.brand_boost_weight)
         print_metrics("End-to-end held-out eval -- WITHOUT category gate (fallback comparison)", ungated_metrics)
 
         with (INDEX_DIR / "pipeline_eval_metrics.json").open("w", encoding="utf-8") as f:
