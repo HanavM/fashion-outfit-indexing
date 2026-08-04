@@ -280,7 +280,16 @@ TEST_IMAGES_PER_PRODUCT = 1
 # product that gains views gets re-embedded. That is why this is NOT in
 # the index fingerprint's `core`: it does not change what an embedding
 # means, only which images back it.
-GALLERY_IMAGES_PER_PRODUCT = int(os.environ.get("GALLERY_IMAGES_PER_PRODUCT", "2"))
+# RESOLVED 2026-08-04 -- default raised 2 -> 6 on measured results.
+# Ungated R@1 at K=150: cap 2 = 53.95%, 4 = 58.32%, 6 = 59.50%, all = 59.92%.
+# Shortlist miss was IDENTICAL (1.18%) at every setting, which proves the
+# gain is entirely rerank quality: this is a DINOv3-side change and cannot
+# touch SigLIP2's shortlist. Conditional R@1 went 54.6% -> 60.6%, moving
+# the exact metric that stayed flat through the whole K sweep.
+# 6 captures 93% of the available gain; "all" adds 0.42pt for a fuller
+# re-encode. The concern that detail crops and flat lays would blur the
+# prototype did not materialize at any setting.
+GALLERY_IMAGES_PER_PRODUCT = int(os.environ.get("GALLERY_IMAGES_PER_PRODUCT", "6"))
 SPLIT_SEED = 42  # matches dino_identity_finetune.py's split exactly, so eval here is apples-to-apples
 
 DEVICE = "cuda" if torch.cuda.is_available() else ("mps" if torch.backends.mps.is_available() else "cpu")
