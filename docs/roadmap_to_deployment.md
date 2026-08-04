@@ -64,6 +64,30 @@ GPU already live there.
 
 Success: `curl` an image, get JSON in under ~2s warm.
 
+**Status: built and deployed, 2026-08-04** — `modal_app_serve.py`, at
+`https://hanavm--fashion-serve-fashionservice-api.modal.run`. Measured
+against a real catalog image (Nike AF1 `IR0273-100`, returned at rank 1,
+DINOv3 score 0.979): **cold 16.8s** wall (13.1s of that is the container's
+model+index load), **warm ~1.5s** wall / ~0.9–1.2s server-side, `/health`
+~0.4s. Under the 2s target, but not by much — the budget is spent almost
+entirely in the two encoder forwards, so anything Phase 7 adds in front of
+this (screenshot segmentation) comes out of ~0.5s of headroom.
+
+Caveats this does NOT resolve:
+- It ships the real pipeline file via `add_local_file`, deliberately, so
+  it cannot drift the way `hierarchical_retrieval_pipeline_modal_body.py`
+  did. Keep it that way.
+- `rejected_open_set` is surfaced but the threshold is still uncalibrated
+  (`reject_threshold_calibrated: false`), so the default response never
+  rejects. Running `--evaluate --open-set-holdout-fraction 0.1` is what
+  turns that field from plumbing into a real behaviour, and Phase 9's
+  "degrade gracefully" item depends on it.
+- The smoke test's query image was in the gallery, so rank-1 there
+  confirms the code path, not accuracy. The accuracy number is still
+  eval_log.md's 59.92% R@1.
+- Volume is still the 6-brand / 1,234-product catalog (1,077 products
+  reach the gallery), i.e. the Phase 9 catalog-size reset is untouched.
+
 ## Phase 7 — Siri / iOS client
 
 1. **Shortcut**: accept a screenshot or shared image + a spoken phrase,
