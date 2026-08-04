@@ -82,44 +82,73 @@ def scored(products, high):
 
 
 def identify_payload(top_k):
+    """Field names follow modal_app_serve.py (`rejected_open_set`,
+    `reject_threshold_calibrated`), not the shorthand in the contract
+    table -- the client must handle the names the real server actually
+    emits. `--scenario alias` sends the shorthand instead, to prove the
+    client's tolerance is real rather than asserted."""
     if SCENARIO == "empty":
         return {"spoken": "I couldn't find anything like that.",
-                "confidence": 0.0, "rejected": True, "results": []}
+                "confidence": None, "rejected_open_set": True,
+                "reject_threshold": 0.35, "reject_threshold_calibrated": False,
+                "results": []}
     if SCENARIO == "rejected":
         results = scored(PRODUCTS[:top_k], high=False)
         return {"spoken": "That looks like " + results[0]["name"] + ".",  # deliberately
                 # over-confident: the client must ignore this and hedge,
-                # because `rejected` is the authoritative field.
-                "confidence": 0.19, "rejected": True,
-                "reject_threshold": 0.35, "results": results}
+                # because the rejection flag is authoritative.
+                "confidence": 0.19, "rejected_open_set": True,
+                "reject_threshold": 0.35, "reject_threshold_calibrated": False,
+                "results": results}
     if SCENARIO == "low":
         results = scored(PRODUCTS[:top_k], high=False)
         return {"spoken": "That looks like " + results[0]["name"] + ".",
-                "confidence": 0.22, "rejected": False, "results": results}
+                "confidence": 0.22, "rejected_open_set": False,
+                "reject_threshold": 0.35, "reject_threshold_calibrated": False,
+                "results": results}
     if SCENARIO == "no-flag":
         results = scored(PRODUCTS[:top_k], high=True)
         return {"spoken": "That looks like " + results[0]["name"] + ".",
                 "confidence": 0.78, "results": results}
     results = scored(PRODUCTS[:top_k], high=True)
     top = results[0]
-    return {"spoken": f"That looks like a {top['brand']} {top['name']}.",
-            "confidence": 0.78, "rejected": False,
-            "reject_threshold": 0.35, "results": results,
-            "detection": {"garment_found": True, "category": "outerwear/jacket",
-                          "bbox": [120, 80, 640, 900], "detector": "stub"}}
+    payload = {"spoken": f"That looks like a {top['brand']} {top['name']}.",
+               "confidence": 0.78,
+               "reject_threshold": 0.35, "reject_threshold_calibrated": False,
+               "results": results,
+               "detection": {"garment_found": True, "category": "outerwear/jacket",
+                             "bbox": [120, 80, 640, 900], "detector": "stub"}}
+    if SCENARIO == "alias":
+        payload["rejected"] = False              # the contract's shorthand
+    else:
+        payload["rejected_open_set"] = False     # what the server really sends
+    return payload
 
 
 def compose_payload(text, top_k):
-    payload = identify_payload(top_k)
-    results = payload.pop("results", [])
-    primary = results[0] if results else None
+    """Mirrors modal_app_serve.py's actual /compose shape, which is NOT a
+    flattened version of /identify: the whole identity block (results,
+    confidence, rejection) is nested under `primary`, and the top level
+    carries only the companions. A client that reads rejection at the top
+    level of this response finds nothing and hedges forever -- which is
+    precisely the bug this scenario exists to catch."""
+    block = identify_payload(top_k)
+    spoken = block.pop("spoken", None)
+    results = block.get("results", [])
     companions = results[1:top_k]
-    payload["primary"] = primary
-    payload["companions"] = companions
-    payload["query_text"] = text
-    if primary and companions and not payload.get("rejected"):
-        payload["spoken"] = (f"That looks like a {primary['brand']} {primary['name']}. "
+    payload = {
+        "primary": block,
+        "companions": companions,
+        "parsed_text_query": {"raw": text, "category": None, "attributes": []},
+        "note": ("primary and companions are TWO INDEPENDENT SEARCHES. Nothing here "
+                 "shows these items were ever worn together in a real photo -- that "
+                 "needs the outfit co-occurrence index (roadmap Phase 8)."),
+    }
+    if results and companions and not block.get("rejected_open_set"):
+        payload["spoken"] = (f"That looks like a {results[0]['brand']} {results[0]['name']}. "
                              f"With {text.strip()}, try the {companions[0]['name']}.")
+    elif spoken:
+        payload["spoken"] = spoken
     return payload
 
 
@@ -202,7 +231,7 @@ def main():
     parser.add_argument("--port", type=int, default=8000)
     parser.add_argument("--token", default=TOKEN)
     parser.add_argument("--scenario", default="ok",
-                        choices=["ok", "rejected", "low", "empty", "no-flag", "error", "slow"])
+                        choices=["ok", "alias", "rejected", "low", "empty", "no-flag", "error", "slow"])
     parser.add_argument("--slow-seconds", type=float, default=SLOW_SECONDS)
     parser.add_argument("--seed", type=int, default=0)
     args = parser.parse_args()

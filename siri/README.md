@@ -53,13 +53,15 @@ Authorization: Bearer <token>
 {
   "spoken": "That looks like a Dickies 874 work pant.",
   "confidence": 0.78,
-  "rejected": false,
+  "rejected_open_set": false,
   "reject_threshold": 0.35,
+  "reject_threshold_calibrated": false,
   "results": [
-    {"product_code": "874BK", "brand": "dickies", "name": "Original 874 Work Pant",
-     "score": 0.81, "product_url": "https://...", "image_path": "..."}
+    {"rank": 1, "product_code": "874BK", "brand": "Dickies",
+     "name": "Original 874 Work Pant", "category": "...", "score": 0.81}
   ],
-  "detection": {"garment_found": true, "category": "bottoms/pants", "bbox": [x1,y1,x2,y2]}
+  "predicted_category": {"node": "...", "confidence": 0.63},
+  "latency_ms": 812.4
 }
 ```
 
@@ -71,22 +73,41 @@ Authorization: Bearer <token>
 ```json
 {
   "spoken": "That looks like a Dickies 874 work pant. With cargo pants, try the Eagle Bend Cargo.",
-  "confidence": 0.78,
-  "rejected": false,
-  "primary": { ...one product... },
-  "companions": [ ...products... ]
+  "primary":    { ...the ENTIRE /identify block: results, confidence, rejected_open_set... },
+  "companions": [ ...products from the text search... ],
+  "parsed_text_query": {"category": "cargo pants", "attributes": []},
+  "note": "primary and companions are TWO INDEPENDENT SEARCHES ..."
 }
 ```
 
+> **`/compose` is not a flattened `/identify`.** The identity block —
+> `results`, `confidence`, `rejected_open_set` — is nested one level down
+> under `primary`, and the top level carries no rejection field at all. A
+> client that reads rejection at the top level of a `/compose` response
+> finds nothing, treats it as unsafe, and hedges on *every* composed
+> query. `siri_client.py` resolves the block first
+> (`identity_block()`); `stub_server.py --scenario ok --text …` exists to
+> keep that regression caught.
+
 ### Fields that carry the honesty, not just the answer
 
-* **`rejected`** — the open-set rejection that already exists inside
-  `hierarchical_retrieval_pipeline.py` as `rejected_open_set`. It must
+* **`rejected_open_set`** — the open-set rejection that already exists
+  inside `hierarchical_retrieval_pipeline.py` under the same name. It must
   survive the trip to the API edge (roadmap Phase 6.4). `siri_client.py`
-  accepts either name, and treats the field being **absent** as unsafe —
-  a missing rejection signal is not evidence of a match.
-* **`confidence`** — the client hedges below `--min-confidence` (0.35 by
-  default) regardless of what `spoken` says.
+  accepts `rejected` as an alias, and treats the field being **absent** as
+  unsafe — a missing rejection signal is not evidence of a match.
+* **`reject_threshold_calibrated`** — the server says, correctly, that
+  this is `false`: the threshold has never been checked against a measured
+  false-accept rate, and upstream `REJECT_SIMILARITY_THRESHOLD` is `None`
+  by default, which makes `rejected_open_set` *always* false. The client
+  does **not** turn that into a permanent hedge (that would make the
+  feature useless) — it prints, on every confident answer, that the
+  rejection is uncalibrated and the confidence gate is the only guard.
+  Calibrating it is real outstanding work, not a formality.
+* **`confidence`** — the top DINOv3 identity score. The client hedges
+  below `--min-confidence` (0.35 by default) regardless of what `spoken`
+  says. **That default is a guess, not a calibrated threshold**; the same
+  measurement that calibrates `reject_threshold` should set it.
 * **`spoken`** — one sentence for TTS, separate from the visual list. It
   is used **verbatim only when the answer is neither rejected nor
   low-confidence.** Otherwise the client writes its own hedge and throws
@@ -212,9 +233,10 @@ real model. No retrieval-quality claim is made or implied by any of it.
 
 | scenario | spoken | exit |
 |---|---|---|
-| healthy, confident | server's `spoken`, verbatim | 0 |
-| `/compose` | primary + companion sentence | 0 |
-| `rejected: true` (server still sent a confident sentence) | client's hedge; server's sentence discarded | 2 |
+| healthy, confident | server's `spoken`, verbatim, plus an "open-set rejection is UNCALIBRATED" line on stderr | 0 |
+| `/compose` (identity block nested under `primary`) | primary + companion sentence, and the server's "two independent searches" note printed | 0 |
+| `rejected` alias instead of `rejected_open_set` | identical behaviour | 0 |
+| `rejected_open_set: true` (server still sent a confident sentence) | client's hedge; server's sentence discarded | 2 |
 | `confidence 0.22` | "I'm not sure. It might be … but the match is weak." | 2 |
 | empty results | "I'm not sure — I couldn't match that to anything in the catalog." | 2 |
 | `rejected` field missing entirely | "I'm not sure — the service didn't tell me whether that was a real match." | 2 |

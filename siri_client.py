@@ -239,13 +239,40 @@ def first_present(payload, *names, default=None):
     return default
 
 
+def identity_block(payload):
+    """The part of the response that describes WHAT THE IMAGE IS, with its
+    own results/confidence/rejection.
+
+    /identify returns that block at the top level. /compose nests it under
+    `primary` and puts the text-search companions beside it, so the
+    rejection flag and the confidence live one level down -- and a client
+    that only looked at the top level of a /compose response would find no
+    rejection field at all and hedge on every single composed query.
+    Finding it is the difference between a usable feature and a permanent
+    'I'm not sure'."""
+    if isinstance(payload.get("results"), list):
+        return payload
+    nested = first_present(payload, "primary", "primary_item")
+    if isinstance(nested, dict) and isinstance(nested.get("results"), list):
+        return nested
+    if isinstance(nested, dict):
+        return nested  # server sent a bare product as `primary`
+    return payload
+
+
 def extract_results(payload):
-    """The ranked list, whichever of the contract's shapes came back.
-    /identify returns a flat list; /compose returns primary + companions."""
-    primary = first_present(payload, "primary", "primary_item")
-    companions = first_present(payload, "companions", "second_item_matches", default=[])
-    flat = first_present(payload, "results", "matches", "products", default=[])
-    return primary, list(companions or []), list(flat or [])
+    """(primary_product, companions, flat_results) -- normalised across
+    both endpoint shapes so the printing code doesn't branch."""
+    block = identity_block(payload)
+    flat = first_present(block, "results", "matches", "products", default=[]) or []
+    companions = first_present(payload, "companions", "second_item_matches", default=[]) or []
+    if block is payload:
+        primary = None
+    else:
+        # /compose: the primary item is the top hit of the nested block,
+        # or the nested dict itself if the server sent a bare product.
+        primary = flat[0] if flat else (block if "product_code" in block else None)
+    return primary, list(companions), list(flat)
 
 
 def describe_product(product):
@@ -272,14 +299,35 @@ def is_rejected(payload):
     the open-set rejection already exists in the pipeline
     (`rejected_open_set`) and must not be silently dropped at the API edge
     (roadmap Phase 6.4). If it's missing, something dropped it."""
-    value = first_present(payload, "rejected", "rejected_open_set")
+    block = identity_block(payload)
+    value = first_present(block, "rejected", "rejected_open_set")
     if value is None:
         return None
     return bool(value)
 
 
+def rejection_is_trustworthy(payload):
+    """False when the server itself says its rejection is uncalibrated
+    (`reject_threshold_calibrated: false`, or no threshold set at all --
+    the pipeline's REJECT_SIMILARITY_THRESHOLD is None by default, which
+    makes `rejected_open_set` always false and therefore meaningless).
+
+    This does NOT force a hedge -- doing that would make every answer
+    "I'm not sure" and the feature pointless. It means the confidence gate
+    below is the ONLY thing standing between the user and a confident
+    wrong answer, and the reason line says so out loud so nobody reads a
+    `rejected: false` as "the system checked"."""
+    block = identity_block(payload)
+    if block.get("reject_threshold_calibrated") is False:
+        return False
+    if "reject_threshold" in block and block.get("reject_threshold") is None:
+        return False
+    return True
+
+
 def confidence_of(payload):
-    value = first_present(payload, "confidence", "hsc_confidence", "score")
+    block = identity_block(payload)
+    value = first_present(block, "confidence", "hsc_confidence", "score")
     return float(value) if isinstance(value, (int, float)) else None
 
 
@@ -319,16 +367,19 @@ def decide_spoken(payload, min_confidence, segmentation_note=None):
                 f"but the match is weak.", False,
                 f"confidence {confidence:.3f} < {min_confidence:.2f}")
 
+    caveat = "" if rejection_is_trustworthy(payload) else \
+        " (server says its open-set rejection is UNCALIBRATED -- the confidence gate is the only guard)"
+
     server_line = payload.get("spoken")
     if isinstance(server_line, str) and server_line.strip():
-        return (server_line.strip(), True, "server spoken line")
+        return (server_line.strip(), True, f"server spoken line, confidence {confidence:.3f}{caveat}")
 
     # Server met the bar but sent no spoken line -- build one rather than
     # going silent, since the Shortcut has nothing else to say.
     line = f"That looks like {product_phrase(top)}."
     if companions:
         line += f" It goes with {product_phrase(companions[0])}."
-    return (line, True, "locally composed (server sent no spoken line)")
+    return (line, True, f"locally composed (server sent no spoken line){caveat}")
 
 
 def product_phrase(product):
@@ -433,15 +484,27 @@ def run(args):
 
     primary, companions, flat = extract_results(response)
     if primary:
+        # /compose: primary is flat[0], so the rest of the identity block
+        # is "other things the image might be", not a second result list.
         print(f"\nprimary: {describe_product(primary)}")
+        for rank, item in enumerate(flat[1:], start=2):
+            print(f"  or #{rank}: {describe_product(item)}")
+    elif flat:
+        print("\nresults:")
+        for rank, item in enumerate(flat, start=1):
+            print(f"  {rank}. {describe_product(item)}")
     if companions:
         print("\ncompanions:")
         for rank, item in enumerate(companions, start=1):
             print(f"  {rank}. {describe_product(item)}")
-    if flat:
-        print("\nresults:")
-        for rank, item in enumerate(flat, start=1):
-            print(f"  {rank}. {describe_product(item)}")
+
+    # The server attaches its own standing caveats (e.g. /compose's "these
+    # are two independent searches, nothing shows these were worn together
+    # -- that needs Phase 8"). Print them: a caveat the API bothered to
+    # send and the client swallows is a caveat that doesn't exist.
+    note = response.get("note")
+    if note:
+        print(f"\nnote: {note}")
 
     return EXIT_OK if confident else EXIT_UNSURE
 
