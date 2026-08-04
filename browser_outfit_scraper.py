@@ -110,8 +110,16 @@ UPGRADE_LADDERS = {
 # Provenance rule 3 in SCRAPING_PROCESS.md requires an author on every
 # record so a takedown can be traced without re-scraping; sites that put the
 # handle in the permalink give it away for free.
+# The second path segment is the item id, but it is only digits on
+# `/coordinate/` posts -- `/videos/<base62 id>` uses the same
+# `/<handle>/<kind>/<id>` shape with a non-numeric id, and requiring `\d+`
+# silently dropped the author on every one of those. Match any second
+# segment instead, and exclude the site's own non-user top-level sections
+# so e.g. `/men-coordinate/` is never mistaken for a handle.
 AUTHOR_PATTERNS = {
-    "wear.jp": re.compile(r"wear\.jp/([^/]+)/\d+"),
+    "wear.jp": re.compile(
+        r"wear\.jp/(?!(?:men|women)?-?coordinate/|search/|brand/|topics/)"
+        r"([^/?#]+)/[^/?#]+"),
 }
 
 

@@ -127,6 +127,85 @@ Validated end to end: 12 records from one page, all images 1000×1334,
 author populated. `wear_targets.txt` holds 60 grid pages (~7k items) for
 when the machine is free.
 
+## Revision — 2026-08-04: both browser sources ran, and a scroll bug capped
+## every browser scrape that came before them
+
+The Pinterest session exists now (a human logged in), so both browser
+targets were finally run at scale. What that exposed first was a bug, not
+a source problem.
+
+### `harvest_page` was stopping after three screens, on every site, always
+
+The scroll loop compared `len(found)` before and after `page.mouse.wheel()`
+— but nothing between those two statements can change the count, since the
+next harvest happens at the top of the following iteration. `stale` was
+therefore incremented unconditionally, and **every page ever scraped by
+this tool stopped after exactly `SCROLL_PATIENCE` = 3 scrolls**, no matter
+how much content remained.
+
+It hid well. Pages still returned images, just a small fraction of them,
+and the run printed a plausible "page exhausted or filters too tight" note
+on the way out — which reads like a source limit, not a bug. The pre-fix
+20-query Pinterest run averaged 30–70 candidate images per search and
+looked, from the log alone, like Pinterest simply not having more.
+
+Measured on one Pinterest search page (`q=vintage outfit style`):
+
+| scroll policy | images harvested | wall time |
+|---|---:|---:|
+| 12000px step, buggy staleness (as shipped) | 65 | 4s |
+| 2000px step, buggy staleness | 180 | 13s |
+| 2000px step, staleness fixed | **409** | 30s |
+
+Two separate causes, both fixed: the staleness comparison now spans
+consecutive harvests, and `SCROLL_STEP` dropped from 12000px to 2000px
+because virtualized masonry grids only mount rows near the viewport — a
+13-viewport leap harvests nothing from the region it jumped over.
+
+### wear.jp at scale confirms the earlier read
+
+Its coordinate grids are fixed 120-item pages rather than infinite feeds,
+so the harvest hits its target on the first screen and the scroll bug
+never mattered there. Steady ~35–45 new items/minute, one image each, and
+`author` populated on every record from the `/<handle>/<id>/` permalink.
+It remains the better target on terms: robots-clean, run with
+`--respect-robots`, and the only source here that yields provenance-
+complete records for free.
+
+### Pinterest's remaining gap: no author
+
+Pin permalinks are `/pin/<id>` with no handle, so every Pinterest record
+carries `author: ""`. Provenance rule 3 says to store the author "where the
+source exposes it," and the URL does not — but a takedown would need the
+pinner, so this is a real gap, not a satisfied requirement. Fixing it means
+harvesting the pinner from the DOM alongside the image, which the current
+`HARVEST_JS` (url/alt/anchor only) does not do.
+
+### What the two runs actually collected
+
+Both sources were run one browser at a time, each capped by wall clock
+rather than by exhausting its target list, so both remain resumable —
+`existing_ids` skips what is already stored, so re-running the same target
+file simply continues.
+
+| source | records | images | author | state |
+|---|---:|---:|---|---|
+| reddit (prior) | 4,151 | 7,166 | 100% | — |
+| wear | 1,367 | 1,367 | 100% | ~11 of 60 grid pages consumed |
+| pinterest | 1,342 | 1,438 | 0% | all 20 queries, twice (pre/post fix) |
+| **total** | **6,860** | **9,971** | | |
+
+Up from 4,193 records / 7,208 images. wear.jp is one image per item by
+construction; Pinterest averages ~1.07 because most pins are a single
+photo and `MAX_IMAGES_PER_ITEM` rarely binds.
+
+### Operating discipline held
+
+One browser at a time, never two, with `uptime` checked throughout. The
+1-minute load average stayed between 1.3 and 2.9 across ~90 minutes of
+scraping — nowhere near the 68 that two concurrent browsers produced, and
+well under the stop-and-wait threshold of 12.
+
 ## Pinterest — assessed, and why it doesn't work as a scrape target
 
 The intuition behind picking Pinterest is correct and worth stating
