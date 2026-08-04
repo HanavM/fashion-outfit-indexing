@@ -25,6 +25,10 @@ negatives_dataset/*/
 negatives_dataset/.scraper.pid
 outfit_dataset/.metadata.lock
 outfit_dataset/metadata.json.tmp
+# merge_outfit_detections.py writes a timestamped backup before each merge.
+# Git already holds the previous revision, so these are local belt-and-braces
+# copies only and must not be committed.
+outfit_dataset/metadata.backup-*.json
 logs/
 checkpoints/
 Self-Correction-Human-Parsing/
