@@ -88,12 +88,24 @@ if os.environ.get("HF_TOKEN"):
 # Configuration
 # ============================================================
 
-DATASET_ROOT = Path("/content/drive/MyDrive/apparel_dataset")
+# APPAREL_DATASET_ROOT override matches hierarchical_retrieval_pipeline.py's,
+# so this script can run anywhere the dataset lives (Modal Volume at
+# /data/apparel_dataset, a local copy, or the Colab Drive default) without
+# a forked Modal-specific copy of the file. Maintaining such a copy is what
+# left hierarchical_retrieval_pipeline_modal_body.py 800 lines behind the
+# real pipeline while still exiting 0.
+DATASET_ROOT = Path(os.environ.get("APPAREL_DATASET_ROOT", "/content/drive/MyDrive/apparel_dataset"))
 METADATA_PATH = DATASET_ROOT / "metadata.json"
 
 MODEL_ID = "facebook/dinov3-vitb16-pretrain-lvd1689m"
 
-LOSS_TYPE = "supcon"          # "supcon" (default) or "arcface" -- see module docstring point 4
+# Env-overridable so the supcon-vs-arcface benchmark the module docstring
+# calls for can be launched without editing the file (and so a Modal run
+# can select it per-invocation). Still defaults to supcon, so nothing
+# about an existing run changes.
+LOSS_TYPE = os.environ.get("LOSS_TYPE", "supcon")  # "supcon" or "arcface" -- see docstring point 4
+if LOSS_TYPE not in {"supcon", "arcface"}:
+    raise SystemExit(f"LOSS_TYPE must be 'supcon' or 'arcface', got {LOSS_TYPE!r}")
 SUPCON_TEMPERATURE = 0.07
 ARCFACE_MARGIN = 0.30
 ARCFACE_SCALE = 30.0
