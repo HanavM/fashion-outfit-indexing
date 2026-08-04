@@ -161,12 +161,119 @@ def box_iou(box_a, box_b):
     return inter / float(area_a + area_b - inter)
 
 
-def detect_outfit_items(image_path, mask_generator, processor, clip_model, device):
+# Prompts for locating the photographic SUBJECT inside a screenshot, used
+# only by --subject-crop. Kept separate from CANDIDATE_LABELS: this stage
+# is deliberately looking for the whole person, which the garment stage
+# spends its effort excluding.
+SUBJECT_LABELS = [
+    "a photo of a person wearing clothes",
+    "a full body photo of a person",
+    "a fashion model posing",
+]
+SUBJECT_DISTRACTOR_LABELS = [
+    "a screenshot of a website",
+    "a block of text",
+    "a user interface with buttons",
+    "a plain background",
+    "a logo",
+    "a price tag",
+]
+# Padding around the subject bbox before re-detecting, as a fraction of the
+# bbox. A tight crop can clip shoes or a hat at the boundary.
+SUBJECT_CROP_PAD = 0.05
+# A subject must be at least this fraction of the canvas to be believed --
+# below it, we are probably locking onto a thumbnail or an icon.
+MIN_SUBJECT_AREA_FRACTION = 0.03
+
+
+def find_subject_bbox(image, mask_generator, processor, clip_model, device):
+    """Locate the photographic subject in a screenshot. -> bbox or None.
+
+    Why this exists: `area_fraction` is computed against the WHOLE canvas,
+    and MAX_AREA_FRACTION=0.55 was calibrated on catalog photos where the
+    garment fills the frame -- there, a "whole person" mask lands above
+    0.55 and is correctly rejected. In a phone screenshot the person
+    occupies maybe 25-30% of the canvas (the rest is nav bars, price text,
+    other products), so the whole-person mask sails through the very
+    filter meant to exclude it, and FashionCLIP happily scores it for a
+    generic garment label. Measured symptom: a real product-page
+    screenshot returned exactly 1 item, the whole person, wrong garment.
+
+    Cropping to the subject first re-normalizes every area fraction to the
+    thing that actually matters, and incidentally recovers resolution --
+    thumbnail() caps the LONG edge, so a 1170x2532 screenshot shrinks to
+    473x1024 and its hero image to roughly 473x358 before SAM2 ever sees
+    it.
+    """
+    image_np = np.array(image)
+    full_area = image_np.shape[0] * image_np.shape[1]
+    masks = mask_generator.generate(image_np)
+
+    crops, boxes, areas = [], [], []
+    for mask_data in masks:
+        if mask_data["area"] < MIN_MASK_AREA:
+            continue
+        crop, box = crop_masked_region(image, mask_data["segmentation"])
+        if crop is None:
+            continue
+        if mask_data["area"] / full_area < MIN_SUBJECT_AREA_FRACTION:
+            continue
+        crops.append(crop)
+        boxes.append(box)
+        areas.append(mask_data["area"])
+
+    if not crops:
+        return None
+
+    labels = SUBJECT_LABELS + SUBJECT_DISTRACTOR_LABELS
+    inputs = processor(images=crops, text=labels, return_tensors="pt", padding=True).to(device)
+    with torch.no_grad():
+        probs = clip_model(**inputs).logits_per_image.softmax(dim=-1)
+
+    best_box, best_score = None, 0.0
+    for idx, box in enumerate(boxes):
+        subject_score = probs[idx, :len(SUBJECT_LABELS)].max().item()
+        distractor_score = probs[idx, len(SUBJECT_LABELS):].max().item()
+        # Must beat every distractor, not merely clear a threshold -- page
+        # chrome is abundant and some of it scores respectably on "person".
+        if subject_score > distractor_score and subject_score > best_score:
+            best_box, best_score = box, subject_score
+
+    if best_box is None:
+        return None
+
+    x1, y1, x2, y2 = best_box
+    pad_x = int((x2 - x1) * SUBJECT_CROP_PAD)
+    pad_y = int((y2 - y1) * SUBJECT_CROP_PAD)
+    return (max(0, x1 - pad_x), max(0, y1 - pad_y),
+            min(image.width, x2 + pad_x), min(image.height, y2 + pad_y))
+
+
+def detect_outfit_items(image_path, mask_generator, processor, clip_model, device,
+                        subject_crop=False):
     """Returns a list of detected items, most-confident first, each:
     {"category_group": ..., "category": ..., "label": ..., "confidence": ...,
-     "bbox": (x1,y1,x2,y2), "area_fraction": ..., "crop": PIL.Image}."""
+     "bbox": (x1,y1,x2,y2), "area_fraction": ..., "crop": PIL.Image}.
+
+    `subject_crop` is OFF by default on purpose. It changes what this
+    function detects, and index_outfits.py is mid-corpus-run over
+    outfit_dataset/ -- flipping the default underneath it would make half
+    that corpus incomparable to the other half. It is also unnecessary for
+    the photos it is processing: a Reddit outfit photo IS the subject,
+    already filling its frame. Turn it on for SCREENSHOTS, where the
+    garment is a minority of the canvas.
+    """
     image = load_rgb_image(image_path)
     image.thumbnail((MAX_IMAGE_DIM, MAX_IMAGE_DIM))
+
+    if subject_crop:
+        bbox = find_subject_bbox(image, mask_generator, processor, clip_model, device)
+        if bbox is not None:
+            image = image.crop(bbox)
+            # Re-expand: the crop is smaller than the canvas, so SAM2 gets
+            # the garment region back at closer to full working resolution
+            # rather than at whatever the screenshot's aspect ratio left it.
+            image.thumbnail((MAX_IMAGE_DIM, MAX_IMAGE_DIM))
     image_np = np.array(image)
     full_area = image_np.shape[0] * image_np.shape[1]
 
@@ -235,6 +342,12 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--image", required=True, help="Path to an outfit photo.")
     parser.add_argument("--out-dir", default=None, help="Directory to save per-item crops (optional).")
+    parser.add_argument("--subject-crop", action="store_true",
+                        help="Locate the photographic subject first and detect garments "
+                             "within it. Use for SCREENSHOTS, where the garment is a "
+                             "minority of the canvas and the whole-person mask otherwise "
+                             "passes the area filter meant to exclude it. Off by default: "
+                             "it changes detections, and index_outfits.py is mid-corpus-run.")
     args = parser.parse_args()
 
     device = "cuda" if torch.cuda.is_available() else "cpu"  # deliberately no MPS branch, see module docstring
@@ -249,7 +362,8 @@ def main():
     sam2 = build_sam2(SAM2_CONFIG, SAM2_CHECKPOINT, device=device)
     mask_generator = SAM2AutomaticMaskGenerator(sam2, **MASK_GENERATOR_KWARGS)
 
-    items = detect_outfit_items(args.image, mask_generator, processor, clip_model, device)
+    items = detect_outfit_items(args.image, mask_generator, processor, clip_model, device,
+                                subject_crop=args.subject_crop)
 
     print(f"\n{len(items)} item(s) detected in {args.image}:")
     out_dir = Path(args.out_dir) if args.out_dir else None
