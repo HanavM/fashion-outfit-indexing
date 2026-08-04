@@ -297,14 +297,45 @@ ENCODE_BATCH_SIZE = int(os.environ.get("ENCODE_BATCH_SIZE", "64" if DEVICE == "c
 # Decode/EXIF-transpose threads feeding the GPU. PIL releases the GIL in
 # its C decoders, so threads (not processes) are enough and cost no IPC.
 #
-# 16 on CUDA rather than a core-count-ish number: measured on a Modal T4
-# (2026-08-03) the encode loop ran at ~3.2 images/s, which is nowhere near
-# what a T4 does with a ViT-B at fp16 -- the images live on a network
-# filesystem (Modal Volume there, Google Drive FUSE on Colab) and the GPU
-# spends the batch waiting on per-file round trips. That is latency, not
-# bandwidth or CPU, so oversubscribing threads is the right response.
-# Raise it further (IMAGE_LOADER_WORKERS=32) on especially slow mounts.
-IMAGE_LOADER_WORKERS = int(os.environ.get("IMAGE_LOADER_WORKERS", "16" if DEVICE == "cuda" else "4"))
+# Held at 8 on CUDA, NOT raised further, because the two deployment
+# targets disagree about what is safe.
+#
+# On a Modal Volume the encode loop measured ~3.2 images/s (2026-08-03) --
+# far below a T4's ViT-B fp16 rate -- because each file is a network
+# round trip the GPU waits on. That is pure latency, so more threads help,
+# and modal_app_phase4_eval.py sets IMAGE_LOADER_WORKERS=32 for exactly
+# that reason.
+#
+# On Colab the same mount is Google Drive FUSE, which is far less tolerant
+# of concurrent access and is the prime suspect in a run that died with an
+# unprompted "^C" right after this loader went threaded. Drive is the more
+# fragile of the two, so it sets the default; raise it per-environment
+# where the filesystem can take it. IMAGE_LOADER_WORKERS=1 restores fully
+# serial reads, which is the thing to try first if Drive misbehaves.
+IMAGE_LOADER_WORKERS = int(os.environ.get("IMAGE_LOADER_WORKERS", "8" if DEVICE == "cuda" else "4"))
+
+# How many images are decoded -- and therefore how many files are read
+# CONCURRENTLY -- at once. Deliberately NOT tied to ENCODE_BATCH_SIZE.
+#
+# Context: a Colab run died mid-gallery-encode on 2026-08-03 with a "^C"
+# the user did not type. The first theory was RAM (encode batch had just
+# gone 32 -> 64, decoded whole-batch), but that was measured and does not
+# hold: this catalog's photos are ~1600x798, so a decoded RGB frame is
+# ~3.8MB and 64 of them is ~0.25GB, nowhere near a Colab OOM.
+#
+# The likelier culprit is the other half of that change: images live on a
+# Google Drive FUSE mount, and the threaded loader turned a serial read
+# into N concurrent ones against a network-API-backed filesystem that is
+# well known to hang or fault under exactly that. So the number that
+# needs bounding is concurrency, not bytes.
+#
+# Chunking also keeps peak memory flat regardless of encode batch, which
+# is worth having on its own: decode a chunk, convert it straight to
+# preprocessed pixel tensors (224px DINOv3 / 384px SigLIP2, ~0.6MB and
+# ~1.8MB each), release the full-resolution frames, and only then run the
+# model on a full-size batch. GPU keeps the big batch; RAM and the
+# filesystem never see it.
+IMAGE_DECODE_CHUNK = int(os.environ.get("IMAGE_DECODE_CHUNK", "8"))
 
 
 def load_images_parallel(paths, workers=None):
@@ -722,6 +753,85 @@ def load_dinov3():
     return backbone, None, False, DINOV3_MODEL_ID
 
 
+def pixel_batches_from_paths(processor, paths, gpu_batch, decode_chunk=None):
+    """Yield (pixel_values, kept_positions) preprocessed batches from paths.
+
+    Bounds peak RAM to `decode_chunk` full-resolution images regardless of
+    how large `gpu_batch` is -- see IMAGE_DECODE_CHUNK. `kept_positions`
+    are indices into `paths`, so callers can keep parallel lists (owners,
+    query records) aligned when an unreadable file is dropped.
+    """
+    decode_chunk = decode_chunk or IMAGE_DECODE_CHUNK
+    # More loader threads than images in a chunk buys nothing and only
+    # multiplies the transient decode copies.
+    workers = min(IMAGE_LOADER_WORKERS, max(decode_chunk, 1))
+
+    for batch_start in range(0, len(paths), gpu_batch):
+        batch_paths = paths[batch_start:batch_start + gpu_batch]
+        tensors, kept_positions = [], []
+        for offset in range(0, len(batch_paths), decode_chunk):
+            sub_paths = batch_paths[offset:offset + decode_chunk]
+            images, sub_kept = load_images_parallel(sub_paths, workers=workers)
+            if not images:
+                continue
+            processed = processor(images=images, return_tensors="pt")
+            tensors.append(processed["pixel_values"])
+            kept_positions.extend(batch_start + offset + k for k in sub_kept)
+            # Drop the full-resolution frames before decoding the next
+            # chunk; only the (much smaller) pixel tensors survive.
+            del images, processed
+        if tensors:
+            yield torch.cat(tensors, dim=0), kept_positions
+
+
+@torch.inference_mode()
+def embed_paths_dino(backbone, projection_head, use_projection, processor, paths,
+                     batch_size=None, keep_on_device=False, progress=None):
+    """DINOv3 embeddings for images given BY PATH. -> (embeddings, kept_positions)"""
+    batch_size = batch_size or ENCODE_BATCH_SIZE
+    embeddings, kept_all = [], []
+    batches = pixel_batches_from_paths(processor, paths, batch_size)
+    if progress:
+        batches = tqdm(batches, total=(len(paths) + batch_size - 1) // batch_size,
+                       desc=progress, unit="batch")
+    for pixel_values, kept in batches:
+        pixel_values = pixel_values.to(DEVICE, non_blocking=True)
+        with autocast_context():
+            outputs = backbone(pixel_values=pixel_values)
+            raw = dino_pooled_features(outputs).float()
+            batch_embeddings = projection_head(raw) if (use_projection and projection_head is not None) else F.normalize(raw, dim=-1)
+        embeddings.append(batch_embeddings if keep_on_device else batch_embeddings.cpu())
+        kept_all.extend(kept)
+    if not embeddings:
+        empty = torch.empty(0, DINOV3_PROJECTION_DIM)
+        return (empty.to(DEVICE) if keep_on_device else empty), []
+    return torch.cat(embeddings, dim=0), kept_all
+
+
+@torch.inference_mode()
+def embed_paths_siglip(model, processor, paths, batch_size=None, keep_on_device=False,
+                       progress=None):
+    """SigLIP2 embeddings for images given BY PATH. -> (embeddings, kept_positions)"""
+    batch_size = batch_size or ENCODE_BATCH_SIZE
+    embeddings, kept_all = [], []
+    batches = pixel_batches_from_paths(processor, paths, batch_size)
+    if progress:
+        batches = tqdm(batches, total=(len(paths) + batch_size - 1) // batch_size,
+                       desc=progress, unit="batch")
+    for pixel_values, kept in batches:
+        pixel_values = pixel_values.to(DEVICE, non_blocking=True)
+        with autocast_context():
+            batch_embeddings = extract_siglip_embeddings(
+                model.get_image_features(pixel_values=pixel_values)).float()
+        normalized = F.normalize(batch_embeddings, dim=-1)
+        embeddings.append(normalized if keep_on_device else normalized.cpu())
+        kept_all.extend(kept)
+    if not embeddings:
+        empty = torch.empty(0, model.config.text_config.hidden_size)
+        return (empty.to(DEVICE) if keep_on_device else empty), []
+    return torch.cat(embeddings, dim=0), kept_all
+
+
 def dino_pooled_features(outputs):
     pooler_output = getattr(outputs, "pooler_output", None)
     return pooler_output if pooler_output is not None else outputs.last_hidden_state[:, 0]
@@ -1041,25 +1151,18 @@ def build_or_load_identity_index(backbone, projection_head, use_projection, proc
             flat_paths.append(path)
             owners.append(code)
 
-    all_embeddings = []
-    valid_owners = []
-    batch_size = ENCODE_BATCH_SIZE
-    for start in tqdm(range(0, len(flat_paths), batch_size), desc="Encoding gallery", unit="batch"):
-        batch_paths = flat_paths[start:start + batch_size]
-        batch_owners = owners[start:start + batch_size]
-        # Threaded decode: the GPU was previously idle through a serial
-        # PIL open/EXIF-transpose of every image in the batch. Unreadable
-        # files are still skipped rather than crashing the build --
-        # load_images_parallel drops them from images AND kept together,
-        # so owner alignment survives (the catalog build verify()s images,
-        # but that doesn't catch every corruption mode).
-        images, kept_positions = load_images_parallel(batch_paths)
-        if not images:
-            continue
-        all_embeddings.append(embed_images_dino(backbone, projection_head, use_projection,
-                                                processor, images, batch_size=batch_size))
-        valid_owners.extend(batch_owners[position] for position in kept_positions)
-    all_embeddings = torch.cat(all_embeddings, dim=0) if all_embeddings else torch.empty(0, DINOV3_PROJECTION_DIM)
+    # Encoded BY PATH so peak RAM is bounded by IMAGE_DECODE_CHUNK rather
+    # than by the encode batch -- decoding a full 64-image batch of
+    # ~2880x3600 product photos at once is what OOM-killed a Colab
+    # session here. Unreadable files are still skipped rather than
+    # crashing the build (the catalog build verify()s images, but that
+    # doesn't catch every corruption mode); kept_positions keeps `owners`
+    # aligned across those drops.
+    all_embeddings, kept_positions = embed_paths_dino(
+        backbone, projection_head, use_projection, processor, flat_paths,
+        progress="Encoding gallery",
+    )
+    valid_owners = [owners[position] for position in kept_positions]
 
     embeddings_by_product = defaultdict(list)
     for embedding, code in zip(all_embeddings, valid_owners):
@@ -1455,28 +1558,23 @@ class HierarchicalRetriever:
         if getattr(self, "_query_embedding_cache", (None,))[0] == cache_key:
             return self._query_embedding_cache[1], self._query_embedding_cache[2]
 
-        chunk_size = max(ENCODE_BATCH_SIZE, 32)
-        siglip_chunks, dino_chunks = [], []
         paths = [path for _, path in queries]
-        for start in tqdm(range(0, len(paths), chunk_size), desc="Embedding queries", unit="chunk"):
-            chunk_paths = paths[start:start + chunk_size]
-            chunk_images, kept_positions = load_images_parallel(chunk_paths)
-            if len(kept_positions) != len(chunk_paths):
-                # evaluate() indexes embeddings positionally against
-                # `queries`, so a silently dropped image would misalign
-                # every subsequent query with the wrong vector -- a
-                # corrupted R@K number rather than an error. Loud instead.
-                dropped = set(range(len(chunk_paths))) - set(kept_positions)
-                raise RuntimeError("Unreadable query image(s) would misalign the eval: "
-                                   f"{sorted(chunk_paths[i] for i in dropped)}")
-            siglip_chunks.append(embed_images_siglip(
-                self.siglip2_model, self.siglip2_processor, chunk_images, keep_on_device=True))
-            dino_chunks.append(embed_images_dino(
-                self.dino_backbone, self.dino_head, self.dino_use_projection,
-                self.dino_processor, chunk_images, keep_on_device=True))
+        all_siglip, siglip_kept = embed_paths_siglip(
+            self.siglip2_model, self.siglip2_processor, paths,
+            keep_on_device=True, progress="Embedding queries (SigLIP2)")
+        all_dino, dino_kept = embed_paths_dino(
+            self.dino_backbone, self.dino_head, self.dino_use_projection,
+            self.dino_processor, paths,
+            keep_on_device=True, progress="Embedding queries (DINOv3)")
 
-        all_siglip = torch.cat(siglip_chunks, dim=0)
-        all_dino = torch.cat(dino_chunks, dim=0)
+        # evaluate() indexes these positionally against `queries`, so a
+        # silently dropped image would pair every later query with the
+        # wrong vector -- a corrupted R@K rather than an error. Loud.
+        expected = list(range(len(paths)))
+        if siglip_kept != expected or dino_kept != expected:
+            dropped = sorted(set(expected) - (set(siglip_kept) & set(dino_kept)))
+            raise RuntimeError("Unreadable query image(s) would misalign the eval: "
+                               f"{[paths[i] for i in dropped]}")
         self._query_embedding_cache = (cache_key, all_siglip, all_dino)
         return all_siglip, all_dino
 
