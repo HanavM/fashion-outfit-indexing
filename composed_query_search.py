@@ -80,9 +80,42 @@ description B," clearly labeled as such in every output.
   if it even works" becoming "runs correctly, mechanism confirmed,
   accuracy still unmeasured."
 
+**Update, 2026-08-04 -- the "two independent searches" caveat is now
+conditional, because there is finally real co-occurrence evidence.**
+Roadmap 11.1 landed: `index_outfits.py` ran multi-item detection over
+`outfit_dataset/`'s real outfit photos and `build_outfit_cooccurrence.py`
+aggregated the result into `outfit_cooccurrence.json` -- an index of which
+garment categories were actually detected together on the same real
+person. Two changes here follow from it:
+
+  1. When the query image's category and the requested category BOTH appear
+     in that index, the response now carries an `outfit_evidence` block
+     (how many outfits showed them together, p(b|a), lift) and the note
+     stops saying nothing shows these worn together, because something
+     does. Colour evidence, where present, re-ranks (never filters)
+     `second_item_matches`.
+  2. `--text` is now optional. With an image alone, companions are
+     PROPOSED from co-occurrence -- "what actually gets worn with this" --
+     rather than requiring the user to already know what they want. That
+     is the outfit-level result the spec's architecture diagram asks for.
+
+The old independent-search path is untouched and is still what runs when
+the index is missing, when the anchor category is unknown, or when the
+corpus never showed the requested pairing. That fallback is deliberate:
+thin evidence must degrade to the honest old answer, not to a confident
+wrong one.
+
+**The evidence is model-derived and has no ground truth.** The outfit
+corpus is deliberately unlabelled (SCRAPING_PROCESS.md, 2026-08-03); the
+categories behind every count are SAM2 masks scored zero-shot by
+FashionCLIP, with precision and recall unmeasured. `outfit_evidence`
+therefore reports what the DETECTOR saw, and says so, in the payload.
+
 Usage:
     python3 composed_query_search.py --image path/to/query.jpg --text "with cargo jorts" --top-k 10
     python3 composed_query_search.py --text "with cargo jorts" --top-k 10   # text-only half, no image stage
+    python3 composed_query_search.py --image path/to/query.jpg              # companions proposed from co-occurrence
+    python3 composed_query_search.py --anchor-category jacket              # co-occurrence only, no model load
 """
 
 import argparse
@@ -331,27 +364,102 @@ def parse_text_fragment(text_fragment, metadata_path):
 
 
 # ============================================================
+# Catalog product -> taxonomy category.
+#
+# Lifted out of composed_search's inner loop (where it used to be an inline
+# double loop over the whole hierarchy per hit) because the co-occurrence
+# join needs the SAME mapping for the query image's own identified product.
+# Both sides must agree on what "jacket" means or the anchor silently never
+# matches the index.
+# ============================================================
+
+def product_category(product):
+    """The hierarchy CATEGORY (not leaf) a catalog product sits in, or None.
+    Category-level on purpose: that is the granularity the outfit detector
+    emits, so it is the only granularity the two indexes can be joined on."""
+    structured = product.get("structured_caption") or {}
+    canonical_path = structured.get("canonical_taxonomy_path") or []
+    if not canonical_path:
+        return None
+    # Reverse lookup built once. The version this replaced re-read and
+    # re-walked the whole hierarchy for every hit of every query.
+    lookup = _taxonomy_term_to_category()
+    found = None
+    for entry in canonical_path:
+        category = lookup.get(str(entry).lower())
+        if category:
+            found = category
+    return found
+
+
+_TERM_TO_CATEGORY_CACHE = None
+
+
+def _taxonomy_term_to_category():
+    """Every taxonomy term (category name or leaf) -> its category."""
+    global _TERM_TO_CATEGORY_CACHE
+    if _TERM_TO_CATEGORY_CACHE is None:
+        lookup = {}
+        for _group, categories in _load_hierarchy().items():
+            for category, leaves in categories.items():
+                lookup[category.lower()] = category
+                for leaf in leaves:
+                    lookup[leaf.lower()] = category
+        _TERM_TO_CATEGORY_CACHE = lookup
+    return _TERM_TO_CATEGORY_CACHE
+
+
+def product_colors(product):
+    structured = product.get("structured_caption") or {}
+    attributes = structured.get("attributes") or {}
+    return [str(c).strip().lower() for c in (attributes.get("color") or []) if str(c).strip()]
+
+
+# ============================================================
 # Combined search -- pulls in the heavy modules lazily, only when actually
 # invoked, so parse_text_fragment stays cheaply testable on its own.
 # ============================================================
 
-def composed_search(image_path, text_fragment, top_k=10, metadata_path=None, retriever=None, canonical_only=False):
-    """Runs two independent searches and returns both, clearly labeled.
-    `retriever`: an already-constructed HierarchicalRetriever, so callers
-    doing multiple queries don't pay model-load cost per call. If omitted
-    and image_path is given, one is constructed here (slow: loads SigLIP2
-    + DINOv3 and builds/reads the catalog indexes).
+COOCCURRENCE_PATH = Path(__file__).parent / "outfit_cooccurrence.json"
+
+# A pairing seen in fewer outfits than this is not reported as evidence.
+# Under it, one or two detector mistakes are the entire signal.
+MIN_EVIDENCE_OUTFITS = 5
+
+INDEPENDENT_SEARCH_NOTE = (
+    "identified_item and second_item_matches are TWO INDEPENDENT "
+    "SEARCHES, not a confirmed outfit -- no co-occurrence evidence was "
+    "available for this query, so nothing here shows these items were "
+    "ever worn together in a real photo."
+)
+
+def composed_search(image_path, text_fragment, top_k=10, metadata_path=None, retriever=None,
+                    canonical_only=False, use_cooccurrence=True,
+                    cooccurrence_path=COOCCURRENCE_PATH, anchor_category=None):
+    """Identify the item in `image_path`, then find a companion item.
+
+    The companion comes from real co-occurrence when the outfit index has
+    evidence for it, and from the old independent text search when it does
+    not. `retriever`: an already-constructed HierarchicalRetriever, so
+    callers doing multiple queries don't pay model-load cost per call. If
+    omitted and image_path is given, one is constructed here (slow: loads
+    SigLIP2 + DINOv3 and builds/reads the catalog indexes).
     `canonical_only`: skip catalog_query_search.py's semantic-embedding
     fallback (no model weights loaded at all for the text side) -- useful
     on a machine where the model stack isn't usable, or just to force the
     cheap/fast lexical-only path. (Confirmed working with this repo's own
     `.venv` as of 2026-08-02 -- an earlier note here about torch 2.0.0
     making this unavailable was an unactivated-environment issue, not a
-    real limitation.)"""
+    real limitation.)
+    `anchor_category`: override the category the co-occurrence lookup keys
+    on, so the outfit half can be exercised without loading the image
+    stack at all.
+    `use_cooccurrence`: set False to force the pre-11.1 behaviour, which is
+    what makes the two paths comparable rather than just replaced."""
     from catalog_query_search import CatalogQuerySearch, METADATA_PATH as CATALOG_METADATA_PATH
 
     metadata_path = metadata_path or CATALOG_METADATA_PATH
-    parsed = parse_text_fragment(text_fragment, metadata_path)
+    parsed = parse_text_fragment(text_fragment, metadata_path) if text_fragment else None
 
     identified_item = None
     if image_path is not None:
@@ -362,15 +470,61 @@ def composed_search(image_path, text_fragment, top_k=10, metadata_path=None, ret
         identified_item = raw_result["results"][0] if raw_result["results"] else None
 
     engine = CatalogQuerySearch()
+
+    # ---- anchor: what the query image actually is, in the taxonomy the
+    # outfit detector speaks. Without this there is nothing to condition on.
+    anchor_colors = []
+    if anchor_category is None and identified_item is not None:
+        anchor_product = engine.code_to_product.get(identified_item.get("product_code"), {})
+        anchor_category = product_category(anchor_product)
+        anchor_colors = product_colors(anchor_product)
+
+    cooccurrence = None
+    if use_cooccurrence:
+        from build_outfit_cooccurrence import OutfitCooccurrence
+        cooccurrence = OutfitCooccurrence.load_if_available(cooccurrence_path)
+
+    companion_suggestions = []
+    if cooccurrence is not None and anchor_category and cooccurrence.known_category(anchor_category):
+        companion_suggestions = cooccurrence.companions(
+            anchor_category, top_k=8, min_count=MIN_EVIDENCE_OUTFITS)
+    # ---- what to search for.
+    # Normally the user says ("with cargo jorts"). When they don't, the
+    # co-occurrence index proposes it -- that proposal is the whole point of
+    # 11.1, and it is the one case where the companion category is chosen
+    # from observed outfits rather than from the user's own words.
+    parsed_category = (parsed or {}).get("category") or {}
+    category_term = parsed_category.get("leaf") or parsed_category.get("category")
+    attribute_keywords = [a["keyword"] for a in (parsed or {}).get("attributes", [])]
+    companion_source = "user_text"
+
+    if not text_fragment:
+        if not companion_suggestions:
+            return {
+                "identified_item": identified_item,
+                "anchor_category": anchor_category,
+                "parsed_text_query": None,
+                "second_item_matches": [],
+                "category_filter_applied": False,
+                "companion_suggestions": [],
+                "outfit_evidence": None,
+                "cooccurrence_available": cooccurrence is not None,
+                "note": (
+                    "No text fragment was given and the outfit co-occurrence index "
+                    "has no evidence for this item's category, so there is nothing "
+                    "to suggest a companion from. Provide --text to use the "
+                    "independent text-search path."
+                ),
+            }
+        category_term = companion_suggestions[0]["category"]
+        companion_source = "cooccurrence"
+
     # Query catalog_query_search.py with the PARSED terms, not the raw
     # fragment verbatim -- slang the synonym table resolved (e.g. "jorts")
     # generally isn't itself a substring of any real canonical label, only
     # the taxonomy term it resolved to is ("denim shorts"). Falls back to
     # the raw fragment if nothing parsed at all (parser found no category
     # or attribute signal, so there's nothing better to search with).
-    parsed_category = parsed["category"] or {}
-    category_term = parsed_category.get("leaf") or parsed_category.get("category")
-    attribute_keywords = [a["keyword"] for a in parsed["attributes"]]
     if category_term or attribute_keywords:
         query_for_second_item = " ".join(attribute_keywords + ([category_term] if category_term else []))
     else:
@@ -386,80 +540,176 @@ def composed_search(image_path, text_fragment, top_k=10, metadata_path=None, ret
         print(f"  (semantic fallback unavailable ({error!r}) -- falling back to canonical-only text match)")
         raw_hits = engine.search(query_for_second_item, top_k=top_k * 3, canonical_only=True)
 
-    target_category = (parsed["category"] or {}).get("category")
+    target_category = parsed_category.get("category") or (
+        category_term if companion_source == "cooccurrence" else None)
+    code_to_product = engine.code_to_product
     if target_category:
-        code_to_product = engine.code_to_product
-        filtered = []
-        for hit in raw_hits:
-            product = code_to_product.get(hit["product_code"], {})
-            structured = product.get("structured_caption") or {}
-            canonical_path = structured.get("canonical_taxonomy_path") or []
-            product_category = None
-            for group, categories in _load_hierarchy().items():
-                for category, leaves in categories.items():
-                    leaf_names = {category.lower()} | {leaf.lower() for leaf in leaves}
-                    if any(str(p).lower() in leaf_names for p in canonical_path):
-                        product_category = category
-            if product_category and product_category.lower() == target_category.lower():
-                filtered.append(hit)
-        second_item_matches = filtered[:top_k] if filtered else raw_hits[:top_k]
+        filtered = [hit for hit in raw_hits
+                    if (product_category(code_to_product.get(hit["product_code"], {})) or "").lower()
+                    == target_category.lower()]
+        candidate_hits = filtered if filtered else raw_hits
         category_filter_applied = bool(filtered)
     else:
-        second_item_matches = raw_hits[:top_k]
+        candidate_hits = raw_hits
         category_filter_applied = False
+
+    # ---- the actual outfit evidence, if any.
+    outfit_evidence = None
+    if cooccurrence is not None and anchor_category and target_category:
+        raw_evidence = cooccurrence.evidence_for(anchor_category, target_category)
+        if raw_evidence and raw_evidence["cooccurrence_count"] >= MIN_EVIDENCE_OUTFITS:
+            outfit_evidence = dict(raw_evidence)
+            outfit_evidence.update({
+                "anchor_category": anchor_category,
+                "companion_category": target_category,
+                "basis": "co-occurrence detected in real outfit photos "
+                         "(outfit_cooccurrence.json)",
+                "labels_are_ground_truth": False,
+                "caveat": "These counts are what an UNVALIDATED detector reported "
+                          "(SAM2 masks + FashionCLIP zero-shot) over an unlabelled "
+                          "corpus. They are evidence of what the model saw, not a "
+                          "measured fact about what people wear.",
+            })
+
+    # ---- colour bias. Applied only on top of a category the evidence
+    # already supports, and only as a re-rank: the colour signal is a
+    # centre-of-bbox palette vote, far too crude to remove results with.
+    color_evidence = []
+    if outfit_evidence and anchor_colors:
+        for anchor_color in anchor_colors:
+            color_evidence.extend(
+                cooccurrence.companion_colors(anchor_category, anchor_color, target_category))
+    if color_evidence:
+        preferred = {}
+        for entry in color_evidence:
+            preferred[entry["color"]] = preferred.get(entry["color"], 0) + entry["count"]
+        ordered = list(candidate_hits)
+        for position, hit in enumerate(ordered):
+            colors = product_colors(code_to_product.get(hit["product_code"], {}))
+            support = max((preferred.get(color, 0) for color in colors), default=0)
+            hit["cooccurrence_color_support"] = support
+            hit["_original_rank"] = position
+        # Stable: co-occurring colours float up, everything else keeps its
+        # relative text-search order rather than being reshuffled.
+        ordered.sort(key=lambda h: (-h["cooccurrence_color_support"], h["_original_rank"]))
+        for hit in ordered:
+            hit.pop("_original_rank", None)
+        candidate_hits = ordered
+
+    second_item_matches = candidate_hits[:top_k]
+
+    if outfit_evidence:
+        share = outfit_evidence["share_of_outfits_with_anchor"]
+        note = (
+            f"Grounded in observed co-occurrence: in {outfit_evidence['cooccurrence_count']} "
+            f"of {outfit_evidence['anchor_outfits']} real outfit photos where the detector "
+            f"found a '{anchor_category}', it also found a '{target_category}' "
+            f"({share*100:.0f}%, lift {outfit_evidence['lift']:.2f}). These are DETECTED "
+            f"labels over an unlabelled corpus, with no measured precision -- evidence of "
+            f"what the model saw worn together, not a verified fact."
+        )
+    elif cooccurrence is None:
+        note = (INDEPENDENT_SEARCH_NOTE +
+                " (outfit_cooccurrence.json is not present -- run "
+                "build_outfit_cooccurrence.py to enable the evidence path.)")
+    elif not anchor_category:
+        note = (INDEPENDENT_SEARCH_NOTE +
+                " (the query item's category could not be resolved, so the outfit "
+                "index could not be consulted.)")
+    else:
+        note = (INDEPENDENT_SEARCH_NOTE +
+                f" (the outfit corpus did not show '{anchor_category}' together with "
+                f"'{target_category}' in at least {MIN_EVIDENCE_OUTFITS} photos.)")
 
     return {
         "identified_item": identified_item,
+        "anchor_category": anchor_category,
         "parsed_text_query": parsed,
         "second_item_matches": second_item_matches,
         "category_filter_applied": category_filter_applied,
-        "note": (
-            "identified_item and second_item_matches are TWO INDEPENDENT "
-            "SEARCHES, not a confirmed outfit -- this system has no data "
-            "showing these items were ever worn together in a real photo "
-            "(that needs multi-item outfit-photo detection, not built yet; "
-            "see docs/roadmap.md Phase 3)."
-        ),
+        "companion_source": companion_source,
+        "companion_suggestions": companion_suggestions,
+        "outfit_evidence": outfit_evidence,
+        "cooccurrence_available": cooccurrence is not None,
+        "note": note,
     }
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--image", type=str, default=None, help="Path to the query image of item A.")
-    parser.add_argument("--text", type=str, required=True, help='Text fragment describing item B, e.g. "with cargo jorts".')
+    parser.add_argument("--text", type=str, default=None,
+                        help='Text fragment describing item B, e.g. "with cargo jorts". '
+                             'Optional since 11.1: omit it and companions are proposed from '
+                             'observed outfit co-occurrence instead.')
     parser.add_argument("--top-k", type=int, default=10)
     parser.add_argument("--metadata", type=str, default=None, help="Override path to metadata.json (defaults to catalog_query_search.py's own default).")
+    parser.add_argument("--anchor-category", type=str, default=None,
+                        help="Skip the image stage and key the co-occurrence lookup on this "
+                             "taxonomy category directly (e.g. 'jacket'). Loads no model weights.")
+    parser.add_argument("--no-cooccurrence", action="store_true",
+                        help="Force the pre-11.1 two-independent-searches behaviour.")
     parser.add_argument("--canonical-only", action="store_true",
                          help="Skip catalog_query_search.py's semantic-embedding fallback for the text side "
                               "(no model weights loaded for that stage). Also engaged automatically if the "
                               "semantic fallback errors out (e.g. no usable local torch/transformers stack).")
     args = parser.parse_args()
 
-    result = composed_search(args.image, args.text, top_k=args.top_k, metadata_path=args.metadata, canonical_only=args.canonical_only)
+    if not args.text and not (args.image or args.anchor_category):
+        parser.error("give --text, or --image/--anchor-category to propose companions from co-occurrence")
 
-    print(f"\nText fragment: '{args.text}'")
+    result = composed_search(args.image, args.text, top_k=args.top_k, metadata_path=args.metadata,
+                             canonical_only=args.canonical_only,
+                             use_cooccurrence=not args.no_cooccurrence,
+                             anchor_category=args.anchor_category)
+
     parsed = result["parsed_text_query"]
-    if parsed["category"]:
-        c = parsed["category"]
-        print(f"  Parsed category: leaf={c['leaf']!r} category={c['category']!r} group={c['group']!r} (matched on {c['matched_term']!r})")
+    if parsed:
+        print(f"\nText fragment: '{args.text}'")
+        if parsed["category"]:
+            c = parsed["category"]
+            print(f"  Parsed category: leaf={c['leaf']!r} category={c['category']!r} group={c['group']!r} (matched on {c['matched_term']!r})")
+        else:
+            print("  Parsed category: none matched")
+        if parsed["attributes"]:
+            print("  Parsed attribute keywords:")
+            for a in parsed["attributes"]:
+                print(f"    '{a['keyword']}'  fields={a['fields']}  example real values={a['example_values']}")
+        else:
+            print("  Parsed attribute keywords: none")
     else:
-        print("  Parsed category: none matched")
-    if parsed["attributes"]:
-        print("  Parsed attribute keywords:")
-        for a in parsed["attributes"]:
-            print(f"    '{a['keyword']}'  fields={a['fields']}  example real values={a['example_values']}")
-    else:
-        print("  Parsed attribute keywords: none")
+        print("\n(no --text given -- companion category taken from outfit co-occurrence)")
 
     if args.image:
         print(f"\nidentified_item (from {args.image}):")
         print(f"  {result['identified_item']}")
     else:
         print("\n(no --image given -- identified_item skipped)")
+    print(f"anchor_category: {result['anchor_category']}")
 
-    print(f"\nsecond_item_matches (category filter applied: {result['category_filter_applied']}):")
+    if result["companion_suggestions"]:
+        print("\nObserved companions for the anchor (DETECTED, not verified; ranked by lift):")
+        for suggestion in result["companion_suggestions"]:
+            print(f"  {suggestion['category']:<12} n={suggestion['cooccurrence_count']:<5} "
+                  f"p(companion|anchor)={suggestion['share_of_outfits_with_anchor']:.2f}  "
+                  f"lift={suggestion['lift']:.2f}")
+    elif result["cooccurrence_available"]:
+        print("\n(no co-occurrence evidence for this anchor category)")
+
+    if result["outfit_evidence"]:
+        evidence = result["outfit_evidence"]
+        print(f"\noutfit_evidence: {evidence['anchor_category']} + {evidence['companion_category']} "
+              f"seen together in {evidence['cooccurrence_count']} of "
+              f"{evidence['anchor_outfits']} outfits (lift {evidence['lift']:.2f})")
+        for url in evidence["example_post_urls"][:3]:
+            print(f"    example: {url}")
+
+    print(f"\nsecond_item_matches (category filter applied: {result['category_filter_applied']}, "
+          f"companion source: {result['companion_source']}):")
     for rank, hit in enumerate(result["second_item_matches"], start=1):
         label = hit.get("matched_label") or f"semantic score={hit.get('score', 0):.4f}"
-        print(f"  #{rank}  [{hit['match_type']}: {label}]  {hit['brand']} {hit['name']}  [{hit['product_code']}]")
+        boost = hit.get("cooccurrence_color_support")
+        boost_note = f"  [colour co-occurrence support={boost}]" if boost else ""
+        print(f"  #{rank}  [{hit['match_type']}: {label}]  {hit['brand']} {hit['name']}  [{hit['product_code']}]{boost_note}")
 
     print(f"\nNOTE: {result['note']}")
