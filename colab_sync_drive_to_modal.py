@@ -56,6 +56,40 @@ def run(args, **kwargs):
     return subprocess.run(args, text=True, capture_output=True, **kwargs)
 
 
+AUTH_HELP = """
+Modal is not authenticated in this Colab runtime.
+
+Do NOT use `modal setup` here. It prints its browser URL to a pipe, and
+Colab block-buffers that, so the URL never appears and the process waits
+forever for a link you cannot see.
+
+Instead, paste a token directly:
+
+  1. open  https://modal.com/settings/tokens
+  2. click "New Token"
+  3. copy the `modal token set ...` command it shows you
+  4. run it in a Colab cell WITH a leading !, e.g.
+
+       !modal token set --token-id ak-xxxx --token-secret as-xxxx
+
+  5. re-run this script
+
+The secret always begins with `as-`. If yours starts with anything else
+you have copied the wrong field.
+"""
+
+
+def modal_authenticated() -> bool:
+    """Actually call the API rather than trusting that a token exists.
+
+    Checking only for the presence of MODAL_TOKEN_ID/SECRET is what let a
+    wrong secret sail through and fail later on the first upload -- by
+    which point the plan has printed and it looks like a network problem.
+    """
+    probe = run([sys.executable, "-m", "modal", "volume", "list"])
+    return probe.returncode == 0
+
+
 def ensure_modal():
     try:
         import modal  # noqa: F401
@@ -63,17 +97,19 @@ def ensure_modal():
         print("Installing modal...")
         subprocess.run([sys.executable, "-m", "pip", "install", "-q", "modal"], check=True)
 
-    # Token from env if provided (paste MODAL_TOKEN_ID / MODAL_TOKEN_SECRET
-    # from your local ~/.modal.toml to skip the browser flow entirely).
-    if os.environ.get("MODAL_TOKEN_ID") and os.environ.get("MODAL_TOKEN_SECRET"):
-        print("Using MODAL_TOKEN_ID / MODAL_TOKEN_SECRET from the environment.")
+    if modal_authenticated():
+        source = ("MODAL_TOKEN_ID / MODAL_TOKEN_SECRET"
+                  if os.environ.get("MODAL_TOKEN_ID") else "the stored Modal profile")
+        print(f"Modal authenticated (via {source}).")
         return
-    probe = run([sys.executable, "-m", "modal", "volume", "list"])
-    if probe.returncode == 0:
-        print("Modal already authenticated.")
-        return
-    print("Modal is not authenticated. Running `modal setup` -- open the URL it prints.\n")
-    subprocess.run([sys.executable, "-m", "modal", "setup"], check=True)
+
+    if os.environ.get("MODAL_TOKEN_ID") or os.environ.get("MODAL_TOKEN_SECRET"):
+        print("\n!! MODAL_TOKEN_ID / MODAL_TOKEN_SECRET are set but REJECTED by Modal.")
+        print("!! Clear them and use a fresh token -- a wrong token is worse than none,")
+        print("!! because it suppresses every other auth path.\n")
+        print("   del os.environ['MODAL_TOKEN_ID'], os.environ['MODAL_TOKEN_SECRET']")
+
+    sys.exit(AUTH_HELP)
 
 
 def mount_drive():
