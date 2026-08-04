@@ -162,7 +162,27 @@ def main():
         if p.is_dir() and p.name not in SKIP
     )
     wanted = [d for d in local_dirs if d in EXTRA_PATHS or not d.startswith("finetuned_")]
-    todo = [d for d in wanted if d not in present]
+
+    # `--reconcile` re-pushes directories that already exist on the Volume.
+    #
+    # Why this is needed and why the default is still skip-if-present:
+    # `modal volume put` has no incremental diff, so reconciling means
+    # re-uploading whole directories. But skipping them entirely has a real
+    # cost that bit us on 2026-08-03: metadata.json is force-overwritten
+    # every run while brand directories are skipped whenever they exist, so
+    # a Volume whose images were uploaded weeks ago ends up carrying a
+    # CURRENT catalog that references images it does not have. That run left
+    # 640 of 7,510 referenced paths missing, and nothing failed -- the
+    # trainer just silently skipped them and learned from 91% of the data.
+    reconcile = "--reconcile" in sys.argv
+    todo = wanted if reconcile else [d for d in wanted if d not in present]
+    stale = [d for d in wanted if d in present]
+    if stale and not reconcile:
+        print("NOTE: these already exist on the volume and will NOT be updated:")
+        print(f"      {', '.join(stale)}")
+        print("      If Drive has gained images since they were uploaded, the volume")
+        print("      will reference files it does not have. Re-run with --reconcile")
+        print("      to force-push them (slower -- it re-uploads in full).\n")
 
     print("PLAN")
     if not todo:
@@ -189,9 +209,10 @@ def main():
     for index, name in enumerate(todo, 1):
         local = DRIVE_ROOT / name
         print(f"\n[{index}/{len(todo)}] {name} ({dir_size_mb(local):.0f} MB)")
-        result = subprocess.run(
-            [sys.executable, "-m", "modal", "volume", "put", VOLUME,
-             str(local), f"{REMOTE_ROOT}/{name}"])
+        put = [sys.executable, "-m", "modal", "volume", "put"]
+        if reconcile:
+            put.append("-f")  # existing files are refused without this
+        result = subprocess.run(put + [VOLUME, str(local), f"{REMOTE_ROOT}/{name}"])
         if result.returncode != 0:
             print(f"  !! {name} FAILED -- re-run this script to retry just this one")
             failed.append(name)
