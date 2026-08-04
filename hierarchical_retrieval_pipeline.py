@@ -278,6 +278,42 @@ PATCH_RERANK_CANDIDATES = 10
 # Unlike --patch-rerank and --score-fusion this costs nothing when wrong,
 # which is what boost-not-filter bought. It just earns nothing either.
 # Kept as a measured, off-by-default flag, not an unvalidated option.
+# ---- Garment gate (does this image contain clothing at all?) ----------
+#
+# Calibrated 2026-08-04 against 507 REAL non-clothing photos in
+# negatives_dataset/ (see docs/eval_log.md): AUROC 0.9994, and the
+# recommended operating point margin >= +0.010 gives false-reject 2.50%,
+# false-accept 0.39%.
+#
+# Score is (max cosine over GARMENT_PROMPTS) - (max over NON_GARMENT_PROMPTS).
+# It reuses the SigLIP2 image embedding retrieve() already computes, so the
+# cost is one matmul against ~23 cached text vectors.
+#
+# Two things the calibration established that matter more than the AUROC:
+#
+#   * The false-rejects are ONE-SIDED. Up to +0.010, 100% of them are worn
+#     outfits and 0% are product photos -- studio photography is trivially
+#     separable, real people in real clothes are the hard positives. So
+#     every point of false-accept bought by raising this is paid for
+#     entirely by real users photographing real outfits, which is exactly
+#     the population the gate exists to serve. Do not raise it casually.
+#   * It cannot distinguish DEPICTED clothing from PRESENT clothing -- a
+#     laptop showing a photo of jeans scores +0.024. That is correct
+#     behaviour here, not a defect: the primary input for this product is
+#     a screenshot of a product page, which is depicted clothing and must
+#     pass.
+GARMENT_PROMPTS = [
+    "a photo of clothing", "a photo of a garment", "a shirt", "a pair of pants",
+    "a jacket", "a shoe", "a dress", "a hoodie", "a person wearing clothes",
+    "a fashion product photo",
+]
+NON_GARMENT_PROMPTS = [
+    "a photo of furniture", "a chair", "a car", "a landscape", "a building",
+    "food on a plate", "a screenshot of text", "an animal", "a plain background",
+    "an electronic device", "a plant", "a document", "kitchenware",
+]
+GARMENT_GATE_THRESHOLD = float(os.environ.get("GARMENT_GATE_THRESHOLD", "0.010"))
+
 USE_BRAND_BOOST = False
 BRAND_BOOST_WEIGHT = float(os.environ.get("BRAND_BOOST_WEIGHT", "0.03"))
 # Minimum brand_evidence score to act on at all. Anything below is treated
@@ -1427,6 +1463,32 @@ class HierarchicalRetriever:
             list(IDENTITY_TO_PRODUCT_CODES[identity]) for identity in self.identities
         ]
 
+    def garment_gate(self, siglip_image_embedding):
+        """Does this image contain clothing at all? -> dict with score/passed.
+
+        Built lazily: the two prompt sets are embedded on first use rather
+        than in __init__, so eval runs that never call this pay nothing for
+        it. See GARMENT_PROMPTS for the calibration and its caveats.
+        """
+        if getattr(self, "_gate_text", None) is None:
+            prompts = GARMENT_PROMPTS + NON_GARMENT_PROMPTS
+            embeddings = embed_texts_siglip(self.siglip2_model, self.siglip2_processor, prompts)
+            self._gate_text = embeddings.to(self.identity_embeddings.device)
+            self._gate_split = len(GARMENT_PROMPTS)
+
+        similarity = (siglip_image_embedding.to(self._gate_text.device)
+                      @ self._gate_text.T).squeeze(0)
+        garment = float(similarity[:self._gate_split].max())
+        non_garment = float(similarity[self._gate_split:].max())
+        margin = garment - non_garment
+        return {
+            "score": margin,
+            "passed": margin >= GARMENT_GATE_THRESHOLD,
+            "threshold": GARMENT_GATE_THRESHOLD,
+            "garment_similarity": garment,
+            "non_garment_similarity": non_garment,
+        }
+
     def _candidate_set(self, allowed_categories):
         """(indices, sub_embeddings) for a given category gate, cached.
 
@@ -1686,6 +1748,12 @@ class HierarchicalRetriever:
             "hsc_confidence": hsc_result["confidence"], "hsc_climbing_path": hsc_result["climbing_path"],
             "hsc_best_leaf": hsc_result["best_leaf"], "hsc_best_leaf_probability": hsc_result["best_leaf_probability"],
             "allowed_categories": sorted(hsc_result["allowed_categories"]),
+            # Reported, never enforced here. retrieve() is what evaluate()
+            # drives, and silently dropping ~2.5% of queries would change
+            # every R@K in docs/eval_log.md for a reason that has nothing to
+            # do with retrieval quality. The serving layer applies the
+            # threshold; the eval path just carries the number.
+            "garment_gate": self.garment_gate(siglip_embedding),
             "num_identity_candidates": len(candidates), "results": results,
             "brand_evidence": evidence_brand,
             "same_model_different_colorway_ambiguous": ambiguous,

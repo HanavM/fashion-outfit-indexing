@@ -94,7 +94,20 @@ DEFAULT_TOKEN_ENV = "FASHION_API_TOKEN"
 # so it is a conservative default and an explicit flag, not a claim.
 DEFAULT_MIN_CONFIDENCE = 0.35
 
-DEFAULT_TIMEOUT = 20.0
+# 20s was too short for the case that matters most: the FIRST call.
+#
+# Measured 2026-08-04 against the live service. The serving container
+# scales to zero after 20 minutes idle, and a cold start is ~17s of model
+# and index loading before it can answer at all -- so the first request of
+# any session reliably blew a 20s budget and the client reported "The
+# fashion service isn't responding right now." Every warm call after it
+# answered in 1-2.4s. The one request a user is most likely to make is the
+# one that failed.
+#
+# 90s is not a latency target, it is a ceiling for the cold path. If the
+# service is genuinely down, connection errors surface immediately and do
+# not wait this out.
+DEFAULT_TIMEOUT = 90.0
 DEFAULT_TOP_K = 5
 
 # Payload guard. iOS Shortcuts will happily base64 a 12MB screenshot and
