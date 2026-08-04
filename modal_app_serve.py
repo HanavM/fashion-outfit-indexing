@@ -109,6 +109,15 @@ image = (
     .add_local_file(str(HERE / "free_text_visual_search.py"),
                     "/root/free_text_visual_search.py")
     .add_local_file(str(HERE / "docs" / "hierarchy.json"), "/root/docs/hierarchy.json")
+    # Outfit co-occurrence: the module that defines OutfitCooccurrence and
+    # the index itself. Both are required -- without them _outfit_evidence
+    # degrades silently to "no evidence", which looks identical to a pair
+    # the index genuinely has nothing for, so the failure would be
+    # invisible rather than loud.
+    .add_local_file(str(HERE / "build_outfit_cooccurrence.py"),
+                    "/root/build_outfit_cooccurrence.py")
+    .add_local_file(str(HERE / "outfit_cooccurrence.json"),
+                    "/root/outfit_cooccurrence.json")
 )
 
 volume = modal.Volume.from_name("fashion-dataset", create_if_missing=False)
@@ -483,18 +492,35 @@ class FashionService:
                 text, str(self.pipeline.METADATA_PATH))
             companions, filter_applied = self._companions(parsed, text, top_k, semantic)
 
+            # Real co-occurrence evidence, when the index has any for this
+            # anchor/companion pair. Built 2026-08-04 from 6,860 outfit
+            # photos; before it existed this endpoint returned a hardcoded
+            # note saying it did not, which is now false.
+            outfit_evidence = self._outfit_evidence(primary, parsed)
+
             payload = {
                 "primary": primary,
                 "parsed_text_query": parsed,
                 "companions": companions,
                 "category_filter_applied": filter_applied,
-                # composed_query_search.py's own standing caveat, carried to
-                # the API edge verbatim in spirit: these are two independent
-                # searches, not a pairing this system has evidence for.
-                "note": ("primary and companions are TWO INDEPENDENT SEARCHES. "
-                         "Nothing here shows these items were ever worn together "
-                         "in a real photo -- that needs the outfit co-occurrence "
-                         "index (roadmap Phase 8), which does not exist yet."),
+                "outfit_evidence": outfit_evidence,
+                # The caveat is now CONDITIONAL, because the honest answer
+                # differs by case. With evidence, these items were seen
+                # together in real photos -- by an unvalidated detector, so
+                # that qualifier travels with the claim rather than being
+                # dropped at the API edge. Without it, the old warning still
+                # holds exactly as before.
+                "note": (
+                    "companions are supported by co-occurrence in real outfit photos "
+                    "(see outfit_evidence). Those labels come from an UNVALIDATED "
+                    "detector (SAM2 + zero-shot FashionCLIP) over an unlabelled "
+                    "corpus -- evidence of what the model saw, not measured fact."
+                    if outfit_evidence else
+                    "primary and companions are TWO INDEPENDENT SEARCHES. Nothing "
+                    "here shows these items were ever worn together in a real photo. "
+                    "The co-occurrence index exists but has no evidence for this "
+                    "particular pair."
+                ),
                 "latency_ms": round((time.time() - started) * 1000, 1),
             }
             payload["spoken"] = self._spoken_compose(primary, companions, parsed)
@@ -571,6 +597,79 @@ class FashionService:
     def dinov3_checkpoint(self):
         found = self.pipeline.pick_first_existing(self.pipeline.DINOV3_CHECKPOINT_CANDIDATES)
         return str(found) if found else self.pipeline.DINOV3_MODEL_ID
+
+    def _outfit_evidence(self, primary, parsed):
+        """Co-occurrence support for this anchor->companion pair, or None.
+
+        Needs BOTH a category for the query image and one parsed out of the
+        text; with either missing there is no pair to look up. Returns None
+        rather than raising if the index is absent, so the endpoint keeps
+        working on a Volume that predates it.
+        """
+        if not primary or not parsed:
+            return None
+
+        import composed_query_search
+
+        # BOTH sides need mapping into the index's vocabulary, and getting
+        # either wrong fails SILENTLY as "no evidence" -- indistinguishable
+        # from a pair the index genuinely lacks. The first version of this
+        # got both wrong and looked like it worked:
+        #
+        #   anchor: predicted_category.best_leaf is an HSC LEAF ("shirt
+        #     jacket"); the index keys on the 13 hierarchy CATEGORIES
+        #     ("jacket"). _taxonomy_term_to_category() is the mapping, and
+        #     product_category()'s own docstring says category level is
+        #     "the only granularity the two indexes can be joined on".
+        #   companion: parse_text_fragment returns category as a DICT
+        #     {'leaf': 'cargo pants', 'category': 'pants', ...}, not a string.
+        lookup = composed_query_search._taxonomy_term_to_category()
+        predicted = primary.get("predicted_category") or {}
+        anchor = None
+        for term in (predicted.get("best_leaf"), predicted.get("node")):
+            if term:
+                anchor = lookup.get(str(term).lower())
+                if anchor:
+                    break
+
+        companion_field = parsed.get("category")
+        if isinstance(companion_field, dict):
+            companion = companion_field.get("category")
+        else:
+            companion = companion_field
+
+        if not anchor or not companion:
+            return None
+        index = getattr(self, "_cooccurrence", "unset")
+        if index == "unset":
+            # Loaded once and cached, including the None result -- a Volume
+            # that predates the index should not retry a missing file on
+            # every request.
+            try:
+                from build_outfit_cooccurrence import OutfitCooccurrence
+                index = OutfitCooccurrence.load_if_available(
+                    composed_query_search.COOCCURRENCE_PATH)
+            except Exception as error:  # missing/unreadable -- not fatal
+                print(f"outfit evidence unavailable: {type(error).__name__}: {error}")
+                index = None
+            self._cooccurrence = index
+        if index is None:
+            return None
+        try:
+            evidence = index.evidence_for(anchor, companion)
+        except Exception as error:
+            print(f"outfit evidence lookup failed: {type(error).__name__}: {error}")
+            return None
+        if not evidence:
+            return None
+        if evidence.get("cooccurrence_count", 0) < composed_query_search.MIN_EVIDENCE_OUTFITS:
+            return None
+        return {
+            **evidence,
+            "anchor_category": anchor,
+            "companion_category": companion,
+            "labels_are_ground_truth": False,
+        }
 
     def _companions(self, parsed, text, top_k, semantic):
         """The text half of composed_query_search.composed_search, reusing
