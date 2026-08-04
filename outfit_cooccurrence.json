@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-08-04T22:18:59Z",
+  "generated_at": "2026-08-04T22:21:38Z",
   "diagnostics": {
     "mean_items_per_outfit": 1.846455351056578,
     "pairs_with_lift_below_1": 52,
@@ -25,6 +25,7 @@
     "Colours are a crude centre-of-bbox palette vote over the un-masked crop (index_outfits.dominant_color), not a colour model. Navy/black and beige/white are expected to confuse. Spot-checked visually on 4 real crops 2026-08-04: all 4 CATEGORIES were plausible, but only ~2 colours were usable -- a correctly-labelled 'loafer' had a bounding box containing wall, ground and both legs, so its colour was read almost entirely off the background. Colour is a re-ranking hint at best and must never filter results.",
     "Category labels survive a loose bounding box far better than colours do, because FashionCLIP still scores the dominant garment in an oversized crop while the colour vote just averages in whatever else is in frame.",
     "The corpus is Reddit/Pinterest/wear-site street style. It is not a representative sample of how anyone dresses; it is a sample of what gets posted.",
+    "`pants` is the top companion for EVERY anchor category (64% of shirt outfits, 65% of t-shirt, 61% of loafer, 51% of jacket...). That is partly true and partly a detector artifact -- bottoms are large, central and easy to segment. Treat a bare 'wear it with pants' as near-zero information; the informative signal is in `color_pairs` and `by_context`, which do discriminate.",
     "DO NOT RANK BY `lift` OR `npmi`. They are emitted as diagnostics only. The detector recovers ~1.7 items from photos of people wearing 4-5, so categories compete for a capped number of detections and nearly every pair scores below chance. See `diagnostics.lift_is_unreliable`."
   ],
   "totals": {

@@ -134,6 +134,12 @@ CAVEATS = [
     "The corpus is Reddit/Pinterest/wear-site street style. It is not a "
     "representative sample of how anyone dresses; it is a sample of what gets "
     "posted.",
+    "`pants` is the top companion for EVERY anchor category (64% of shirt "
+    "outfits, 65% of t-shirt, 61% of loafer, 51% of jacket...). That is partly "
+    "true and partly a detector artifact -- bottoms are large, central and "
+    "easy to segment. Treat a bare 'wear it with pants' as near-zero "
+    "information; the informative signal is in `color_pairs` and `by_context`, "
+    "which do discriminate.",
     "DO NOT RANK BY `lift` OR `npmi`. They are emitted as diagnostics only. "
     "The detector recovers ~1.7 items from photos of people wearing 4-5, so "
     "categories compete for a capped number of detections and nearly every "
