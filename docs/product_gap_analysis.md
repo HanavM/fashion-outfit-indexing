@@ -23,7 +23,7 @@ built-but-disproven items are stated plainly.
 | Candidate retrieval | **Done**, and tuned to saturation |
 | Patch-level reranking | **Built, measured, HARMFUL** (−30pt). Disabled. The spec asks for it; the evidence says no |
 | Multimodal reranking | Score fusion built and **also harmful** (−6.2pt). Disabled |
-| **Outfit-level results** | **Not built.** The final box of the spec diagram. `composed_query_search.py` returns two independent searches |
+| **Outfit-level results** | **Built 2026-08-04**, on real but thin evidence. `outfit_cooccurrence.json` aggregates detections over all 6,860 outfit photos; `composed_query_search.py` now grounds companions in observed co-occurrence and falls back to the old two-independent-searches path when the corpus has none. `POST /compose` is NOT yet wired to it |
 
 ## Spec §1 — the four named query types
 
@@ -73,12 +73,42 @@ real photo. Roughly five minutes, and it is the only thing that converts
 
 ### P1 — the answer is incomplete without these
 
-**11.1 Outfit-level results.** Run `index_outfits.py` over the 6,860
+**11.1 Outfit-level results.** ~~Run `index_outfits.py` over the 6,860
 outfit photos on GPU, build a co-occurrence index, and replace
-`/compose`'s two-independent-searches with retrieval against it. This is
-the difference between "cargo pants exist in the catalog" and "this
-jacket is worn with cargo pants." `modal_app_index_outfits.py` is written
-and smoke-tested; the corpus run has not been started.
+`/compose`'s two-independent-searches with retrieval against it.~~
+**Done 2026-08-04, with a real caveat on how thin the evidence is.**
+
+The corpus run completed on an A10G: all 6,860 records, 0 failures,
+10,842 items, ~3.9 GPU-hours (~$5.6 total Modal spend including a
+cancelled first attempt). `build_outfit_cooccurrence.py` aggregates it
+into `outfit_cooccurrence.json`, and `composed_query_search.py` now
+returns an `outfit_evidence` block instead of the blanket "two
+independent searches" disclaimer, falling back to the old path (and
+naming which of three reasons applied) when the corpus has no evidence.
+
+**Half the corpus contributes nothing.** 14.5% of photos yielded no
+detection and 34.1% yielded exactly one item; a single-item photo says
+nothing about what goes with what. The index therefore rests on the
+**3,530 photos (51.5%) that yielded 2+ distinct categories**, not on
+6,860. Mean 1.85 items per productive outfit, from photos of people
+wearing four or five garments — so the binding constraint is 11.2's
+detector, not the data, and improving it would deepen this index for
+free.
+
+Two things measured while building it, both worth not re-learning:
+- **`lift`/PMI are unusable here.** 52 of 74 pairs scored below chance,
+  which is impossible of clothing. Categories compete for a capped number
+  of detections (one item per category, plus NMS), so joint probabilities
+  sit below the product of the marginals. Ranking is by count/p(b|a); the
+  artifact is recorded in the index's own `diagnostics`.
+- **Colour is much weaker than category.** Spot-checking crops, a
+  correctly-labelled "loafer" had a box containing wall, ground and both
+  legs, so its colour came off the background. Colour re-ranks, never
+  filters.
+
+Still open: `POST /compose` in `modal_app_serve.py` reimplements the text
+half itself and still returns the old hardcoded "co-occurrence index ...
+does not exist yet" note. The index exists; that endpoint needs wiring.
 
 **11.2 Detection that survives a screenshot.** Fix `segment_outfit.py`'s
 resize behaviour (`MAX_IMAGE_DIM=1024` shrinks a 1170×2532 screenshot's
@@ -140,6 +170,14 @@ personal use. 1,342 Pinterest records still have no author.
 
 The retrieval core is strong and largely finished. What is missing is
 **breadth, not depth**: two of four query types unserved, no brand
-evidence, no outfit reasoning, and detection that does not survive the
-real input modality. None of these need a better encoder — 59.92% R@1 is
-not the bottleneck for any of them.
+evidence, and detection that does not survive the real input modality.
+None of these need a better encoder — 59.92% R@1 is not the bottleneck
+for any of them.
+
+Outfit reasoning has moved from "not built" to "built on thin, unlabelled
+evidence" (11.1). The thing now limiting it is the same detector that
+limits 11.2: it recovers 1.85 garments from photos containing four or
+five, so half the outfit corpus contributes nothing to co-occurrence.
+That makes 11.2 the highest-leverage item on this list — it is the only
+one that would improve two boxes at once — and it still needs no better
+encoder.
