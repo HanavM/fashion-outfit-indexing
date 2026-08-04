@@ -1,0 +1,27 @@
+# Pinterest search grids -- one query per line.
+# Pinterest's robots.txt disallows everything for User-agent: *; this target
+# is an explicit, reviewed exception by the project owner (see
+# docs/outfit_sourcing_plan.md, "Revision -- Pinterest is reachable"). Do NOT
+# pass --respect-robots here or every line is skipped.
+# Breadth is the point: one query's grid converges on one look, so a dozen
+# disjoint queries buy far more variety than a deeper scroll of one.
+https://www.pinterest.com/search/pins/?q=streetwear%20outfit
+https://www.pinterest.com/search/pins/?q=mens%20outfit%20inspiration
+https://www.pinterest.com/search/pins/?q=womens%20outfit%20inspiration
+https://www.pinterest.com/search/pins/?q=ootd
+https://www.pinterest.com/search/pins/?q=outfit%20of%20the%20day%20men
+https://www.pinterest.com/search/pins/?q=workwear%20outfit
+https://www.pinterest.com/search/pins/?q=techwear%20outfit
+https://www.pinterest.com/search/pins/?q=vintage%20outfit%20style
+https://www.pinterest.com/search/pins/?q=casual%20everyday%20outfit
+https://www.pinterest.com/search/pins/?q=summer%20outfit%20street%20style
+https://www.pinterest.com/search/pins/?q=winter%20outfit%20street%20style
+https://www.pinterest.com/search/pins/?q=denim%20outfit%20men
+https://www.pinterest.com/search/pins/?q=korean%20street%20fashion
+https://www.pinterest.com/search/pins/?q=japanese%20street%20fashion%20outfit
+https://www.pinterest.com/search/pins/?q=minimalist%20outfit%20women
+https://www.pinterest.com/search/pins/?q=business%20casual%20outfit
+https://www.pinterest.com/search/pins/?q=athleisure%20outfit
+https://www.pinterest.com/search/pins/?q=fit%20check
+https://www.pinterest.com/search/pins/?q=full%20body%20outfit%20photo
+https://www.pinterest.com/search/pins/?q=skater%20style%20outfit

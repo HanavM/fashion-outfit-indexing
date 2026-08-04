@@ -76,6 +76,13 @@ SCROLL_PAUSE = 1.2
 MAX_SCROLLS = 60
 # Stop scrolling after this many consecutive rounds that add no new images.
 SCROLL_PATIENCE = 3
+# How far one scroll round advances, in CSS px. Deliberately close to a
+# viewport height rather than a big jump: virtualized masonry grids
+# (Pinterest) only mount the rows near the viewport, so leaping 12k px past
+# unmounted rows harvests nothing from the region it skipped. Measured
+# 2026-08-03 on one Pinterest search page: 2000px yields 180 images where
+# 12000px yields 65, for 13s instead of 4s.
+SCROLL_STEP = 2000
 PAGE_TIMEOUT_MS = 60_000
 
 # Junk that survives the size filter on most sites.
@@ -241,6 +248,12 @@ def harvest_page(page, url, target_images, verbose=True):
 
     found, stale = {}, 0
     for round_index in range(MAX_SCROLLS):
+        # `before` must be captured before this round's harvest, not after:
+        # nothing between a `wheel()` and the next `evaluate()` can change
+        # the count, so comparing across the scroll alone made `stale`
+        # increment every single round and capped every page at exactly
+        # SCROLL_PATIENCE scrolls no matter how much it had left to give.
+        before = len(found)
         for entry in page.evaluate(HARVEST_JS, MIN_RENDER_SIDE):
             if URL_BLOCKLIST.search(entry["url"]):
                 continue
@@ -251,12 +264,13 @@ def harvest_page(page, url, target_images, verbose=True):
         if len(found) >= target_images:
             break
 
-        before = len(found)
-        page.mouse.wheel(0, 12_000)
+        if round_index:  # round 0 has no prior round to be stale against
+            stale = stale + 1 if len(found) == before else 0
+            if stale >= SCROLL_PATIENCE:
+                break
+
+        page.mouse.wheel(0, SCROLL_STEP)
         time.sleep(SCROLL_PAUSE)
-        stale = stale + 1 if len(found) == before else 0
-        if stale >= SCROLL_PATIENCE:
-            break
 
     if verbose:
         print(f"    harvested {len(found)} candidate images from {url[:70]}")
