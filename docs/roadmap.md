@@ -3,6 +3,21 @@
 Status snapshot and phased plan following the audit of the codebase against
 `docs/project_spec_v1.md`. Written 2026-07-27.
 
+> **Read this first (added 2026-08-04).** Phases 0–5 below are
+> substantially DONE. The "Immediate next step" section further down still
+> says to begin at Phase 0 — that was true on 2026-07-27 and has been
+> stale for a week; it is kept only because the dated update sections
+> beneath it are the real history.
+>
+> For current work see, in order:
+> - **`docs/roadmap_to_deployment.md`** — Phases 6–9, the path to a usable
+>   product. The dominant gap is that there is no serving layer at all.
+> - **`docs/rerank_improvement_scope.md`** — model-quality levers, running
+>   in parallel and deliberately off the deployment critical path.
+> - **`docs/eval_log.md`** — every measured number. Current best is
+>   **59.92% R@1** (2026-08-04, ungated, K=150,
+>   `GALLERY_IMAGES_PER_PRODUCT=6+`).
+
 ## Where things actually stand
 
 **Mature / spec-aligned:**
