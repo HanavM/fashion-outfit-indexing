@@ -27,6 +27,7 @@ apparel_dataset/ or outfit_dataset/.
 
 import argparse
 import json
+import os
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -123,6 +124,47 @@ THEMES = {
         "map application screenshot",
     ],
 }
+
+
+class _SingleWriter:
+    """Refuse to start if another copy of this scraper is already running.
+
+    Learned the hard way on the first bulk run, and it is the same incident
+    SCRAPING_PROCESS.md records for apparel_dataset: two processes each hold
+    the whole record list in memory and rewrite metadata.json wholesale, so the
+    later save silently erases everything the other one added. It cost 127
+    already-downloaded images -- files on disk with no record, invisible to
+    every consumer and un-re-addable, since the scraper skips paths that
+    already exist. Cheaper to refuse than to reconcile.
+
+    A pid file rather than a real lock: this is one script on one machine, and
+    the failure it must prevent is "the operator started it twice."
+    """
+
+    def __init__(self, path):
+        self.path = Path(path)
+
+    def __enter__(self):
+        if self.path.is_file():
+            try:
+                other = int(self.path.read_text().strip())
+                os.kill(other, 0)
+            except (ValueError, ProcessLookupError):
+                pass  # stale pid file from a crash; ours now
+            except PermissionError:
+                raise SystemExit(f"another scraper (pid {other}) is running")
+            else:
+                raise SystemExit(
+                    f"another negatives_scraper is running (pid {other}). "
+                    f"Two writers WILL destroy metadata.json -- see _SingleWriter. "
+                    f"If that pid is dead, delete {self.path}.")
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        self.path.write_text(str(os.getpid()))
+        return self
+
+    def __exit__(self, *exc):
+        self.path.unlink(missing_ok=True)
+        return False
 
 
 def load_records() -> list:
@@ -315,7 +357,8 @@ def main():
               if t in THEMES]
 
     stats = new_stats()
-    records = collect(sources, args.per_query, args.target, themes, stats)
+    with _SingleWriter(DATASET_DIR / ".scraper.pid"):
+        records = collect(sources, args.per_query, args.target, themes, stats)
     print(f"\n{len(records)} records in {METADATA_PATH}")
     print(format_stats(stats))
 
