@@ -414,28 +414,97 @@ with METADATA_PATH.open("r", encoding="utf-8") as f:
 CATALOG = {}          # product_code -> {brand, name, category, model_identity, images: [resolved paths]}
 IMAGES_BY_PRODUCT = defaultdict(list)
 
-print("Building catalog (verifying every image -- slow on Drive FUSE, this is expected to take a while, not hung)...")
-for _product in tqdm(_metadata, desc="Verifying catalog images"):
+# Catalog verification is the slowest part of startup on Colab, and it
+# runs on EVERY invocation before any model loads. Per image it costs up
+# to five path probes (resolve_image_path's candidate list) plus a full
+# file read (Image.verify() reads the whole file), and Google Drive FUSE
+# charges round-trip latency for each one -- ~14k images, serially.
+#
+# Two fixes, both here rather than by weakening the check itself: results
+# are cached to disk keyed on metadata.json's own fingerprint, and the
+# cold path is threaded. The work is pure I/O latency, so threads help
+# far past core count and PIL releases the GIL while reading.
+CATALOG_CACHE_PATH = INDEX_DIR / "catalog_image_cache.json"
+CATALOG_VERIFY_WORKERS = int(os.environ.get("CATALOG_VERIFY_WORKERS", "32"))
+# Escape hatch: skip verification entirely and trust whatever resolves.
+# Faster still, but a corrupt JPEG then surfaces as a crash deep inside
+# the identity-index build instead of being filtered out here.
+SKIP_CATALOG_VERIFY = os.environ.get("SKIP_CATALOG_VERIFY", "").lower() in {"1", "true", "yes"}
+
+
+def _catalog_cache_fingerprint():
+    """Cache is valid only for the exact metadata.json that produced it.
+
+    Keyed on the metadata file rather than per-image stats: negative
+    results (an image that doesn't resolve at all) can't be revalidated
+    cheaply, and metadata.json changes whenever images are added or
+    recropped anyway -- so tying the two together keeps negatives safe to
+    cache without a per-image stat.
+    """
+    try:
+        stat = METADATA_PATH.stat()
+    except OSError:
+        return None
+    return {"metadata_size": stat.st_size, "metadata_mtime": int(stat.st_mtime),
+            "dataset_root": str(DATASET_ROOT), "verified": not SKIP_CATALOG_VERIFY}
+
+
+def _verify_catalog_image(raw_path):
+    """-> (raw_path, resolved path str) or (raw_path, None) if unusable."""
+    path = resolve_image_path(raw_path)
+    if path is None:
+        return raw_path, None
+    if SKIP_CATALOG_VERIFY:
+        return raw_path, str(path)
+    # Corrupted/truncated-file skip, same convention as
+    # finetune_siglip2_v3.py / dino_identity_finetune.py -- without this a
+    # single bad JPEG crashes the whole identity-index build deep inside
+    # HierarchicalRetriever.__init__ instead of being filtered out here at
+    # catalog-build time.
+    try:
+        with Image.open(path) as _check_image:
+            _check_image.verify()
+    except Exception:
+        return raw_path, None
+    return raw_path, str(path)
+
+
+_fingerprint = _catalog_cache_fingerprint()
+_resolved_by_raw = None
+if _fingerprint is not None and CATALOG_CACHE_PATH.is_file():
+    try:
+        _cached = json.loads(CATALOG_CACHE_PATH.read_text(encoding="utf-8"))
+        if _cached.get("fingerprint") == _fingerprint:
+            _resolved_by_raw = _cached["resolved"]
+            print(f"Catalog image cache: hit ({len(_resolved_by_raw):,} paths, skipping verification).")
+    except (json.JSONDecodeError, OSError, KeyError):
+        _resolved_by_raw = None
+
+if _resolved_by_raw is None:
+    _all_raw_paths = sorted({raw for product in _metadata for raw in product.get("images", [])})
+    print(f"Building catalog ({'resolving' if SKIP_CATALOG_VERIFY else 'verifying'} "
+          f"{len(_all_raw_paths):,} images, {CATALOG_VERIFY_WORKERS} threads -- "
+          f"cached for next run)...")
+    _resolved_by_raw = {}
+    with ThreadPoolExecutor(max_workers=CATALOG_VERIFY_WORKERS) as _pool:
+        for _raw, _resolved in tqdm(_pool.map(_verify_catalog_image, _all_raw_paths),
+                                    total=len(_all_raw_paths), desc="Verifying catalog images"):
+            _resolved_by_raw[_raw] = _resolved
+    if _fingerprint is not None:
+        try:
+            CATALOG_CACHE_PATH.write_text(
+                json.dumps({"fingerprint": _fingerprint, "resolved": _resolved_by_raw}),
+                encoding="utf-8")
+        except OSError as _error:
+            print(f"Catalog image cache: not saved ({_error}) -- startup will re-verify next run.")
+
+for _product in _metadata:
     _product_code = normalize_text(_product.get("product_code", ""))
     if not _product_code:
         continue
     _identity, _category, _brand = product_identity_and_category(_product)
-    _resolved_images = []
-    for _raw_path in _product.get("images", []):
-        _path = resolve_image_path(_raw_path)
-        if _path is None:
-            continue
-        # Corrupted/truncated-file skip, same convention as
-        # finetune_siglip2_v3.py / dino_identity_finetune.py -- without
-        # this a single bad JPEG crashes the whole identity-index build
-        # deep inside HierarchicalRetriever.__init__ instead of being
-        # filtered out here at catalog-build time.
-        try:
-            with Image.open(_path) as _check_image:
-                _check_image.verify()
-        except Exception:
-            continue
-        _resolved_images.append(str(_path))
+    _resolved_images = [resolved for _raw_path in _product.get("images", [])
+                        if (resolved := _resolved_by_raw.get(_raw_path)) is not None]
     if not _resolved_images:
         continue
     CATALOG[_product_code] = {
