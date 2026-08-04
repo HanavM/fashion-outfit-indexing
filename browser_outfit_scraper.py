@@ -89,7 +89,32 @@ URL_BLOCKLIST = re.compile(
 UPGRADE_LADDERS = {
     "i.pinimg.com": (re.compile(r"/(\d+x\d*|originals)/"),
                      ["/originals/", "/1200x/", "/736x/", "/564x/"]),
+    # wear.jp declares only `_276.jpg` in the grid -- 276x368, below the
+    # 320px floor, so a DOM-faithful scrape of it collects ZERO images, the
+    # same trap Pinterest sets. The width is a plain filename suffix and
+    # bigger renditions are generated on demand: measured 2026-08-03,
+    # `_1000.jpg` returns 1000x1334 and `_500.jpg` 500x667, while `_org.jpg`
+    # is 403. Ladder down rather than up so one 404 doesn't lose the photo.
+    "images.wear2.jp": (re.compile(r"_(\d+)\.jpg"),
+                        ["_1000.jpg", "_750.jpg", "_500.jpg"]),
 }
+
+# host substring -> regex whose group 1 is the author handle in an ITEM url.
+# Provenance rule 3 in SCRAPING_PROCESS.md requires an author on every
+# record so a takedown can be traced without re-scraping; sites that put the
+# handle in the permalink give it away for free.
+AUTHOR_PATTERNS = {
+    "wear.jp": re.compile(r"wear\.jp/([^/]+)/\d+"),
+}
+
+
+def author_for(item_url: str) -> str:
+    for host, pattern in AUTHOR_PATTERNS.items():
+        if host in item_url:
+            match = pattern.search(item_url)
+            if match:
+                return match.group(1)
+    return ""
 
 
 def upgrade_candidates(url: str) -> list:
@@ -197,7 +222,9 @@ def source_for(url: str) -> str:
 def item_id_for(item_url: str) -> str:
     """Prefer the site's own item id when the URL exposes one."""
     for pattern in (r"/pin/(\d+)", r"/p/([A-Za-z0-9_-]{5,})",
-                    r"/photos?/([A-Za-z0-9_-]{5,})", r"/status/(\d+)"):
+                    r"/photos?/([A-Za-z0-9_-]{5,})", r"/status/(\d+)",
+                    # wear.jp: /<handle>/<coordinate id>/
+                    r"wear\.jp/[^/]+/(\d+)"):
         match = re.search(pattern, item_url)
         if match:
             return match.group(1)
@@ -251,7 +278,7 @@ def build_record(source, item_url, section, entries, paths, urls, hashes):
         "source": source,
         "source_id": item_id_for(item_url),
         "post_url": item_url,
-        "author": "",
+        "author": author_for(item_url),
         "title": titles[0] if titles else "",
         "section": section,
         "created_utc": 0,

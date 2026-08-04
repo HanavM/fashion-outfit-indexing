@@ -18,6 +18,12 @@ __pycache__/
 apparel_dataset/*/
 apparel_dataset_sample/
 apparel_dataset_full/
+# Same rule for the real-outfit tree: images stay out of git, the
+# metadata.json manifest beside them stays tracked.
+outfit_dataset/*/
+outfit_dataset/.metadata.lock
+outfit_dataset/metadata.json.tmp
+logs/
 checkpoints/
 Self-Correction-Human-Parsing/
 
