@@ -1232,6 +1232,46 @@ unambiguous which fields are scraped fact and which are model output.
    checkpoint `metadata.json` every 10-20 records, never `rm` it to reset
    state, verify `json.load()` after any crash (see "Lessons learned").
 
+### Running it at scale — the procedure, and what it costs
+
+Added 2026-08-03 after the first bulk collection run.
+
+```
+./run_reddit_wide.sh        # 17 shards, one per subreddit, ~150-200 images/min
+python dedup_outfits.py     # report cross-shard duplicates
+python dedup_outfits.py --apply
+```
+
+Four operational facts that are not obvious from the scrapers themselves:
+
+1. **Fan out, don't run one process.** The reddit scraper is network-bound,
+   not CPU-bound — a single process spends nearly all its wall clock in
+   `requests.get` and in the politeness sleeps, and measured ~6 images/min.
+   One process per subreddit measured **150-200 images/min** while staying
+   under ~15% of one core. The Arctic Shift API is not the limit (1.1s per
+   100-post page, no 429s observed with 17 concurrent clients).
+
+2. **Sharding weakens dedup, so sweep afterwards.** Each process loads its
+   own in-memory phash list at startup. Dedup is exact within a shard and
+   blind across them, and reposts across these subs are endemic. That is
+   what `dedup_outfits.py` is for — it is part of the procedure, not
+   cleanup. It re-reads under the lock, so it is safe to run while
+   scrapers are still going.
+
+3. **Expect ~45% of image fetches to 404, and don't try to fix it.** That
+   is Reddit media deleted after the archive snapshotted the post, and it
+   rises with post age. Verified on 25 such posts: the `preview` blob
+   recovers **zero** of them, so there is no fallback ladder worth adding.
+   Budget for it — a 300-image target scans far more posts than 300.
+
+4. **Browser-driven sources are expensive and must be run alone.** Two
+   headless Chromium instances took this machine to **load average 68**
+   alongside the segmentation job, as the top two CPU consumers at 96% and
+   64%. Never run `browser_outfit_scraper.py` concurrently with model or
+   segmentation work, and never two of it at once. Reddit is both the
+   deepest source and the cheap one; the browser is a supplement for an
+   idle machine.
+
 ### Standing note: these are photos of real people
 
 The brand scrapers collect corporate product photography. This target
