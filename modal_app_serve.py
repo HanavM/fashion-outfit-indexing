@@ -308,6 +308,23 @@ class FashionService:
             # rather than letting a client read `rejected_open_set: false`
             # as "the system checked and is confident".
             "reject_threshold_calibrated": False,
+            # The garment gate, unlike open-set rejection, IS calibrated --
+            # AUROC 0.9994 against 507 real non-clothing photos, operating
+            # point +0.010 for FR 2.50% / FA 0.39% (docs/eval_log.md
+            # 2026-08-04). The pipeline reports it without enforcing so the
+            # eval path is unaffected; enforcing is this layer's job.
+            #
+            # `looks_like_clothing: false` does NOT empty `results`. The
+            # closest matches stay visible and the client decides -- same
+            # discipline as open-set rejection, and it keeps a false-reject
+            # (2.5%, and by measurement ALL of them are worn outfits, i.e.
+            # real users) recoverable rather than a dead end.
+            "garment_gate": {
+                "score": round(float(raw["garment_gate"]["score"]), 6),
+                "threshold": raw["garment_gate"]["threshold"],
+                "looks_like_clothing": bool(raw["garment_gate"]["passed"]),
+                "calibrated": True,
+            },
             "same_model_different_colorway_ambiguous": bool(raw["same_model_different_colorway_ambiguous"]),
             "predicted_category": {
                 "node": raw["hsc_predicted_node"],
@@ -322,13 +339,31 @@ class FashionService:
 
     @staticmethod
     def _short(brand, name, limit=52):
-        label = f"{brand} {name}".strip()
+        # Don't prepend the brand when the name already starts with it.
+        # Many catalog names embed it ("Nike Pro Dri-FIT", "Gap x Awake
+        # NY ..."), and the naive concatenation produced "Nike Nike Pro
+        # Dri-FIT". Harmless in JSON, but this string is SPOKEN, and a
+        # doubled brand is immediately audible as broken.
+        brand = (brand or "").strip()
+        name = (name or "").strip()
+        if brand and name.lower().startswith(brand.lower()):
+            label = name
+        else:
+            label = f"{brand} {name}".strip()
         return label if len(label) <= limit else label[:limit].rsplit(" ", 1)[0] + "…"
 
     def _spoken_identify(self, shaped):
         results = shaped["results"]
         if not results:
             return "I couldn't find anything close to that in the catalog."
+        # Checked before anything else: if there is no clothing in the
+        # frame, naming the closest catalog product is exactly the
+        # confident-nonsense failure this gate exists to stop. Said out
+        # loud rather than silently returning matches, because the spoken
+        # line is the whole answer for a voice surface.
+        gate = shaped.get("garment_gate") or {}
+        if gate and not gate.get("looks_like_clothing", True):
+            return "I don't see any clothing in that image."
         top = results[0]
         label = self._short(top["brand"], top["name"])
         if shaped["rejected_open_set"]:
