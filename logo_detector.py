@@ -159,6 +159,12 @@ def sample_dataset(records, products_per_brand, images_per_product, seed, use_cr
             for r in by_identity[ident]:
                 field = r.get("cropped_images") if use_cropped else r.get("images")
                 for raw in (field or []):
+                    # `cropped_images` interleaves real crops (*_cropped.jpg)
+                    # with the ORIGINAL file wherever segmentation declined to
+                    # crop. Keeping those would silently put as-shot photos
+                    # back into the control that exists to remove them.
+                    if use_cropped and "_cropped" not in Path(raw).name:
+                        continue
                     resolved = resolve_image(raw)
                     if resolved is not None:
                         paths.append(resolved)
@@ -245,7 +251,7 @@ def load_backbone(name: str):
     raise SystemExit(f"unknown backbone {name}")
 
 
-def embed_rows(rows, backbone, crops_mode, batch_size, progress_every=200):
+def embed_rows(rows, backbone, crops_mode, batch_size, progress_every=50, degrade=0):
     from PIL import Image
 
     encode, device = load_backbone(backbone)
@@ -277,6 +283,12 @@ def embed_rows(rows, backbone, crops_mode, batch_size, progress_every=200):
                 out[slot] = None
                 continue
             piece = img if c == 0 else img.crop((int(l * w), int(t * h), int(r * w), int(b * h)))
+            if degrade:
+                # Destroy every detail smaller than the garment while leaving
+                # colour, silhouette, layout and studio style intact. A logo
+                # is unreadable at 32px; a brand's photography is not. If
+                # accuracy survives this, the probe is not reading marks.
+                piece = piece.resize((degrade, degrade)).resize((384, 384))
             pending.append(piece)
             pending_idx.append(slot)
             if len(pending) >= batch_size:
@@ -307,8 +319,10 @@ def build_or_load_features(args, use_cropped=False, tag_suffix=""):
     records = json.loads(DB_FILE.read_text())
     rows = sample_dataset(records, args.products_per_brand, args.images_per_product,
                           args.seed, use_cropped=use_cropped)
+    degrade = getattr(args, "degrade", 0)
     tag = (f"{args.backbone}_{args.crops}_p{args.products_per_brand}"
-           f"_i{args.images_per_product}_s{args.seed}{tag_suffix}")
+           f"_i{args.images_per_product}_s{args.seed}"
+           f"{f'_d{degrade}' if degrade else ''}{tag_suffix}")
     path = cache_path(args.cache_dir, tag)
     if path.exists() and not args.refresh:
         blob = np.load(path, allow_pickle=True)
@@ -316,7 +330,7 @@ def build_or_load_features(args, use_cropped=False, tag_suffix=""):
         return list(blob["brands"]), list(blob["idents"]), blob["feats"]
 
     args.cache_dir.mkdir(parents=True, exist_ok=True)
-    keep, feats = embed_rows(rows, args.backbone, args.crops, args.batch_size)
+    keep, feats = embed_rows(rows, args.backbone, args.crops, args.batch_size, degrade=degrade)
     brands = [rows[i][0] for i in keep]
     idents = [rows[i][1] for i in keep]
     np.savez_compressed(path, feats=feats, brands=np.array(brands), idents=np.array(idents))
@@ -550,7 +564,8 @@ def cmd_open_set(args):
               f"[DINOv3 distance path: 0.769]")
         print(f"{'reject below':>13} {'false-reject':>13} {'false-accept':>13} {'youden J':>9}")
         best = None
-        for t in np.linspace(0.2, 0.999, 25):
+        grid = np.unique(np.concatenate([p_in, p_off]))
+        for t in grid:
             fr = float((p_in < t).mean())      # in-catalog wrongly rejected
             fa = float((p_off >= t).mean())    # off-catalog wrongly accepted
             j = (1 - fr) + (1 - fa) - 1
@@ -593,6 +608,10 @@ def main():
     ap.add_argument("--C", type=float, default=1.0)
     ap.add_argument("--seed", type=int, default=17)
     ap.add_argument("--batch-size", type=int, default=16)
+    ap.add_argument("--degrade", type=int, default=0,
+                    help="logo-legibility control: downsample each crop to NxN before "
+                         "embedding, destroying any mark while keeping colour/silhouette/"
+                         "studio style. Accuracy that survives this is not logo reading.")
     ap.add_argument("--refresh", action="store_true")
     ap.add_argument("--cache-dir", type=Path,
                     default=Path(os.environ.get("LOGO_CACHE_DIR", "checkpoints/logo_detector_cache")))
