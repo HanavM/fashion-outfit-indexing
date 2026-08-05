@@ -82,6 +82,8 @@ image = (
     .pip_install(
         "torch", "torchvision", "transformers", "pillow", "tqdm", "numpy",
         "accelerate", "safetensors", "hydra-core", "iopath",
+        # garment_proposer uses scipy.ndimage for connected components
+        "scipy",
     )
     # SAM2 has no PyPI release; same source install as the apparel job.
     .run_commands("pip install --no-build-isolation git+https://github.com/facebookresearch/sam2.git")
@@ -93,6 +95,7 @@ image = (
     )
     .add_local_file(str(Path(__file__).parent / "index_outfits.py"), "/root/index_outfits.py")
     .add_local_file(str(Path(__file__).parent / "segment_outfit.py"), "/root/segment_outfit.py")
+    .add_local_file(str(Path(__file__).parent / "garment_proposer.py"), "/root/garment_proposer.py")
 )
 
 volume = modal.Volume.from_name("outfit-index", create_if_missing=True)
@@ -106,7 +109,8 @@ TIMEOUT_SECONDS = 6 * 60 * 60
 
 @app.function(image=image, gpu="A10G", volumes={"/data": volume}, timeout=TIMEOUT_SECONDS)
 def index_outfits(source: str = None, limit: int = None,
-                  max_images_per_record: int = 2, force: bool = False):
+                  max_images_per_record: int = 2, force: bool = False,
+                  proposer: str = "sam2"):
     import os
     import subprocess
     import sys
@@ -137,7 +141,8 @@ def index_outfits(source: str = None, limit: int = None,
                         "/data/checkpoints/sam2.1_hiera_small.pt"], check=True)
 
     args = [sys.executable, "/root/index_outfits.py",
-            "--max-images-per-record", str(max_images_per_record)]
+            "--max-images-per-record", str(max_images_per_record),
+            "--proposer", proposer]
     if source:
         args += ["--source", source]
     if limit:
@@ -165,6 +170,8 @@ def index_outfits(source: str = None, limit: int = None,
 
 @app.local_entrypoint()
 def main(source: str = None, limit: int = None,
-         max_images_per_record: int = 2, force: bool = False):
+         max_images_per_record: int = 2, force: bool = False,
+         proposer: str = "sam2"):
     index_outfits.remote(source=source, limit=limit,
-                         max_images_per_record=max_images_per_record, force=force)
+                         max_images_per_record=max_images_per_record, force=force,
+                         proposer=proposer)

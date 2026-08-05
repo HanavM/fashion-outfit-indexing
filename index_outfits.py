@@ -218,6 +218,12 @@ def main():
                         help="Stop after N records. Use for smoke tests -- this is slow on CPU.")
     parser.add_argument("--force", action="store_true",
                         help="Re-detect records that already have detections from the same params.")
+    parser.add_argument("--proposer", choices=["sam2", "human-parsing"], default="sam2",
+                        help="Mask proposer. 'human-parsing' measured 2.48 items/photo at "
+                             "91%% real-garment crops vs sam2's 1.53 at ~48%% (40 photos, all "
+                             "127 crops inspected), and is ~53x faster because it drops SAM2's "
+                             "mask generator. Default stays sam2 because outfit_cooccurrence.json "
+                             "was built from it -- switching is a deliberate corpus re-run.")
     parser.add_argument("--max-images-per-record", type=int, default=2,
                         help="Cap images processed per post (default 2). Multi-image posts are often "
                              "the same outfit from several angles, so the marginal image is worth "
@@ -256,6 +262,13 @@ def main():
     sam2 = build_sam2(SAM2_CONFIG, SAM2_CHECKPOINT, device=device)
     mask_generator = SAM2AutomaticMaskGenerator(sam2, **MASK_GENERATOR_KWARGS)
 
+    # Loaded once for the whole corpus, like the SAM2 generator above.
+    parser_processor = parser_model = None
+    if args.proposer == "human-parsing":
+        from garment_proposer import load_human_parser, propose_garment_items
+        print("Loading human parser...")
+        parser_processor, parser_model = load_human_parser(device)
+
     touched = {}
     stats = {"records": 0, "images": 0, "items": 0, "empty_images": 0, "failed_images": 0}
     started = time.time()
@@ -271,7 +284,12 @@ def main():
                 stats["failed_images"] += 1
                 continue
             try:
-                items = detect_outfit_items(image_path, mask_generator, processor, clip_model, device)
+                if args.proposer == "human-parsing":
+                    items = propose_garment_items(
+                        image_path, parser_processor, parser_model,
+                        processor, clip_model, device)
+                else:
+                    items = detect_outfit_items(image_path, mask_generator, processor, clip_model, device)
             except Exception as error:
                 # One bad image must not kill a multi-hour corpus run.
                 print(f"  detection failed on {image_path}: {error}")
