@@ -116,6 +116,20 @@ subject to ~360×180, which is likely why SAM2 stops proposing per-garment
 masks), then validate on a real labelled screenshot set. Until then the
 Shortcut relies on a human crop, which currently beats the detector.
 
+*Update 2026-08-05 — the resize hypothesis was not the main cause.* The
+detector's weakness is upstream of resolution: SAM2's class-agnostic point
+grid does not propose garment-shaped regions at all (the full measurement
+is in `segment_outfit.py`'s `DISTRACTOR_MARGIN` block). `garment_proposer.py`
+replaces the proposer with human parsing and, on 40 random corpus photos,
+takes **1.53 → 2.48 items/photo while roughly doubling crop precision by
+eye (~48% → 91%, all 127 crops inspected)**; the 2026-08-05 roadmap entry
+has the table and the failure modes. Shipped opt-in as `--proposer
+human-parsing`; making it the default means re-running the corpus and
+rebuilding `outfit_cooccurrence.json` from it, which is now cheap (~1.4 s
+vs ~75 s per photo on CPU). The screenshot case still needs its own
+validation — the parser needs a person in frame, which is the one thing a
+page screenshot does reliably contain.
+
 **11.3 Brand evidence — logo detection and OCR.** ~~Likely the single
 largest untried accuracy lever left.~~ **Built and measured 2026-08-04
 (`brand_evidence.py`, `brand_evidence_eval.py`, `--brand-boost`). The

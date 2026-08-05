@@ -107,6 +107,27 @@ MIN_REGION_PIXELS = 400
 # piece of it, not a 20-pixel fragment.
 MIN_COMPONENT_RATIO = 0.15
 
+# Minimum mean parser posterior for a region to be believed.
+#
+# MEASURED, on the 40-image sample whose 105 crops I inspected one by one
+# (see the commit message / docs entry for the run). Of those 105, 15 were
+# not real garments -- mostly a bare foot or a sandal strap read as
+# Left-shoe, plus one collage image whose four regions came out shredded.
+# Their mean parser posterior is median 0.653 against 0.944 for the 90
+# real ones, so this single number separates them well:
+#
+#     thr 0.0  kept 105  real 85.7%  items/photo 2.62
+#     thr 0.5  kept  99  real 90.9%  items/photo 2.48   <- default
+#     thr 0.7  kept  86  real 96.5%  items/photo 2.15
+#     thr 0.9  kept  57  real 98.2%  items/photo 1.43
+#
+# 0.5 is the strictly-free point on this sample: it removes 6 false
+# positives and zero true ones. 0.7 buys another 5.6pp of precision for
+# 0.33 items/photo and is one argument away. Honest caveat: these numbers
+# come from the same 40 images the threshold was picked on -- it is a
+# defensible default, not a held-out result.
+MIN_PARSER_SCORE = 0.5
+
 MAX_IMAGE_DIM = 1024
 
 
@@ -183,7 +204,8 @@ def garment_regions(label_map, probs, min_area_fraction=MIN_REGION_AREA_FRACTION
 
 def propose_garment_items(image_path, parser_processor, parser_model,
                           clip_processor, clip_model, device="cpu",
-                          min_confidence=0.0, mask_background=True):
+                          min_confidence=0.0, mask_background=True,
+                          min_parser_score=MIN_PARSER_SCORE):
     """Garment-aware replacement for segment_outfit.detect_outfit_items.
 
     Returns the same dicts: category_group, category, label, confidence,
@@ -205,7 +227,8 @@ def propose_garment_items(image_path, parser_processor, parser_model,
     full_area = image.width * image.height
 
     label_map, probs = parse_person(image, parser_processor, parser_model, device)
-    regions = garment_regions(label_map, probs)
+    regions = [r for r in garment_regions(label_map, probs)
+               if r["parser_score"] >= min_parser_score]
     if not regions:
         return []
 
@@ -293,6 +316,9 @@ def main():
     parser.add_argument("--image", required=True)
     parser.add_argument("--out-dir", default=None)
     parser.add_argument("--min-confidence", type=float, default=0.0)
+    parser.add_argument("--min-parser-score", type=float, default=MIN_PARSER_SCORE,
+                        help="Minimum mean parser posterior per region. See MIN_PARSER_SCORE "
+                             "for the measured precision/recall trade at 0.5 / 0.7 / 0.9.")
     args = parser.parse_args()
 
     from transformers import AutoProcessor, AutoModelForZeroShotImageClassification
@@ -305,7 +331,8 @@ def main():
 
     items = propose_garment_items(args.image, parser_processor, parser_model,
                                   clip_processor, clip_model, device,
-                                  min_confidence=args.min_confidence)
+                                  min_confidence=args.min_confidence,
+                                  min_parser_score=args.min_parser_score)
     print(f"{len(items)} item(s) in {args.image}:")
     out_dir = Path(args.out_dir) if args.out_dir else None
     if out_dir:

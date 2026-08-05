@@ -2176,3 +2176,86 @@ a from-scratch build of the same state.**
 Practical effect: catching the local index up from 872 to 1,272 products
 now costs ~400 products' worth of encoding instead of 1,272, and the next
 brand costs only itself.
+
+## Update — 2026-08-05: the outfit detector's bottleneck was the PROPOSER, and a garment-aware one recovers 62% more items at ~2x the precision
+
+`segment_outfit.py`'s `DISTRACTOR_MARGIN` block ends on a measured
+negative: thresholds cannot fix this detector. The 63 masks a distractor
+won have a median best-garment score of 0.031 against 0.034 for uniform
+over 29 labels, so FashionCLIP sees no clothing in them at all, and
+sweeping the margin gave bit-identical output. The problem is that SAM2's
+class-agnostic point grid does not propose garment-shaped regions.
+
+**New module `garment_proposer.py` replaces the proposer, not the
+thresholds.** It parses the person into clothing classes (ATR-18:
+Upper-clothes, Pants, Left/Right-shoe, Hat, ...), takes connected
+components per class, blanks everything outside the garment inside its own
+bbox, and only then asks FashionCLIP which category the region is —
+restricted to the groups the parser's class permits, so "Pants" can never
+come back a hat. Skin and background are excluded **structurally**, by the
+parser's own Face/arm/leg/Background classes, instead of by the score
+comparison that was never going to work.
+
+**Human parsing over prompted SAM2**, the other candidate: a keypoint
+prompt still yields a *class-agnostic* region near the torso, which leaves
+FashionCLIP the same undecidable question it is already failing. The
+parser answers "this pixel is Upper-clothes" directly.
+
+**Not the vendored `Self-Correction-Human-Parsing/`,** for two checked
+reasons rather than assumed ones: (1) no weights exist anywhere in the
+tree — `find -name '*.pth'` returns only a setuptools shim, and the
+official checkpoints are Google Drive links; (2) decisively,
+`networks.init_model` does not build on this machine at all — it pulls in
+`modules/bn.py`'s InPlaceABN, which JIT-compiles a CUDA C++ extension and
+dies with `CUDA_HOME environment variable is not set` on a CPU/MPS Mac
+(installing ninja gets exactly one error further). Used instead a
+SegFormer trained on the **same ATR dataset and the same 18-class label
+space**, through plain `transformers` classes — same task, same label
+semantics, obtainable weights, no vendored CUDA extension and no
+`trust_remote_code`.
+
+**Measured on 40 random `outfit_dataset` photos** (seed 11, first image of
+each of 40 random posts; reddit/pinterest/wear mixed).
+
+| | items/photo | photos with 0 items | crops judged real garments |
+|---|---|---|---|
+| SAM2 (current default) | **1.53** | 8/40 | 10-11 of 22 (~48%) |
+| human-parsing | **2.48** | 4/40 | 90 of 99 (**91%**) |
+
+The "before" column is the corpus's own stored `detected_items`; re-running
+the SAM2 path on 15 of the 40 reproduced its stored count on **15 of 15**,
+so the stored numbers are the live path, not stale.
+
+**Precision was inspected by eye, not asserted.** All 105 human-parsing
+crops and all 22 SAM2 crops from the same photos, one at a time. The SAM2
+number is the honest one to compare against: 5 of its 22 crops are the
+*whole person* labelled with one garment, and 6 more are ground, a wall,
+or a garment other than the label (one crop of a jeans waistband labelled
+"shirt"). Counting merely "contains a garment somewhere" SAM2 reaches
+16/22, but a whole-person crop is useless to a per-item index, so ~48% is
+the number that matters. The human-parsing failures are a different and
+narrower kind: 15 of 105 were not garments, almost all a **bare foot or a
+sandal strap read as Left/Right-shoe**, plus one collage photo whose four
+regions came out shredded.
+
+Those failures separate cleanly on the parser's own posterior (median
+0.653 vs 0.944 for the real ones), so `MIN_PARSER_SCORE = 0.5` is the
+default — the strictly-free point, removing 6 false positives and zero
+true ones. 0.7 gives 96.5% precision at 2.15 items/photo and is one
+argument away. Caveat stated in the module: the threshold was chosen on
+the same 40 images it is scored on.
+
+**Known limits, not papered over.** ATR has no Coat class, so a jacket and
+the tee under it are one Upper-clothes region — layering is not recovered,
+which is exactly the case the "4-5 garments per photo" figure counts. Skirt
+and Dress are parsed but deliberately dropped: `docs/hierarchy.json` has no
+category for either, and inventing one would put items in the co-occurrence
+index no catalog category can match.
+
+**Shipped opt-in as `--proposer human-parsing`, default unchanged.**
+`outfit_cooccurrence.json` was built from the SAM2 path; flipping the
+default silently would leave that corpus only half-comparable to itself.
+Making it the default is worth doing, but as a deliberate full re-run of
+the 6,860-photo corpus with the index rebuilt from it, not as a quiet
+behaviour change. Bonus: no SAM2 mask generator means **~1.4 s/photo on
+CPU versus ~75 s** for the SAM2 path, so that re-run is now cheap.
