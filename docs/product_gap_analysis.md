@@ -152,6 +152,19 @@ signal (AUROC 0.769).
 ### P2 — worth doing, not blocking
 
 **12.1 Attribute heads** at query time, replacing offline LLM captions.
+**BUILT AND MEASURED 2026-08-05** (`attribute_heads.py`, eval_log row).
+The heads themselves work: on a product-level holdout, closure 85.3% vs
+25.2% majority, material 81.7% vs 50.0%, colour 69.0% vs 25.0%, fit 67.1%
+vs 34.0%. Wiring them into ranking earns **nothing** — best delta across
+three split seeds is +0.15 / −0.76 / −0.46 pt R@1, i.e. noise, and larger
+weights collapse the ranking the way `--patch-rerank` did. Unlike the
+other negatives, though, the mechanism is not dead: an ORACLE arm using
+the products' own labels gives a consistent **+8pt R@1**, so the ranking
+information is real and the head's 67–85% accuracy is what fails to carry
+it. So: keep the heads as a query-time descriptor (they can fill the 297
+products with no material label and 1,141 with no fit label), do not add
+a rerank flag until a head is materially more accurate. All accuracy
+numbers are against LLM-generated labels, not ground truth.
 **12.2 Catalog-size reset** — push the six local-only brands, re-baseline;
 R@1 will drop on distractor count alone.
 **12.3 Licensing review** — blocking for a *public* surface, not for

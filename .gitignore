@@ -38,6 +38,13 @@ Self-Correction-Human-Parsing/
 catalog_embeddings.npy
 catalog_metadata.json
 
+# attribute_heads.py inputs and outputs: 49MB of frozen SigLIP2 vectors dumped
+# by modal_app_attribute_embed.py, and the trained heads themselves. Both are
+# regenerable from the Volume in one GPU run plus a minute of CPU, so they are
+# data, not source.
+attribute_head_embeddings/
+attribute_heads_v3/
+
 # Debug/scratch output images
 output.png
 output_apparel.png
