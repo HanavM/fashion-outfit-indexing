@@ -114,7 +114,7 @@ ENV = {
 
 @app.function(image=image, gpu="A10G", volumes={"/data": volume},
               secrets=[hf_secret], timeout=90 * 60)
-def evaluate(extra_args: str = "", index_dir: str = ""):
+def evaluate(extra_args: str = "", index_dir: str = "", env: str = ""):
     """`extra_args` is appended to --evaluate (e.g. "--open-set-holdout-fraction 0.1").
 
     `index_dir` sets RETRIEVAL_INDEX_DIR. Pass it for ANY run whose flags
@@ -129,7 +129,17 @@ def evaluate(extra_args: str = "", index_dir: str = ""):
     import subprocess
     import sys
 
-    env = {**os.environ, **ENV, "PYTHONUNBUFFERED": "1"}
+    extra_env = {}
+    if env:
+        # "KEY=VAL,KEY2=VAL2" -- lets a caller set pipeline knobs that are
+        # env-driven (EVAL_GALLERY_SIZE, GALLERY_IMAGES_PER_PRODUCT,
+        # DISTRACTOR_MARGIN) without a new parameter per knob.
+        for pair in env.split(","):
+            if "=" in pair:
+                k, v = pair.split("=", 1)
+                extra_env[k.strip()] = v.strip()
+        print(f"extra env: {extra_env}", flush=True)
+    env = {**os.environ, **ENV, **extra_env, "PYTHONUNBUFFERED": "1"}
     if index_dir:
         env["RETRIEVAL_INDEX_DIR"] = index_dir
         print(f"index dir isolated to {index_dir} (serving index untouched)", flush=True)
@@ -147,5 +157,5 @@ def evaluate(extra_args: str = "", index_dir: str = ""):
 
 
 @app.local_entrypoint()
-def main(extra_args: str = "", index_dir: str = ""):
-    evaluate.remote(extra_args=extra_args, index_dir=index_dir)
+def main(extra_args: str = "", index_dir: str = "", env: str = ""):
+    evaluate.remote(extra_args=extra_args, index_dir=index_dir, env=env)

@@ -205,6 +205,35 @@ OPEN_SET_HOLDOUT_FRACTION = 0.0
 # (and vice versa) -- these two splits answer different questions.
 OPEN_SET_SPLIT_SEED = 20260803
 
+# ---- Fixed-size gallery evaluation --------------------------------------
+#
+# R@1 IS NOT COMPARABLE ACROSS CATALOG SIZES, and this exists to fix that.
+#
+# Measured 2026-08-04/05: doubling the catalog from 1,077 to 2,230 gallery
+# products moved R@1 from 59.92% to 43.05% at fixed K, and to 47.65% once
+# K was scaled. Part of that is a config failure (K did not grow with the
+# catalog) and part is real -- more products means more things that look
+# like the query. The two are entangled, so "did the model improve" and
+# "did the catalog grow" cannot be separated from R@1 alone.
+#
+# Decomposing does not rescue it either: conditional R@1 (accuracy given
+# the true product IS in the shortlist) goes 60.6% -> 53.8% -> 50.6% as
+# the catalog and K grow, because a larger candidate set is a harder
+# reranking job. Neither number is stable.
+#
+# The standard fix is to score against a FIXED-SIZE gallery. With this
+# set, a deterministic sample of N products becomes the entire catalog for
+# the run, and only queries whose true product is in that sample are
+# evaluated. R@1 then means the same thing at 2,000 products as at 50,000,
+# so the catalog can grow -- which it must, for coverage -- while model
+# quality stays measurable.
+#
+# Deterministic (EVAL_GALLERY_SEED) so two runs at the same N are directly
+# comparable. Off by default: 0 means "use the whole catalog", i.e. every
+# existing row in docs/eval_log.md keeps its meaning.
+EVAL_GALLERY_SIZE = int(os.environ.get("EVAL_GALLERY_SIZE", "0"))
+EVAL_GALLERY_SEED = int(os.environ.get("EVAL_GALLERY_SEED", "20260805"))
+
 # Score fusion (spec sections 2.1/6: candidates should be reranked with
 # more than one signal, not DINOv3-rerank-only). Off by default, same
 # caution pattern as the category gate -- an unvalidated new arm to
@@ -1430,6 +1459,9 @@ class HierarchicalRetriever:
             self.dino_backbone, self.dino_head, self.dino_use_projection, self.dino_processor,
             dino_checkpoint, self.gallery_images_by_product, open_set_holdout_fraction,
         )
+        if EVAL_GALLERY_SIZE:
+            self._restrict_to_fixed_gallery(EVAL_GALLERY_SIZE)
+
         self.gallery_index_by_code = {code: i for i, code in enumerate(self.gallery_product_codes)}
 
         # ---- Move every index onto the GPU, once -------------------
@@ -1462,6 +1494,65 @@ class HierarchicalRetriever:
         self._codes_by_identity_index = [
             list(IDENTITY_TO_PRODUCT_CODES[identity]) for identity in self.identities
         ]
+
+    def _restrict_to_fixed_gallery(self, size):
+        """Shrink the catalog to a deterministic sample of `size` products.
+
+        See EVAL_GALLERY_SIZE for why. Restricts the DINOv3 gallery, the
+        SigLIP2 identity index, and the query set together -- restricting
+        only the gallery would leave the shortlist proposing identities
+        whose products no longer exist, which reads as a shortlist miss
+        and would make the fix look like a regression.
+
+        Queries whose true product falls outside the sample are dropped,
+        because they are unanswerable by construction. That is the correct
+        behaviour for a fixed-size-catalog simulation, not a filter to
+        flatter the number: every surviving query still competes against
+        the full `size` products.
+        """
+        if size >= len(self.gallery_product_codes):
+            print(f"Fixed gallery: requested {size:,} >= catalog "
+                  f"{len(self.gallery_product_codes):,} -- using the whole catalog.")
+            return
+
+        rng = random.Random(EVAL_GALLERY_SEED)
+        keep_codes = set(rng.sample(sorted(self.gallery_product_codes), size))
+
+        keep_positions = [i for i, code in enumerate(self.gallery_product_codes)
+                          if code in keep_codes]
+        index = torch.tensor(keep_positions, dtype=torch.long,
+                             device=self.gallery_embeddings.device)
+        self.gallery_product_codes = [self.gallery_product_codes[i] for i in keep_positions]
+        self.gallery_embeddings = self.gallery_embeddings[index].contiguous()
+
+        # Identities keep only their surviving product codes. An identity
+        # whose every colorway was sampled out is dropped entirely.
+        surviving_identities, identity_positions = [], []
+        for position, identity in enumerate(self.identities):
+            codes = [c for c in IDENTITY_TO_PRODUCT_CODES[identity] if c in keep_codes]
+            if codes:
+                surviving_identities.append(identity)
+                identity_positions.append(position)
+        identity_index = torch.tensor(identity_positions, dtype=torch.long,
+                                      device=self.identity_embeddings.device)
+        self.identities = surviving_identities
+        self.identity_embeddings = self.identity_embeddings[identity_index].contiguous()
+        self._codes_by_identity_index = [
+            [c for c in IDENTITY_TO_PRODUCT_CODES[i] if c in keep_codes]
+            for i in self.identities
+        ]
+        self.identity_category = {i: c for i, c in self.identity_category.items()
+                                  if i in set(surviving_identities)}
+        self._shortlist_cache = {}
+
+        before = len(self.test_image_by_product)
+        self.test_image_by_product = {code: paths for code, paths
+                                      in self.test_image_by_product.items()
+                                      if code in keep_codes}
+        print(f"Fixed gallery: {len(self.gallery_product_codes):,} products, "
+              f"{len(self.identities):,} identities, "
+              f"{len(self.test_image_by_product):,}/{before:,} queries answerable "
+              f"(seed {EVAL_GALLERY_SEED}).")
 
     def garment_gate(self, siglip_image_embedding):
         """Does this image contain clothing at all? -> dict with score/passed.

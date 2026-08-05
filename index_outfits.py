@@ -183,12 +183,21 @@ def save_detections_safe(touched):
     return by_key
 
 
-def detection_params():
+def detection_params(proposer="sam2"):
     """The knobs that decide what counts as a detected item. Stored on
     every record so a future reader can tell whether two records'
-    detections are comparable without re-reading this file's git history."""
+    detections are comparable without re-reading this file's git history.
+
+    `proposer` is part of this on purpose. needs_detection() compares the
+    whole dict, so without it a human-parsing re-run over sam2-labelled
+    records reads as "already detected with the same params" and is
+    skipped unless --force -- i.e. the better proposer would silently
+    no-op. It is also the field that tells a later reader which half of a
+    partially re-run corpus they are looking at.
+    """
     return {
         "version": DETECTION_VERSION,
+        "proposer": proposer,
         "sam2_checkpoint": str(SAM2_CHECKPOINT),
         "fashion_clip": FASHION_CLIP_MODEL,
         "mask_generator_kwargs": dict(MASK_GENERATOR_KWARGS),
@@ -236,7 +245,7 @@ def main():
               f"(Scrapers write there; see SCRAPING_PROCESS.md's real-outfit section.)")
         return
 
-    params = detection_params()
+    params = detection_params(args.proposer)
     pending = [r for r in records
                if (args.source is None or r.get("source") == args.source)
                and needs_detection(r, params, args.force)]
