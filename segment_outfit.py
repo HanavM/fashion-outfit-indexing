@@ -411,6 +411,16 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--image", required=True, help="Path to an outfit photo.")
     parser.add_argument("--out-dir", default=None, help="Directory to save per-item crops (optional).")
+    parser.add_argument("--proposer", choices=["sam2", "human-parsing"], default="sam2",
+                        help="Which module proposes candidate regions. 'sam2' (default) is "
+                             "the class-agnostic point grid this script has always used. "
+                             "'human-parsing' uses garment_proposer.py, which segments the "
+                             "person into clothing classes first -- see that module's "
+                             "docstring and the DISTRACTOR_MARGIN block above for the "
+                             "measurement that motivated it. OPT-IN on purpose: "
+                             "outfit_cooccurrence.json was built from the sam2 path, and "
+                             "silently changing detection would make that corpus only "
+                             "half-comparable to itself.")
     parser.add_argument("--subject-crop", action="store_true",
                         help="Locate the photographic subject first and detect garments "
                              "within it. Use for SCREENSHOTS, where the garment is a "
@@ -427,12 +437,27 @@ def main():
     clip_model = AutoModelForZeroShotImageClassification.from_pretrained("patrickjohncyh/fashion-clip")
     clip_model.to(device)
 
-    print("Loading SAM2...")
-    sam2 = build_sam2(SAM2_CONFIG, SAM2_CHECKPOINT, device=device)
-    mask_generator = SAM2AutomaticMaskGenerator(sam2, **MASK_GENERATOR_KWARGS)
+    if args.proposer == "human-parsing":
+        # Imported here, not at module scope: garment_proposer imports back
+        # from this module for the taxonomy, and it must stay possible to
+        # run the default sam2 path without the parser's weights present.
+        from garment_proposer import load_human_parser, propose_garment_items
+        if args.subject_crop:
+            # --subject-crop's whole mechanism is SAM2-based (find_subject_bbox
+            # runs the mask generator), and the parser needs no help finding
+            # the person anyway -- it segments one directly.
+            print("Note: --subject-crop is ignored by the human-parsing proposer.")
+        print("Loading human parser...")
+        parser_processor, parser_model = load_human_parser(device)
+        items = propose_garment_items(args.image, parser_processor, parser_model,
+                                      processor, clip_model, device)
+    else:
+        print("Loading SAM2...")
+        sam2 = build_sam2(SAM2_CONFIG, SAM2_CHECKPOINT, device=device)
+        mask_generator = SAM2AutomaticMaskGenerator(sam2, **MASK_GENERATOR_KWARGS)
 
-    items = detect_outfit_items(args.image, mask_generator, processor, clip_model, device,
-                                subject_crop=args.subject_crop)
+        items = detect_outfit_items(args.image, mask_generator, processor, clip_model, device,
+                                    subject_crop=args.subject_crop)
 
     print(f"\n{len(items)} item(s) detected in {args.image}:")
     out_dir = Path(args.out_dir) if args.out_dir else None
