@@ -56,12 +56,35 @@ using the background-removed garment crops in `cropped_images`. A probe
 that is really reading marks should survive; a probe reading studio
 background should collapse. Read the two numbers together or not at all.
 
+WHAT THE CONTROLS ACTUALLY SAID (2026-08-05, eval_log)
+------------------------------------------------------
+The confound won. Held-out accuracy is 99.08% and macro per-brand recall
+98.44% against OCR's 11.07% -- but the full-image arm BEATS the crops
+(99.08% > 98.34%), accuracy at 32x32 where no mark is legible is still
+83.95%, and on 300 real outfit photos confidence falls 0.852 -> 0.406,
+with confidence alone separating real-photo from catalog-photo at AUROC
+0.967. **This is a brand-photography-style classifier, not a logo
+detector.** It is a good free brand labeller for catalog-side imagery and
+a bad query-side signal, and it is deliberately not wired into retrieval.
+
+Image-level brand labels turned out to be solvable without ever looking
+at the mark, so the optimiser never looked. A real logo detector needs
+mark-level supervision -- boxes on logos, or a mark-crop dataset.
+
 USAGE
 -----
     .venv/bin/python logo_detector.py --embed          # cache features
     .venv/bin/python logo_detector.py --evaluate       # 12-brand P/R + confusion
-    .venv/bin/python logo_detector.py --eval-cropped   # style-confound control
+    .venv/bin/python logo_detector.py --eval-cropped   # background-removal control
+    .venv/bin/python logo_detector.py --evaluate --crops full --degrade 32 --pool full
+                                                       # logo-legibility control
+    .venv/bin/python logo_detector.py --nn-baseline    # brand already in the embedding?
+    .venv/bin/python logo_detector.py --domain-check   # does it survive real photos?
     .venv/bin/python logo_detector.py --open-set       # 6-in / 6-out rejection
+
+Each control needs its own cached feature set (the cache tag encodes
+--crops / --degrade / cropped-vs-as-shot), so run the matching --embed
+first or let the eval build it.
 
 Nothing here writes to apparel_dataset/ -- it is read-only over the catalog,
 and every cached feature goes to --cache-dir (default: a scratch path).
