@@ -50,6 +50,7 @@ Usage:
 
 import argparse
 import json
+import os
 from pathlib import Path
 
 import numpy as np
@@ -105,6 +106,54 @@ MAX_AREA_FRACTION = 0.55
 NMS_IOU_THRESHOLD = 0.5
 
 DISTRACTOR_LABELS = ["a person", "a face", "human skin", "background", "the ground", "a wall"]
+
+# How decisively a distractor must beat the best garment label before the
+# mask is discarded.
+#
+# Measured 2026-08-04 by instrumenting the funnel over 8 real outfit
+# photos: of 174 proposed masks, 137 cleared the area floor and only 16
+# survived everything -- and **90 of those 137 (66%) died solely because
+# their top label was a distractor**. Confidence dropped 12 and the area
+# band dropped 19, so this single rule discarded more than four times as
+# much as the other two filters combined. That is the reason the detector
+# recovers ~1.85 garments from photos containing 4-5.
+#
+# The rule was inherited from segment_apparel.py, where it is correct: a
+# catalog photo is one garment on white, so a mask scoring highest for "a
+# person" really is background. A WORN OUTFIT photo inverts that -- every
+# garment mask also contains a person, so "a person" wins on regions that
+# are predominantly clothing.
+#
+# Argmax is the wrong comparison for that; a margin is the right one, the
+# same fix that worked for the garment gate and find_subject_bbox.
+#
+# ---- AND THEN IT TURNED OUT TO BUY NOTHING. Kept, at 0.0, as a record. ----
+#
+# Sweeping 0.0 / 0.10 / 0.20 / 0.30 over 6 real outfit photos produced
+# BIT-IDENTICAL output: 7 items, same per-image counts, same categories.
+# The reason is that the funnel attribution above was an artifact of
+# filter ORDER, not a real bottleneck. Measuring the 63 masks a distractor
+# actually won:
+#
+#     best-garment score   min 0.000   median 0.031   max 0.241
+#     would clear MIN_CONFIDENCE=0.4:  0 of 63
+#     would clear MIN_CONFIDENCE=0.2:  3 of 63
+#
+# So those masks die at MIN_CONFIDENCE regardless; the distractor check
+# merely got credit for kills that came first in the code. A median
+# garment score of 0.031 against 0.034 for uniform over 29 labels means
+# FashionCLIP sees no clothing in them AT ALL -- the rule is correct, and
+# there is nothing there to rescue.
+#
+# The real bottleneck is UPSTREAM of every filter: SAM2's class-agnostic
+# point grid is not proposing masks that isolate individual garments. Of
+# 174 proposals across 8 photos only ~16 were garment-shaped regions, and
+# no threshold can recover a garment from a proposal that does not contain
+# one. Fixing this needs a garment-aware proposer -- human parsing (this
+# repo already vendors Self-Correction-Human-Parsing, currently unused by
+# any script) or SAM2 prompted with person keypoints instead of a uniform
+# grid. Parameter tuning is the wrong tool.
+DISTRACTOR_MARGIN = float(os.environ.get("DISTRACTOR_MARGIN", "0.0"))
 
 # Category label phrasings per the 5-group/13-category taxonomy finalized
 # in docs/hierarchy.json (2026-08-01 restructuring) -- kept in sync with
@@ -304,8 +353,28 @@ def detect_outfit_items(image_path, mask_generator, processor, clip_model, devic
         top_score = probs[idx, top_label_idx].item()
         top_label = CANDIDATE_LABELS[top_label_idx]
         area_fraction = area / full_area
-        if top_label not in LABEL_TO_CATEGORY:
-            continue  # top match was a distractor label -- not a garment
+
+        # Garment-vs-distractor by MARGIN, not argmax. See DISTRACTOR_MARGIN:
+        # at 0.0 this is bit-identical to the old `top_label not in
+        # LABEL_TO_CATEGORY: continue`, because requiring the distractor to
+        # merely exceed the garment is the same as it winning the argmax.
+        garment_scores = [(probs[idx, j].item(), CANDIDATE_LABELS[j])
+                          for j in range(len(CANDIDATE_LABELS))
+                          if CANDIDATE_LABELS[j] in LABEL_TO_CATEGORY]
+        distractor_best = max((probs[idx, j].item()
+                               for j in range(len(CANDIDATE_LABELS))
+                               if CANDIDATE_LABELS[j] not in LABEL_TO_CATEGORY),
+                              default=0.0)
+        if not garment_scores:
+            continue
+        garment_best, garment_label = max(garment_scores)
+        if distractor_best > garment_best + DISTRACTOR_MARGIN:
+            continue  # a distractor wins decisively -- background, not clothing
+
+        # From here the garment interpretation is the one under test, so
+        # confidence and area are judged on IT rather than on whatever
+        # happened to win the raw argmax.
+        top_label, top_score = garment_label, garment_best
         if top_score < MIN_CONFIDENCE:
             continue
         if not (MIN_AREA_FRACTION <= area_fraction <= MAX_AREA_FRACTION):
