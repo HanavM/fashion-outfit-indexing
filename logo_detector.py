@@ -471,9 +471,14 @@ def cmd_evaluate(args, use_cropped_test=False):
                 print(f"{c:<12} {p:>7.1%} {r:>7.1%} {f1:>7.1%} {n:>5} "
                       f"{(f'{o:.1%}' if o is not None else '-'):>8} "
                       f"{(f'{100 * (r - o):+.1f}pt' if o is not None else '-'):>8}")
-            macro_r = np.mean([r for _, _, r, _, _ in rows])
-            print(f"macro recall {macro_r:.2%} vs OCR macro recall "
-                  f"{np.mean([OCR_RECALL[c] for c, *_ in rows if c in OCR_RECALL]):.2%}")
+            # Macro over classes that are actually PRESENT. The cropped
+            # control only covers 7 brands; averaging a 0% recall over
+            # brands with no test images would understate it by ~40pt.
+            present = [(c, r) for c, _, r, _, n in rows if n > 0]
+            macro_r = np.mean([r for _, r in present])
+            print(f"macro recall over the {len(present)} brands present: {macro_r:.2%} "
+                  f"vs OCR macro recall on the same brands "
+                  f"{np.mean([OCR_RECALL[c] for c, _ in present if c in OCR_RECALL]):.2%}")
             print("\nconfusion matrix (rows = truth, cols = predicted):")
             print_confusion(confusion(y_true, y_pred, classes), classes)
 
@@ -524,6 +529,76 @@ def cmd_nn_baseline(args):
     for b in sorted(set(true_brand)):
         m = true_brand == b
         print(f"{b:<12} {float((nn_brand[m] == b).mean()):>13.2%} {int(m.sum()):>5}")
+
+
+def cmd_domain_check(args):
+    """Does the probe survive leaving catalog photography?
+
+    Every number in --evaluate and --open-set is measured on catalog
+    product shots, which is also what the probe trained on. The deployment
+    case is a phone photo of a person wearing the garment. `outfit_dataset`
+    is exactly that -- real Reddit/Pinterest outfit photos -- and although
+    it carries no brand labels, it does not need them for this question:
+    if the probe's confidence on real photos collapses to the same range as
+    its confidence on off-catalog *brands*, then what --open-set measured
+    is a catalog-photography detector wearing a brand detector's clothes,
+    and it would reject a real user's in-catalog garment just as eagerly.
+    """
+    from PIL import Image
+
+    brands, idents, feats = build_or_load_features(args)
+    idents = np.array(idents)
+    classes = sorted(set(brands))
+    cls_index = {c: i for i, c in enumerate(classes)}
+    y = np.array([cls_index[b] for b in brands])
+    train_ids, test_ids = split_identities(sorted(set(idents)), args.test_fraction)
+    tr = np.array([i in train_ids for i in idents])
+    clf = fit_probe(feats[tr], y[tr], args.C)
+
+    catalog_conf = image_probs(clf, feats[~tr], args.report_pool).max(axis=1)
+
+    outfits = json.loads(Path("outfit_dataset/metadata.json").read_text())
+    rng = random.Random(args.seed)
+    rng.shuffle(outfits)
+    paths = []
+    for rec in outfits:
+        for raw in rec.get("images") or []:
+            if Path(raw).exists():
+                paths.append(raw)
+                break
+        if len(paths) >= args.domain_samples:
+            break
+
+    encode, _ = load_backbone(args.backbone)
+    boxes = crop_boxes(args.crops)
+    vecs = []
+    for i in range(0, len(paths), 8):
+        batch_imgs, owners = [], []
+        for p in paths[i:i + 8]:
+            try:
+                img = Image.open(p).convert("RGB")
+            except Exception:
+                continue
+            w, h = img.size
+            for c, (l, t, r, b) in enumerate(boxes):
+                piece = img if c == 0 else img.crop((int(l * w), int(t * h), int(r * w), int(b * h)))
+                if args.degrade:
+                    piece = piece.resize((args.degrade, args.degrade)).resize((384, 384))
+                batch_imgs.append(piece)
+            owners.append(p)
+        if batch_imgs:
+            vecs.append(encode(batch_imgs).reshape(len(owners), len(boxes), -1))
+    real = np.concatenate(vecs).astype(np.float32)
+    real_conf = image_probs(clf, real, args.report_pool).max(axis=1)
+
+    print(f"\nreal outfit photos scored: {len(real_conf)}   catalog held-out: {len(catalog_conf)}")
+    for name, arr in (("catalog held-out", catalog_conf), ("real outfit photos", real_conf)):
+        qs = np.quantile(arr, [0.1, 0.25, 0.5, 0.75, 0.9])
+        print(f"{name:<20} mean {arr.mean():.3f}  median {qs[2]:.3f}  "
+              f"p10 {qs[0]:.3f}  p90 {qs[4]:.3f}  frac>0.5 {float((arr > 0.5).mean()):.2%}")
+    print(f"AUROC separating real-outfit from catalog by confidence alone: "
+          f"{auroc(-real_conf, -catalog_conf):.4f}  "
+          f"(1.0 = confidence is purely a 'is this a catalog photo' detector)")
 
 
 def cmd_open_set(args):
@@ -597,6 +672,9 @@ def main():
     ap.add_argument("--eval-cropped", action="store_true",
                     help="style-confound control: test on background-removed garment crops")
     ap.add_argument("--open-set", action="store_true", help="6-in / 6-out rejection evaluation")
+    ap.add_argument("--domain-check", action="store_true",
+                    help="score real outfit photos (outfit_dataset) with the catalog-trained probe")
+    ap.add_argument("--domain-samples", type=int, default=300)
     ap.add_argument("--nn-baseline", action="store_true",
                     help="how much brand the identity-retrieval path already knows (orthogonality control)")
     ap.add_argument("--backbone", default="siglip2", choices=["siglip2", "dinov3"])
@@ -617,8 +695,9 @@ def main():
                     default=Path(os.environ.get("LOGO_CACHE_DIR", "checkpoints/logo_detector_cache")))
     args = ap.parse_args()
 
-    if not any([args.embed, args.evaluate, args.eval_cropped, args.open_set, args.nn_baseline]):
-        ap.error("pick one of --embed / --evaluate / --eval-cropped / --open-set / --nn-baseline")
+    if not any([args.embed, args.evaluate, args.eval_cropped, args.open_set, args.nn_baseline, args.domain_check]):
+        ap.error("pick one of --embed / --evaluate / --eval-cropped / --open-set / "
+                 "--nn-baseline / --domain-check")
 
     if args.embed:
         build_or_load_features(args)
@@ -630,6 +709,8 @@ def main():
         cmd_nn_baseline(args)
     if args.open_set:
         cmd_open_set(args)
+    if args.domain_check:
+        cmd_domain_check(args)
 
 
 if __name__ == "__main__":

@@ -156,12 +156,60 @@ brand look alike, so DINOv3 had already ranked a same-brand product
 first on nearly every query where OCR fired.
 
 `--brand-boost` stays in the tree, off by default, harmless and
-measured. The live follow-ups are **a logo detector** (a small trained
-classifier over brand marks, which is what the 89% of photos OCR cannot
-help with actually needs) and **brand evidence for open-set rejection**
-rather than ranking — a brand read matching no catalog brand is positive
-evidence the product is off-catalog, and that path badly needs a better
-signal (AUROC 0.769).
+measured.
+
+**The logo detector this row called for was then built and measured
+2026-08-05 (`logo_detector.py`, three eval_log rows). It closes the
+wordmark-vs-logo gap on paper and closes nothing in practice, because it
+is not a logo detector — it is a brand-photography-style classifier.**
+
+A logistic probe over frozen SigLIP2 features, held out by product
+identity, gets **99.08%** on 542 unseen catalog images and lifts macro
+per-brand recall from OCR's 11.07% to **98.44%** — precisely on the
+brands OCR could not read (Stüssy 0.0% → 100%, New Balance 1.0% → 100%,
+Champion 4.0% → 98.3%). Four controls say that number is not about marks:
+
+* **The crops bought nothing.** Multi-crop MIL pooling was the whole
+  reason to expect logo reading, and the *full-image* arm is the best arm
+  (99.08% vs 98.34% max-pool). Zooming in should help a mark reader.
+* **Destroying every mark costs 15pt.** At **32×32**, where no logo,
+  wordmark or script is legible, accuracy is still **83.95%** and Stüssy
+  still scores 82.8%. ~85% of the performance carries no mark at all.
+* **It collapses off catalog photography.** On 300 real outfit photos,
+  mean confidence falls 0.852 → 0.406; confidence alone separates
+  real-photo from catalog-photo at **AUROC 0.967**, higher than the 0.909
+  it manages at its actual job.
+* Background removal is survivable (92.64%), so it is not *only* studio
+  backdrop — what survives is house style: palette, cut, treatment.
+
+The ranking question is also now settled with a measured cause rather
+than an inference. **Nearest-neighbour on the same frozen embedding
+already predicts brand at 96.49%** — a 12-way probe adds 2.59pt. That is
+the control the `--brand-boost` row never had, and it explains its
++0.10pt exactly. Since the weight-1.0 arm already measured the ceiling of
+a 100%-precision brand signal, the only variable a detector changes is
+coverage (11% → ~100%), bounding the best case at roughly **+0.9pt** on
+an extrapolation that itself assumes information the embedding does not
+already have. Nothing was wired into the pipeline and no Modal run was
+spent on it.
+
+Open-set is the same story: AUROC **0.9092** vs the DINOv3 path's 0.769,
+but **worse where it counts** (20.44% off-catalog recall at 1%
+false-reject vs 32%), and against a strictly easier split (whole brands
+held out, not identities within brands). Given the 0.967 domain AUROC,
+that rejection signal is mostly a "not a catalog photo" detector and
+would false-reject real users' in-catalog garments.
+
+**So spec §4.5's "Visible logo" source is still genuinely unbuilt.** What
+exists now is a 99%-accurate free brand labeller for *catalog-side*
+imagery and a demonstration that whole-image embeddings cannot supply
+query-side logo evidence. A real logo detector needs mark-level
+supervision — detection boxes on logos, or a mark-crop dataset — not
+image-level brand labels, because image-level labels are solvable without
+ever looking at the mark and the optimiser will always take that route.
+Until then OCR's 100%-precision / 9.17%-recall read remains the only
+brand evidence that is actually about the garment rather than the
+photographer.
 
 ### P2 — worth doing, not blocking
 
