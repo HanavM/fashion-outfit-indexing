@@ -3,6 +3,9 @@
 Status snapshot and phased plan following the audit of the codebase against
 `docs/project_spec_v1.md`. Written 2026-07-27.
 
+> **START HERE: `docs/SESSION_HANDOFF.md`** — current state, the
+> ceiling call, what not to redo, and the operational gotchas.
+>
 > **Read this first (added 2026-08-04).** Phases 0–5 below are
 > substantially DONE. The "Immediate next step" section further down still
 > says to begin at Phase 0 — that was true on 2026-07-27 and has been
