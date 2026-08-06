@@ -154,12 +154,59 @@ SUBREDDITS = [
     # posts and is flat-lay thrift hauls -- the product-shot look this dataset
     # exists to contrast against -- while ootd/menswear/inspo/advice are worn.
     ("vintagefashion", 150, {"ootd", "menswear", "inspo", "advice plz"}, 0),
+    # ------------------------------------------------------------------
+    # Added 2026-08-06: US MEN'S expansion. Motivation is corpus/catalog
+    # mismatch, not volume -- apparel_dataset is 18 US brands, 100% men's
+    # (nike, adidas, newbalance, skechers, vans, gap, pacsun, champion,
+    # carhartt, dickies, levis, stussy, obey, huf, braindead, uniqlo,
+    # northface, americaneagle), while 22% of this corpus was JP/KR-sourced
+    # and 20% women's-only -- unmatchable by construction. Every sub below
+    # was probed live on 2026-08-06 (300-post samples) AND had 4 sample
+    # images per candidate flair downloaded and LOOKED AT, because the flair
+    # name lies often enough to matter (see the sneaker-sub rejects below).
+    #
+    # r/malefashionadvice: previously excluded (see the note under this
+    # table) on the grounds that no worn-outfit flair existed. That is now
+    # false -- the sub added 'Fit Feedback' and 'Discuss/Roast Me', which are
+    # 43 of 300 posts. Eyeballed 4: 2 worn (cropped waist-down mirror shots,
+    # visibly Levi's/NB), 1 flat-lay, 1 order-confirmation screenshot. So
+    # ~50-75% precision -- lower than the WDYWT subs, accepted because this
+    # is the largest US men's sub and the brand density is the highest here.
+    ("malefashionadvice", 200, {"fit feedback", "fit feedback/roast me",
+                                "discuss/roast me"}, 0),
+    # r/menswear: unflaired, 167 usable image posts/300, and the titles are
+    # 'Rate the fit' / 'How's the fit?' -- the sub's own topic is the filter.
+    # Eyeballed 4/4 worn full-body. Skews tailored and somewhat European,
+    # which is why it is not the biggest target here.
+    ("menswear", 250, None, 0),
+    # r/Sneakerhead 'Fit Check! 👀' only (15/300). The much larger
+    # 'On Feet 👟' (47/300) is deliberately EXCLUDED -- see rejects.
+    # Eyeballed 4/4 full-body US fits (jerseys, Nike, cargos).
+    ("Sneakerhead", 150, {"fit check! 👀"}, 0),
+    # r/gorpcore: unflaired, 185/300 image posts. Directly on-catalog for
+    # northface. Mixed with 'what brand is this' gear close-ups; eyeballed
+    # 2/4 worn full-body, 2 product. Modest target because of that.
+    ("gorpcore", 150, None, 0),
+    # r/Denim '📸 Fit Picture' only (18/300). Levis-dense. Eyeballed 4/4
+    # worn. The rest of the vocabulary is exactly what to avoid: 'ID/Legit
+    # Check' (50/300) and 'Thrifted'/'Deals & Finds' are flat-lay product.
+    ("Denim", 120, {"📸 fit picture"}, 0),
+    # r/Stussy 'Fit-Pic/ WDYWT' only (13/300). Small but the single
+    # highest-confidence catalog-brand signal available: eyeballed 4/4 are
+    # street full-body shots by people who own the brand.
+    ("Stussy", 80, {"fit-pic/ wdywt"}, 0),
+    # r/CarharttWIP: 79% image posts but 142/300 are 'Legit Check' garment
+    # close-ups. Only the two worn-ish flairs are allowed. Not eyeballed --
+    # 'Showcase' is a guess that it means worn rather than hauls, so treat
+    # this row as the least trusted here and check it in the next review.
+    ("CarharttWIP", 80, {"🧍‍♂️fit check", "📸 showcase"}, 0),
 ]
 
-# Deliberately NOT in the default list: r/malefashionadvice. Its image
+# (Superseded 2026-08-06: r/malefashionadvice IS now in the list above --
+# it has since added a 'Fit Feedback' flair, which did not exist when this
+# note was written. The original reasoning, kept for the record: "Its image
 # posts are flaired Question/Discussion/Guide -- no worn-outfit flair
-# exists, and "Question" mixes fit checks with product and sizing queries.
-# Add it back with an explicit --subreddit if that mix proves acceptable.
+# exists, and Question mixes fit checks with product and sizing queries.")
 #
 # Also probed 2026-08-03 and rejected, so nobody re-probes them:
 #   r/goodyearwelt      63 image posts/100, but they are boot close-ups
@@ -171,6 +218,65 @@ SUBREDDITS = [
 #   r/OutfitIdeas, r/koreanfashion, r/genderqueerfashion, r/streetweardaily
 #                       returned zero posts from the archive -- private,
 #                       renamed, or too small to have been indexed.
+#
+# Probed 2026-08-06 during the US-men's expansion and REJECTED. Do not
+# re-probe; several of these look obviously right from the name and are not.
+#   THE SNEAKER TRAP -- the single biggest finding of that pass. Brand and
+#   sneaker subs have flairs that read exactly like outfit flairs and are
+#   not: r/Sneakers 'WDYWT' (44/300), r/Vans 'WDYWT' (23/300),
+#   r/newbalance 'Fit' (18/300) and r/Sneakerhead 'On Feet' (47/300) are
+#   FOOT AND ANKLE CLOSE-UPS. Four sample images downloaded and viewed from
+#   each: 4/4 on every one were shoes-on-feet, cropped at the shin or knee.
+#   On a corpus whose whole point is a person wearing several garments,
+#   these are near-negatives. "WDYWT" means the shoes on a sneaker sub.
+#   Only r/Sneakerhead's separate 'Fit Check! 👀' flair is real, and it is
+#   in the table above.
+#   r/frugalmalefashion  105 of 134 image posts are [Deal/Sale] -- retailer
+#                       product photos and screenshots, not people.
+#   r/Workwear          85/300 image posts, 63 unflaired, and the mix is
+#                       tactical gear, DIY heated collars and German-language
+#                       product posts. Confirms the earlier r/workwear reject.
+#   r/navyblazer        113/300 image posts and unflaired, which looked ideal.
+#                       Eyeballed 4: a suit on a HANGER, a scanned 1960s
+#                       magazine page, a rugby shirt product shot. Trad
+#                       menswear subs post garments, not fits.
+#   r/Carhartt          72% image posts but the flairs are SALES/TRADE/WTB,
+#                       Vintage, 'ID, age or info request' -- resale flat-lays
+#                       and tag close-ups. The BRAND sub for a catalog brand
+#                       is still not an outfit sub. (r/CarharttWIP is the
+#                       exception, and only on two of its six flairs.)
+#   r/uniqlo, r/thenorthface, r/Dickies, r/Nike, r/adidas, r/americaneagle
+#                       all unflaired, all 30-77% image posts, all dominated
+#                       by legit-checks, 'what is this piece', sizing and
+#                       sale posts. Same lesson as r/Carhartt: catalog-brand
+#                       subs are product-photo subs.
+#   r/Levis             16 posts total in the archive, several NSFW, and the
+#                       sub is substantially about Lévis, Quebec.
+#   r/thriftstorehauls  87% image posts and 55 'Clothing&Accessories' per
+#                       300 -- but hauls are flat-lays by definition.
+#   r/streetwearstartup 206/300 image posts, ~90% t-shirt MOCKUPS and
+#                       print-on-demand designs. Not photographs of people.
+#   r/findfashion       85% image posts but they are 'where can I buy this'
+#                       crops, screenshots and celebrity photos.
+#   r/fashionadvice     167/300 but 21 NSFW and the flair vocabulary is
+#                       'Help Me Style This!' / 'Cop or Drop?' -- held-up
+#                       garments and store screenshots.
+#   r/OutfitOfTheDay    213/300 image posts, but heavily women's and 15/300
+#                       NSFW; overlaps r/OOTD, which is already in the table.
+#   r/skateboarding     41/300 usable image posts -- it is a video and spot
+#                       sub, and the photos are of boards and parks.
+#   r/StreetwearOutfits 26 posts TOTAL (sub died in 2024) and the sample is
+#                       women's influencer-style posts.
+#   r/Y2Kfashion (33 posts), r/hiphopfashion (1), r/HUF (3),
+#   r/AmericanWorkwear (5), r/mensstyle (1)
+#                       too small to be worth a shard.
+#   r/Champion, r/PacSun, r/MensStyleAdvice, r/DadFashionAdvice, r/fitcheck,
+#   r/hypebeast, r/skatestreetwear, r/workwearfashion
+#                       zero posts from the archive -- private, renamed,
+#                       or never indexed.
+#   NOTE r/streetwearfits has now fully degraded: 300/300 posts sampled in
+#   2026-03..06 were over_18. The 2023-2025 content already collected is
+#   fine; there is nothing new to take there.
 
 MAX_IMAGES_PER_POST = 4
 # PHASH_DISTANCE / MIN_IMAGE_BYTES / MIN_IMAGE_SIDE / IMAGE_SLEEP now live in
@@ -185,7 +291,20 @@ SKIP_AUTHORS = {"[deleted]", "AutoModerator", "None", None}
 
 def get_json(params, attempt=0):
     """GET with backoff. Reddit-adjacent hosts rate-limit hard; 429/5xx get
-    exponential backoff rather than being treated as a dead end."""
+    exponential backoff rather than being treated as a dead end.
+
+    **422 is in the retry set too, as of 2026-08-06.** Arctic Shift returns
+    it intermittently on deep `before` cursors -- not for a malformed
+    request, since the identical params succeed on retry. It was not
+    handled, so `raise_for_status()` killed the whole shard: it took out
+    r/Sneakerhead, r/Stussy, r/malefashion and r/malefashionadvice (three
+    times) in one run, and r/malefashionadvice finished at 60 images
+    against a 200 target as a result.
+
+    Restarting is safe -- existing ids are skipped -- but it re-walks from
+    the newest post, so a mid-walk death is expensive in fetches, not just
+    in time.
+    """
     try:
         resp = requests.get(API, headers=HEADERS, params=params, timeout=60)
     except requests.RequestException as error:
@@ -193,7 +312,7 @@ def get_json(params, attempt=0):
             raise
         time.sleep(5 * (2 ** attempt))
         return get_json(params, attempt + 1)
-    if resp.status_code in (429, 500, 502, 503, 504):
+    if resp.status_code in (422, 429, 500, 502, 503, 504):
         if attempt >= 4:
             print(f"  giving up after {attempt} retries (HTTP {resp.status_code})")
             return []
