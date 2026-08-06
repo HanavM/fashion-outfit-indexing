@@ -427,8 +427,19 @@ class OutfitSearch:
             crop_rows = self.crops_by_post.get(post_id, [])
 
             if categories or colors:
-                post_categories = {self.crop_records[r].get("category") for r in crop_rows}
-                post_colors = {self.crop_records[r].get("color") for r in crop_rows}
+                # Fall back to the PHOTO records' own labels when this post
+                # has no crop rows -- either because the crop index is not
+                # built yet, or because the detector found nothing here.
+                # Deriving the filter only from crops meant an unbuilt crop
+                # index excluded every post and returned an empty grid.
+                if crop_rows:
+                    post_categories = {self.crop_records[r].get("category") for r in crop_rows}
+                    post_colors = {self.crop_records[r].get("color") for r in crop_rows}
+                else:
+                    post_categories = {c for r in photo_rows
+                                       for c in self.photo_records[r]["categories"]}
+                    post_colors = {c for r in photo_rows
+                                   for c in self.photo_records[r]["colors"]}
                 if categories and not (set(categories) & post_categories):
                     continue
                 if colors and not (set(colors) & post_colors):
