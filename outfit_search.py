@@ -123,6 +123,7 @@ def load_image_records():
                 "rel": path,
                 "post_id": f"{record.get('source')}:{record.get('source_id')}",
                 "source": record.get("source"),
+                "section": record.get("section"),
                 "post_url": record.get("post_url"),
                 "title": record.get("title"),
                 "author": record.get("author"),
@@ -304,6 +305,28 @@ class OutfitSearch:
         self.processor = AutoProcessor.from_pretrained(self.checkpoint)
         self.model = AutoModel.from_pretrained(self.checkpoint).to(fts.DEVICE).eval()
 
+        # `section` (subreddit / query URL) is joined from metadata at load
+        # time rather than read from the index, because indexes built
+        # before the field existed carry it as None -- and a source filter
+        # that silently matches nothing is worse than one that is absent.
+        # The join is a dict build over 6,860 records; it costs nothing and
+        # it means the filter works without a 35-minute re-encode.
+        try:
+            sections = {}
+            for record in json.loads(OUTFIT_METADATA.read_text()):
+                sections[f"{record.get('source')}:{record.get('source_id')}"] = \
+                    record.get("section")
+            missing = 0
+            for record in self.photo_records:
+                if not record.get("section"):
+                    record["section"] = sections.get(record["post_id"])
+                    missing += record["section"] is None
+            if missing:
+                print(f"  ({missing:,} photos have no section — source filters "
+                      f"cannot exclude them)")
+        except (OSError, json.JSONDecodeError) as error:
+            print(f"  (section join skipped: {error}; source filters degraded)")
+
         # post_id -> row indexes, so a photo's score can be computed from
         # its own garments without scanning the whole crop table per photo.
         self.crops_by_post = {}
@@ -339,6 +362,33 @@ class OutfitSearch:
                 output = self.fts.extract_embeddings(
                     self.model.get_image_features(**inputs)).float()
             return self.torch.nn.functional.normalize(output, dim=-1)[0].cpu()
+
+    # Sections that cannot match the catalog, measured 2026-08-06.
+    #
+    # The catalog is 18 US brands and **100% men's clothing** -- every
+    # scraper targeted men's categories. The outfit corpus is not: 22% is
+    # Japan/Korea-sourced (wear.jp, "korean street fashion") and 20% is
+    # women's fashion. That ~42% cannot match a men's US catalog no matter
+    # how good the encoder gets, so it is worth being able to exclude.
+    #
+    # Matched on `section` (subreddit or query URL), which every record
+    # carries. Deliberately a display filter rather than a deletion: these
+    # are real outfit photos and still useful for a womenswear or JP
+    # catalog later. Off by default -- narrowing a corpus is the caller's
+    # decision, not a silent one.
+    NON_US_SECTIONS = ("wear.jp", "korean")
+    WOMENS_SECTIONS = ("femalefashion", "femalefashionadvice",
+                       "petitefashionadvice", "womens%20outfit", "womens outfit")
+
+    def _section_excluded(self, record, drop_non_us, drop_womens):
+        section = str(record.get("section") or "").lower()
+        source = str(record.get("source") or "").lower()
+        if drop_non_us and (source == "wear"
+                            or any(k in section for k in self.NON_US_SECTIONS)):
+            return True
+        if drop_womens and any(k in section for k in self.WOMENS_SECTIONS):
+            return True
+        return False
 
     def parse_filters(self, text):
         """Pull detector-known category/color terms out of the text.
@@ -386,7 +436,8 @@ class OutfitSearch:
                   if c and c in lowered][:2]
         return categories, colors
 
-    def search(self, parts, top_k=24, use_filters=True):
+    def search(self, parts, top_k=24, use_filters=True,
+               drop_non_us=False, drop_womens=False):
         """Multimodal outfit retrieval over an arbitrary set of query parts.
 
         `parts` is a list of {"kind": "image"|"text", "value": ..., "weight": float}.
@@ -454,8 +505,14 @@ class OutfitSearch:
         categories, colors = sorted(set(categories)), sorted(set(colors))
 
         scored = []
+        excluded_posts = 0
         for post_id, photo_rows in self.photo_rows_by_post.items():
             crop_rows = self.crops_by_post.get(post_id, [])
+
+            if (drop_non_us or drop_womens) and self._section_excluded(
+                    self.photo_records[photo_rows[0]], drop_non_us, drop_womens):
+                excluded_posts += 1
+                continue
 
             if categories or colors:
                 # Fall back to the PHOTO records' own labels when this post
@@ -536,7 +593,8 @@ class OutfitSearch:
                 "filters_applied": {"categories": categories, "colors": colors},
                 "used_crop_index": self.crop_embeddings is not None,
                 "num_parts": len(encoded),
-                "corpus_posts": len(self.photo_rows_by_post)}
+                "excluded_posts": excluded_posts,
+                "corpus_posts": len(self.photo_rows_by_post) - excluded_posts}
 
 
 def search_cli(args):
@@ -624,9 +682,11 @@ PAGE = r"""<!doctype html>
 
  <div class="slider">
    <label><input type="checkbox" id="filters" checked>
-     require the named garment to be present</label>
-   <span style="margin-left:auto">each part is matched to a
-     <b>different</b> garment in the photo</span>
+     require the named garment</label>
+   <label><input type="checkbox" id="us"> US only <span class="hint">(drops
+     wear.jp / Korean, 22%)</span></label>
+   <label><input type="checkbox" id="mens"> men's only <span class="hint">(drops
+     women's subs, 20% — the catalog is 100% men's)</span></label>
  </div>
 
  <div class="status" id="status"></div>
@@ -701,7 +761,8 @@ async function run(){
   $('go').disabled=true; $('status').textContent='searching…';
   try{
     const res=await fetch('/search',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({images, texts, use_filters:$('filters').checked, top_k:24})});
+      body:JSON.stringify({images, texts, use_filters:$('filters').checked,
+        drop_non_us:$('us').checked, drop_womens:$('mens').checked, top_k:24})});
     const d=await res.json();
     if(!res.ok)throw new Error(d.detail||'failed');
     const f=d.filters_applied, bits=[];
@@ -709,6 +770,8 @@ async function run(){
     if(f.colors.length)bits.push('color '+f.colors.join('/'));
     $('status').textContent=d.results.length+' outfits · '+d.num_parts+' part'+
       (d.num_parts>1?'s':'')+
+      (d.excluded_posts?'  ·  '+d.excluded_posts.toLocaleString()+
+        ' posts excluded, searching '+d.corpus_posts.toLocaleString():'')+
       (bits.length?'  ·  must contain '+bits.join(', '):'')+
       (d.used_crop_index?'':'  ·  whole-frame fallback (crop index not built)')+
       '  ·  '+d.ms+' ms';
@@ -804,7 +867,9 @@ def serve(args):
 
             try:
                 result = engine.search(parts, int(body.get("top_k") or 24),
-                                       bool(body.get("use_filters", True)))
+                                       bool(body.get("use_filters", True)),
+                                       bool(body.get("drop_non_us", False)),
+                                       bool(body.get("drop_womens", False)))
             except ValueError as error:
                 return self._send(400, json.dumps({"detail": str(error)}).encode())
             finally:

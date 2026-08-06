@@ -182,6 +182,12 @@ def build(args):
                 "id": f"{record['source']}_{record['source_id']}_{order}",
                 "crop": str(crop_path.relative_to(REPO_ROOT)),
                 "source_image": image_path,
+                # Needed to draw the region back onto the full photo. A
+                # masked crop alone is genuinely hard to judge -- it blanks
+                # everything outside the garment, so a labeller loses the
+                # context that tells them what they are looking at. The UI
+                # shows both.
+                "bbox": proposal.get("bbox"),
                 "post_url": record.get("post_url"),
                 "source": record.get("source"),
                 # The proposer's own view, kept so a labeller can see when
@@ -234,8 +240,12 @@ LABEL_PAGE = r"""<!doctype html>
  .bar{height:4px;background:var(--line);border-radius:99px;margin-bottom:20px}
  .bar div{height:100%;background:var(--accent);border-radius:99px;transition:.2s}
  .split{display:flex;gap:22px;flex-wrap:wrap}
- .left{flex:0 0 260px}
+ .left{flex:0 0 300px}
  .left img{width:100%;border-radius:10px;background:var(--card)}
+ .ctx{position:relative;display:block;margin-bottom:8px}
+ .ctx .box{position:absolute;border:2px solid var(--accent);border-radius:3px;
+           box-shadow:0 0 0 9999px rgba(0,0,0,.42);pointer-events:none}
+ .cropimg{max-height:150px;width:auto !important;display:block;margin:0 auto}
  .right{flex:1 1 380px;min-width:280px}
  .meta{font-size:12px;color:var(--muted);margin-top:8px;word-break:break-word}
  .cand{display:flex;align-items:center;gap:10px;padding:7px 9px;border:1px solid var(--line);
@@ -284,8 +294,15 @@ function render() {
     return;
   }
   const it = items[i];
+  // Both views: the masked crop is what the encoder actually saw, and the
+  // full photo with the region boxed is what a human needs to judge it.
+  // Showing only the crop makes labelling near-impossible -- everything
+  // outside the garment is blanked, so there is no context at all.
   let h = '<div class="split"><div class="left">' +
-    '<img src="/file?path=' + encodeURIComponent(it.crop) + '">' +
+    '<div class="ctx"><img src="/file?path=' + encodeURIComponent(it.source_image) + '"' +
+      ' onload="drawBox(this)" data-bbox="' + (it.bbox||[]).join(',') + '">' +
+      '<div class="box" style="display:none"></div></div>' +
+    '<img class="cropimg" src="/file?path=' + encodeURIComponent(it.crop) + '">' +
     '<div class="meta">item ' + (i+1) + ' of ' + items.length +
     '<br>proposer: ' + esc(it.proposed_category || '?') +
     ' (' + (it.proposer_confidence != null ? it.proposer_confidence.toFixed(2) : '?') + ')' +
@@ -330,6 +347,21 @@ document.addEventListener('keydown', e => {
   if (e.key === 'x') verdict('badcrop');
   if (e.key === 's') verdict('skip');
 });
+
+// Position the highlight over the region the crop came from. bbox is in
+// ORIGINAL pixel coordinates, so it has to be scaled by the rendered size
+// -- naturalWidth/Height give the original, which is why this runs onload
+// rather than at render time.
+function drawBox(img){
+  const raw=(img.dataset.bbox||'').split(',').filter(Boolean).map(Number);
+  const box=img.parentElement.querySelector('.box');
+  if(raw.length!==4||!img.naturalWidth){ box.style.display='none'; return; }
+  const sx=img.clientWidth/img.naturalWidth, sy=img.clientHeight/img.naturalHeight;
+  const [l,t,r,b]=raw;
+  box.style.left=(l*sx)+'px'; box.style.top=(t*sy)+'px';
+  box.style.width=((r-l)*sx)+'px'; box.style.height=((b-t)*sy)+'px';
+  box.style.display='block';
+}
 
 function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,
   c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
