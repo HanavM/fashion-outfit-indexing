@@ -49,3 +49,6 @@ attribute_heads_v3/
 output.png
 output_apparel.png
 output_retrieval_*.png
+
+# pair_eval: crops are regenerable images; the manifest + human labels are not
+pair_eval/crops/
