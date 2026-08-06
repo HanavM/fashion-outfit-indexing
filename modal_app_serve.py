@@ -136,6 +136,19 @@ ENV = {
     # Same values modal_app_phase4_eval.py settled on.
     "IMAGE_LOADER_WORKERS": "32",
     "CATALOG_VERIFY_WORKERS": "64",
+    # The identity shortlist. This was NEVER set here, so serving ran the
+    # pipeline default of 25 while every headline eval used 150 or 400 --
+    # the deployed API was shortlisting 25 identities out of 1,562 and
+    # routinely never seeing the true product at all.
+    #
+    # 400 is the measured best (docs/eval_log.md: K 150 -> 400 was
+    # +4.60pt at a 2,230-product gallery, recovering shortlist miss from
+    # 19.95% to 5.92%). K is NOT an absolute -- it scales with catalog
+    # size, and the gallery is now 3,522, so 400 is a floor rather than a
+    # tuned value and wants re-sweeping. Latency is not the constraint:
+    # the dense scan is 0.108 ms/query against a ~890-1180 ms encoder
+    # forward, so a wider shortlist costs essentially nothing.
+    "TOP_IDENTITY_CANDIDATES": "400",
 }
 
 

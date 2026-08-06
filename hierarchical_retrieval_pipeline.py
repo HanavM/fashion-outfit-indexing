@@ -162,7 +162,18 @@ DINOV3_CHECKPOINT_CANDIDATES = [
 # (43-52%) is the dominant bottleneck -- DINOv3's rerank is already ~65%
 # accurate conditional on getting a fair candidate set, so giving it more
 # candidates to work with should matter more than anything else right now.
-TOP_IDENTITY_CANDIDATES = 25
+# Env-overridable as of 2026-08-06, because SERVING was silently running
+# this default while every headline eval used 150 or 400. `retrieve()`
+# takes it as a kwarg and `--evaluate` passes it explicitly, but
+# modal_app_serve.py never did -- so the deployed API shortlisted 25
+# identities out of 1,562 (1.6% of the space) and the true product was
+# frequently never in the candidate set at all. Caught by querying the
+# live API with a catalog image that IS in the gallery and finding it
+# absent from the top 50, with num_identity_candidates at 30-344 of 3,522.
+#
+# The default stays 25 so evals and scripts that do not set it keep their
+# existing behaviour; serving sets TOP_IDENTITY_CANDIDATES explicitly.
+TOP_IDENTITY_CANDIDATES = int(os.environ.get("TOP_IDENTITY_CANDIDATES", "25"))
 FINAL_TOP_K = 5
 AMBIGUITY_MARGIN = 0.03        # DINOv3 cosine-similarity gap under which top-1/top-2 count as "too close to call"
 
