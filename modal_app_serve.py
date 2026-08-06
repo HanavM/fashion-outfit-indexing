@@ -108,6 +108,10 @@ image = (
                     "/root/catalog_query_search.py")
     .add_local_file(str(HERE / "free_text_visual_search.py"),
                     "/root/free_text_visual_search.py")
+    # /query's rules-based router. Imported lazily inside _route_query, so
+    # forgetting this line would fail at REQUEST time on /query only --
+    # every other endpoint and the health check would look fine.
+    .add_local_file(str(HERE / "query_router.py"), "/root/query_router.py")
     .add_local_file(str(HERE / "docs" / "hierarchy.json"), "/root/docs/hierarchy.json")
     # Outfit co-occurrence: the module that defines OutfitCooccurrence and
     # the index itself. Both are required -- without them _outfit_evidence
@@ -446,19 +450,7 @@ class FashionService:
             self._authorize(request)
             started = time.time()
             image_bytes, fields = await self._read_payload(request)
-            path = self._write_temp_image(image_bytes)
-            try:
-                top_k = int(fields.get("top_k") or self.pipeline.FINAL_TOP_K)
-                threshold = fields.get("reject_threshold", self.default_reject_threshold)
-                threshold = float(threshold) if threshold not in (None, "") else None
-                gate = str(fields.get("use_category_gate", "")).lower() in {"1", "true", "yes"}
-                raw = self._run_retrieve(path, top_k, threshold, gate)
-            finally:
-                os.unlink(path)
-            shaped = self._shape_identity(raw, threshold)
-            shaped["spoken"] = self._spoken_identify(shaped)
-            shaped["latency_ms"] = round((time.time() - started) * 1000, 1)
-            return JSONResponse(shaped)
+            return JSONResponse(self._do_identify(image_bytes, fields, started))
 
         @web.post("/compose")
         async def compose(request: Request):
@@ -468,63 +460,7 @@ class FashionService:
             text = (fields.get("text") or "").strip()
             if not text:
                 return JSONResponse({"detail": "'text' is required"}, status_code=400)
-
-            top_k = int(fields.get("top_k") or 10)
-            threshold = fields.get("reject_threshold", self.default_reject_threshold)
-            threshold = float(threshold) if threshold not in (None, "") else None
-            gate = str(fields.get("use_category_gate", "")).lower() in {"1", "true", "yes"}
-            # Semantic fallback loads a second full catalog embedding index
-            # on first use; off by default so a voice request never pays it.
-            semantic = str(fields.get("semantic_fallback", "")).lower() in {"1", "true", "yes"}
-
-            primary = None
-            if image_bytes:
-                path = self._write_temp_image(image_bytes)
-                try:
-                    raw = self._run_retrieve(path, top_k, threshold, gate)
-                finally:
-                    os.unlink(path)
-                primary = self._shape_identity(raw, threshold)
-
-            import composed_query_search
-
-            parsed = composed_query_search.parse_text_fragment(
-                text, str(self.pipeline.METADATA_PATH))
-            companions, filter_applied = self._companions(parsed, text, top_k, semantic)
-
-            # Real co-occurrence evidence, when the index has any for this
-            # anchor/companion pair. Built 2026-08-04 from 6,860 outfit
-            # photos; before it existed this endpoint returned a hardcoded
-            # note saying it did not, which is now false.
-            outfit_evidence = self._outfit_evidence(primary, parsed)
-
-            payload = {
-                "primary": primary,
-                "parsed_text_query": parsed,
-                "companions": companions,
-                "category_filter_applied": filter_applied,
-                "outfit_evidence": outfit_evidence,
-                # The caveat is now CONDITIONAL, because the honest answer
-                # differs by case. With evidence, these items were seen
-                # together in real photos -- by an unvalidated detector, so
-                # that qualifier travels with the claim rather than being
-                # dropped at the API edge. Without it, the old warning still
-                # holds exactly as before.
-                "note": (
-                    "companions are supported by co-occurrence in real outfit photos "
-                    "(see outfit_evidence). Those labels come from an UNVALIDATED "
-                    "detector (SAM2 + zero-shot FashionCLIP) over an unlabelled "
-                    "corpus -- evidence of what the model saw, not measured fact."
-                    if outfit_evidence else
-                    "primary and companions are TWO INDEPENDENT SEARCHES. Nothing "
-                    "here shows these items were ever worn together in a real photo. "
-                    "The co-occurrence index exists but has no evidence for this "
-                    "particular pair."
-                ),
-                "latency_ms": round((time.time() - started) * 1000, 1),
-            }
-            payload["spoken"] = self._spoken_compose(primary, companions, parsed)
-            return JSONResponse(payload)
+            return JSONResponse(self._do_compose(image_bytes, fields, text, started))
 
         @web.post("/search")
         async def search(request: Request):
@@ -563,28 +499,229 @@ class FashionService:
             if not query:
                 raise HTTPException(status_code=400, detail="'query' is required")
 
-            top_k = int(fields.get("top_k") or 15)
-            semantic = str(fields.get("semantic_fallback", "")).lower() in {"1", "true", "yes"}
+            return JSONResponse(self._do_search(fields, query, started))
 
-            # Held under the same lock as the retriever: the semantic path
-            # touches the GPU, and CatalogQuerySearch memoises its engine on
-            # first use, so two concurrent first-callers would otherwise race
-            # to build it.
-            with self._gpu_lock:
-                hits = self.text_engine.search(query, top_k=top_k, canonical_only=not semantic)
+        @web.post("/query")
+        async def query(request: Request):
+            """The single entry point -- `docs/unified_query_design.md`.
 
-            payload = {
-                "query": query,
-                "results": hits,
-                "semantic_fallback_used": semantic and any(
-                    h.get("match_type") == "semantic" for h in hits),
-                "match_types": sorted({h.get("match_type") for h in hits if h.get("match_type")}),
-                "latency_ms": round((time.time() - started) * 1000, 1),
+            Accepts `{image_base64?, text?, top_k?}` (or multipart with an
+            `image` file), infers the query's SHAPE with cheap lexical
+            rules, and dispatches to whichever of the three measured paths
+            answers it. `route` is reported in the response so a caller
+            can always see -- and a test can always assert -- which path
+            ran and why.
+
+            This is a ROUTING change, not a retrieval change. It calls
+            `_do_identify` / `_do_compose` / `_do_search`, which are the
+            exact functions `/identify` / `/compose` / `/search` call, so
+            parity holds by construction rather than by a second
+            implementation kept in sync by hand. `query_parity_check.py`
+            asserts that against the live service.
+
+            Deliberately NOT done here: blending the semantic and identity
+            scores into one ranking. That is unifying the representation
+            rather than the interface, and it measured -6.22pt R@1 with
+            shortlist miss identical in both arms.
+            """
+            from fastapi import HTTPException
+
+            self._authorize(request)
+            started = time.time()
+            image_bytes, fields = await self._read_payload(request)
+
+            text = (fields.get("text") or fields.get("query") or "").strip()
+            decision = self._route_query(bool(image_bytes), text)
+
+            if decision["intent"] == "unroutable":
+                raise HTTPException(
+                    status_code=400,
+                    detail="supply an image, text, or both "
+                           "(image_base64 / multipart 'image', and/or 'text')")
+
+            if decision["intent"] == "search":
+                payload = self._do_search(fields, text, started)
+            elif decision["intent"] == "compose":
+                payload = self._do_compose(
+                    image_bytes, fields, decision["companion_text"], started)
+            else:
+                # identify AND brand: the same retrieval, because the brand
+                # IS a field on the identified catalog record. There is no
+                # separate brand-reading path worth routing to -- the logo
+                # detector built for that turned out to be a brand-
+                # PHOTOGRAPHY-STYLE classifier (it scores 83.95% at 32x32
+                # where no mark is legible, and separates catalog photos
+                # from real ones better than it separates brands).
+                payload = self._do_identify(image_bytes, fields, started)
+                if decision["intent"] == "brand":
+                    payload["spoken"] = self._spoken_brand(payload)
+
+            payload["route"] = {
+                "intent": decision["intent"],
+                "equivalent_endpoint": decision["path"],
+                "reason": decision["reason"],
+                "signals": decision["signals"],
+                "router": "rules",
             }
-            payload["spoken"] = self._spoken_search(query, hits, semantic)
+            # Recomputed after routing so it covers the routing decision
+            # too, not just the retrieval the sub-handler timed.
+            payload["latency_ms"] = round((time.time() - started) * 1000, 1)
             return JSONResponse(payload)
 
         return web
+
+    # ---------------- shared endpoint implementations ----------------
+    #
+    # These exist so `/query` and the three original endpoints run the
+    # SAME code rather than two implementations that agree until someone
+    # edits one of them. Each takes an already-parsed payload and returns
+    # a plain dict; the HTTP wrappers above only do auth, body parsing,
+    # and their own 400s.
+
+    def _do_identify(self, image_bytes, fields, started):
+        import time
+
+        path = self._write_temp_image(image_bytes)
+        try:
+            top_k = int(fields.get("top_k") or self.pipeline.FINAL_TOP_K)
+            threshold = fields.get("reject_threshold", self.default_reject_threshold)
+            threshold = float(threshold) if threshold not in (None, "") else None
+            gate = str(fields.get("use_category_gate", "")).lower() in {"1", "true", "yes"}
+            raw = self._run_retrieve(path, top_k, threshold, gate)
+        finally:
+            os.unlink(path)
+        shaped = self._shape_identity(raw, threshold)
+        shaped["spoken"] = self._spoken_identify(shaped)
+        shaped["latency_ms"] = round((time.time() - started) * 1000, 1)
+        return shaped
+
+    def _do_compose(self, image_bytes, fields, text, started):
+        import time
+
+        top_k = int(fields.get("top_k") or 10)
+        threshold = fields.get("reject_threshold", self.default_reject_threshold)
+        threshold = float(threshold) if threshold not in (None, "") else None
+        gate = str(fields.get("use_category_gate", "")).lower() in {"1", "true", "yes"}
+        # Semantic fallback loads a second full catalog embedding index
+        # on first use; off by default so a voice request never pays it.
+        semantic = str(fields.get("semantic_fallback", "")).lower() in {"1", "true", "yes"}
+
+        primary = None
+        if image_bytes:
+            path = self._write_temp_image(image_bytes)
+            try:
+                raw = self._run_retrieve(path, top_k, threshold, gate)
+            finally:
+                os.unlink(path)
+            primary = self._shape_identity(raw, threshold)
+
+        import composed_query_search
+
+        parsed = composed_query_search.parse_text_fragment(
+            text, str(self.pipeline.METADATA_PATH))
+        companions, filter_applied = self._companions(parsed, text, top_k, semantic)
+
+        # Real co-occurrence evidence, when the index has any for this
+        # anchor/companion pair. Built 2026-08-04 from 6,860 outfit
+        # photos; before it existed this endpoint returned a hardcoded
+        # note saying it did not, which is now false.
+        outfit_evidence = self._outfit_evidence(primary, parsed)
+
+        payload = {
+            "primary": primary,
+            "parsed_text_query": parsed,
+            "companions": companions,
+            "category_filter_applied": filter_applied,
+            "outfit_evidence": outfit_evidence,
+            # The caveat is CONDITIONAL, because the honest answer differs
+            # by case. With evidence, these items were seen together in
+            # real photos -- by an unvalidated detector, so that qualifier
+            # travels with the claim rather than being dropped at the API
+            # edge. Without it, the old warning still holds exactly.
+            "note": (
+                "companions are supported by co-occurrence in real outfit photos "
+                "(see outfit_evidence). Those labels come from an UNVALIDATED "
+                "detector (SAM2 + zero-shot FashionCLIP) over an unlabelled "
+                "corpus -- evidence of what the model saw, not measured fact."
+                if outfit_evidence else
+                "primary and companions are TWO INDEPENDENT SEARCHES. Nothing "
+                "here shows these items were ever worn together in a real photo. "
+                "The co-occurrence index exists but has no evidence for this "
+                "particular pair."
+            ),
+            "latency_ms": round((time.time() - started) * 1000, 1),
+        }
+        payload["spoken"] = self._spoken_compose(primary, companions, parsed)
+        return payload
+
+    def _do_search(self, fields, query, started):
+        import time
+
+        top_k = int(fields.get("top_k") or 15)
+        semantic = str(fields.get("semantic_fallback", "")).lower() in {"1", "true", "yes"}
+
+        # Held under the same lock as the retriever: the semantic path
+        # touches the GPU, and CatalogQuerySearch memoises its engine on
+        # first use, so two concurrent first-callers would otherwise race
+        # to build it.
+        with self._gpu_lock:
+            hits = self.text_engine.search(query, top_k=top_k, canonical_only=not semantic)
+
+        payload = {
+            "query": query,
+            "results": hits,
+            "semantic_fallback_used": semantic and any(
+                h.get("match_type") == "semantic" for h in hits),
+            "match_types": sorted({h.get("match_type") for h in hits if h.get("match_type")}),
+            "latency_ms": round((time.time() - started) * 1000, 1),
+        }
+        payload["spoken"] = self._spoken_search(query, hits, semantic)
+        return payload
+
+    # ---------------- routing ----------------
+
+    def _route_query(self, has_image, text):
+        """Rules-based intent inference for `/query`. See `query_router`.
+
+        The taxonomy parser is bound once and memoised: it reads the whole
+        catalog metadata to build its attribute vocabulary, and doing that
+        per request would put a file read in front of every voice query."""
+        import query_router
+
+        if getattr(self, "_query_parser", None) is None:
+            try:
+                self._query_parser = query_router.bind_parser(self.pipeline.METADATA_PATH)
+            except Exception as error:  # noqa: BLE001
+                # Routing degrades rather than fails: without the parser,
+                # bare-"with" companion detection is off and those queries
+                # route to /identify, which ignores the text instead of
+                # acting on a misparse.
+                print(f"[route] taxonomy parser unavailable, "
+                      f"bare-'with' detection disabled: {error}")
+                self._query_parser = False
+        parser = self._query_parser or None
+        return query_router.route(has_image, text, parser)
+
+    def _spoken_brand(self, shaped):
+        """"What brand is this" deserves a brand-shaped answer, not the
+        full product name -- but it must carry the same confidence caveat
+        as `/identify`, because it IS `/identify`. Confidence is not
+        reliability here: on the jacket miss the WRONG answer scored 0.922
+        against the right one's 0.854."""
+        results = shaped.get("results") or []
+        if shaped.get("rejected_open_set") or not results:
+            return "I couldn't match that to anything in the catalog, so I can't name a brand."
+        gate = shaped.get("garment_gate") or {}
+        if gate.get("looks_like_clothing") is False:
+            return "That doesn't look like clothing to me, so I'd rather not guess a brand."
+        # `brand` is already display-mapped by _shape_identity.
+        top = results[0]
+        brand = top.get("brand") or "unknown"
+        runner_up = results[1].get("brand") if len(results) > 1 else None
+        answer = f"Looks like {brand}"
+        if runner_up and runner_up != brand:
+            answer += f", though {runner_up} is close"
+        return answer + f". Best match: {top.get('name', 'unnamed product')}."
 
     # ---------------- compose helpers ----------------
 
