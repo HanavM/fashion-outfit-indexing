@@ -58,6 +58,8 @@
   "outerwear": {
     "jacket": [
       "bomber jacket",
+      "coat",
+      "denim jacket",
       "field jacket",
       "puffer jacket",
       "shirt jacket",
@@ -67,7 +69,8 @@
   "accessories": {
     "hat": [
       "baseball cap",
-      "beanie"
+      "beanie",
+      "cap"
     ],
     "socks": []
   }
