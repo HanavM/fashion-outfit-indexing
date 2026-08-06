@@ -310,15 +310,25 @@ def label_masked(args):
     session = requests.Session()
     started = time.time()
     labelled = failed = 0
-    # The bbox pass's wall-clock budget guard is WRONG here: in this mode
-    # almost all wall time is the local proposer, which Modal does not
-    # bill. Charging it as GPU time would stop a free run early. Bill per
-    # garment instead, from the measured rate of the full bbox pass --
-    # 17,682 garments moved metered spend $20.07 -> $20.34.
-    dollars_per_garment = 0.27 / 17682
-    max_garments = int(args.budget / dollars_per_garment)
-    print(f"  budget ${args.budget:.2f} ~= {max_garments:,} garments "
-          f"(local proposer time is free and not counted)")
+    # COST IS WALL TIME, NOT REQUEST COUNT. I got this wrong twice.
+    #
+    # First I assumed wall time; then I "fixed" it to bill per garment on
+    # the reasoning that local proposer time is free. It is not free,
+    # because the Modal container stays warm between requests (a generous
+    # `scaledown_window` is what keeps latency at ~700ms), so it is billed
+    # through every second the local proposer is thinking.
+    #
+    # Both runs confirm the wall-clock model and refute the per-garment
+    # one: the bbox pass sent 17,682 garments in 16.2 min for $0.27, and
+    # this pass sent 15,846 in 115.7 min for $2.35 -- 9x the cost for FEWER
+    # garments. Both land at ~$1.2 per wall-clock hour, i.e. the A10G rate.
+    #
+    # The practical consequence: a slow local stage in the loop is
+    # expensive. Precompute crops first and send them densely, or accept
+    # paying for an idle GPU.
+    budget_seconds = args.budget / A10G_DOLLARS_PER_HOUR * 3600
+    print(f"  budget ${args.budget:.2f} ~= {budget_seconds/60:.0f} min of WALL time "
+          f"(the container stays warm while the local proposer runs, and that is billed)")
 
     def identify(payload_and_meta):
         payload, meta = payload_and_meta
@@ -388,11 +398,13 @@ def label_masked(args):
                 out_path.write_text(json.dumps(existing, indent=2))
                 elapsed = time.time() - started
                 rate = index / elapsed
+                remaining_minutes = (len(photos) - index) / rate / 60
                 print(f"  {index:5d}/{len(photos)} photos · {labelled:,} garments · "
-                      f"{rate:.2f} photo/s · ~{(len(photos)-index)/rate/60:.0f} min left "
-                      f"· ~${labelled * dollars_per_garment:.2f}")
-            if labelled >= max_garments:
-                print(f"  STOPPED ON BUDGET at {labelled:,} garments")
+                      f"{rate:.2f} photo/s · ~{remaining_minutes:.0f} min left "
+                      f"· ~${elapsed / 3600 * A10G_DOLLARS_PER_HOUR:.2f} spent, "
+                      f"~${(elapsed / 60 + remaining_minutes) / 60 * A10G_DOLLARS_PER_HOUR:.2f} projected")
+            if time.time() - started > budget_seconds:
+                print(f"  STOPPED ON BUDGET after {labelled:,} garments")
                 break
 
     out_path.write_text(json.dumps(existing, indent=2))
