@@ -335,16 +335,48 @@ class OutfitSearch:
     def parse_filters(self, text):
         """Pull detector-known category/color terms out of the text.
 
-        Substring matching on a small closed vocabulary, deliberately --
-        the same 'do not overbuild this' discipline as
-        composed_query_search.parse_text_fragment. Longest term first so
-        'tank top' wins over 'top'."""
+        Routed through `composed_query_search.parse_text_fragment` rather
+        than raw substring matching, because the two vocabularies do not
+        line up. The detector emits hierarchy CATEGORIES -- pants,
+        sneaker, jacket, t-shirt -- while people type leaves and slang:
+        "baggy jeans", "jorts", "tee". Substring matching finds no
+        category for any of those, so the filter would silently never
+        fire on exactly the phrasings it exists to serve.
+
+        `parse_text_fragment` already climbs the real taxonomy and carries
+        the slang table ("jorts" -> denim shorts), and it is the same
+        parser `/compose` uses, so the two surfaces agree about what a
+        word means. Its `category` field is hierarchy-category level,
+        which is precisely the granularity the detections are labelled at
+        -- that is the join.
+
+        Colours stay substring: the detector's colour names are already
+        the plain words people type ("black", "navy", "beige")."""
         lowered = (text or "").lower()
-        categories = [c for c in sorted(self.category_vocab, key=len, reverse=True)
-                      if c and c in lowered]
+
+        categories = []
+        try:
+            import composed_query_search
+
+            parsed = composed_query_search.parse_text_fragment(
+                text, str(REPO_ROOT / "apparel_dataset" / "metadata.json"))
+            category = (parsed or {}).get("category") or {}
+            # Only accept a term the DETECTOR can actually satisfy --
+            # filtering on a category no crop carries returns an empty
+            # grid, which reads as a bug rather than as "no matches".
+            if category.get("category") in self.category_vocab:
+                categories = [category["category"]]
+        except Exception:
+            # Fail open to no filter, never to a wrong one.
+            categories = []
+
+        if not categories:
+            categories = [c for c in sorted(self.category_vocab, key=len, reverse=True)
+                          if c and c in lowered][:1]
+
         colors = [c for c in sorted(self.color_vocab, key=len, reverse=True)
-                  if c and c in lowered]
-        return categories[:2], colors[:2]
+                  if c and c in lowered][:2]
+        return categories, colors
 
     def search(self, image_path=None, text=None, top_k=24,
                image_weight=0.5, use_filters=True):
