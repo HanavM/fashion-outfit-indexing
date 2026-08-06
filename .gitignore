@@ -52,3 +52,6 @@ output_retrieval_*.png
 
 # pair_eval: crops are regenerable images; the manifest + human labels are not
 pair_eval/crops/
+
+# outfit search indexes: regenerable from metadata.json + the checkpoint (20-35 MB each)
+outfit_dataset/*.pt
