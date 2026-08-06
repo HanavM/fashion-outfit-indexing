@@ -1,5 +1,65 @@
 # Production plan — 2026-08-05
 
+> ## CORRECTION, later the same day: the product is OUTFIT SEARCH
+>
+> **Read this before the rest of the file.** Everything below Stage 0 was
+> written on the assumption that the product is an item identifier —
+> point a phone at a garment, hear which catalog product it is. That is
+> what `docs/project_spec_v1.md`, `docs/roadmap.md` and
+> `docs/unified_query_design.md` all describe, and it is wrong.
+>
+> The owner, on seeing the working UI: *"the idea is you give a picture
+> and a text and you get returned a bunch of images of people's outfits
+> that satisfy picture and text. not at all what i was thinking. this
+> just gave me what it thought the item was."*
+>
+> **The product is: item photo + text → real outfit photos.** The result
+> set is `outfit_dataset` (6,860 posts / 9,999 images), not catalog SKUs.
+> Confirmed with the owner: *item*-anchored (the photo is a garment, not
+> a mood board), returning *whole photos* (not per-garment breakdowns).
+>
+> ### What this changes
+>
+> **The encoder.** This file's own Stage 3 quotes the tension without
+> noticing it decides the question: "show me blue jeans" wants all blue
+> jeans NEAR each other; "show me *this exact* sneaker" wants colorway
+> siblings FAR apart. The identify path needs the second geometry, which
+> is exactly what DINOv3's identity fine-tune bought (+31.3pt). **Outfit
+> search needs the first.** So `outfit_search.py` uses SigLIP2 and does
+> not touch DINOv3.
+>
+> **What the accuracy numbers are worth.** R@1 47.65%, 58.58% fixed
+> gallery, the +31.3pt fine-tune, the whole eval log — those measure
+> item identification. They are not wrong, and they are not evidence
+> about outfit search, which currently has **no measurement at all**.
+>
+> **What is still load-bearing.** The outfit corpus and its 20,681
+> garment detections (the crop index is built from those bboxes); the
+> SigLIP2 v3 checkpoint; the co-occurrence index; `dataset_utils` and
+> the scraping pipeline. The identity encoder, the garment gate, the
+> open-set work, `/query`'s routing and `pair_eval.py` all belong to the
+> identifier, which is now at most a *feature* of the product ("what is
+> this item") rather than the product itself.
+>
+> ### What that makes the plan
+>
+> 1. **Build and judge outfit search.** `outfit_search.py build` then
+>    `serve`. Nothing is evaluated; there is no ground truth for "is this
+>    a good outfit match." Judge by looking, then decide what to measure.
+> 2. **Decide what the identifier is for.** It works and it is deployed.
+>    It is plausibly the "shop this look" half of the product. That is a
+>    product decision, not an engineering one.
+> 3. **Re-scope catalog scraping.** Brand coverage was the top priority
+>    when the catalog *was* the result set. For outfit search the corpus
+>    that matters is `outfit_dataset`, and growing *that* is the
+>    equivalent lever.
+> 4. Stages 1–5 below stand as written **only** for the identifier.
+>
+> The rest of this file is left unedited, as the record of what was
+> planned and why, before the premise was corrected.
+
+---
+
 Written after `docs/SESSION_HANDOFF.md`'s ceiling call, which is the
 premise this whole plan rests on:
 
