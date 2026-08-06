@@ -1,8 +1,16 @@
 """Search real people's outfit photos with a picture and/or a text query.
 
-    python outfit_search.py build          # embed the 9,999 outfit photos (once)
-    python outfit_search.py serve          # browse it at http://localhost:7880
-    python outfit_search.py search --text "baggy jeans" --image jacket.jpg
+    .venv/bin/python outfit_search.py build   # embed the 9,999 photos (once)
+    .venv/bin/python outfit_search.py serve   # browse at http://localhost:7880
+    .venv/bin/python outfit_search.py search --text "baggy jeans" --image jacket.jpg
+
+**Use `.venv/bin/python`, not `python3`.** This machine's system Python
+3.10 carries torch 2.0.0, which current `transformers` refuses to use --
+it disables the PyTorch backend and then fails deep inside
+`AutoModel.from_pretrained` with "requires the PyTorch library but it was
+not found", which does not look like a wrong-interpreter error at all.
+`.venv` (Python 3.14) has the working torch. `check_environment()` below
+turns that into a one-line message.
 
 ## What this is, and how it differs from everything else in this repo
 
@@ -741,6 +749,35 @@ def serve(args):
         print("\n  stopped")
 
 
+def check_environment():
+    """Fail with the actual problem instead of an ImportError 300 frames in.
+
+    Running this under system python3 produces "AutoModel requires the
+    PyTorch library but it was not found" raised from inside transformers,
+    long after a model download has already started -- which reads as a
+    broken install rather than as the wrong interpreter. torch IS
+    installed there; it is 2.0.0, and transformers silently disables its
+    PyTorch backend for anything below 2.4."""
+    try:
+        import torch
+    except ImportError:
+        raise SystemExit(
+            "\n  torch is not available in this interpreter.\n"
+            f"  You are running: {sys.executable}\n"
+            "  Use the project venv instead:\n\n"
+            "      .venv/bin/python outfit_search.py ...\n")
+
+    major, minor = (int(part) for part in torch.__version__.split(".")[:2])
+    if (major, minor) < (2, 4):
+        raise SystemExit(
+            f"\n  torch {torch.__version__} is too old — transformers needs >= 2.4\n"
+            f"  and silently disables its PyTorch backend below that, so the\n"
+            f"  real error surfaces much later as a confusing ImportError.\n"
+            f"  You are running: {sys.executable}\n"
+            "  Use the project venv instead:\n\n"
+            "      .venv/bin/python outfit_search.py ...\n")
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -766,6 +803,7 @@ def main():
     v.set_defaults(func=serve)
 
     args = ap.parse_args()
+    check_environment()
     args.func(args)
 
 
