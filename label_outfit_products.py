@@ -257,10 +257,156 @@ def label(args):
     print("  now: .venv/bin/python label_outfit_products.py --report")
 
 
+def label_masked(args):
+    """Re-label from the proposer's OWN masked crops, not from bboxes.
+
+    Measured, paired, 237 garments (`crop_style_ab.py`): garment-group
+    agreement **40.9% -> 72.2%**, and footwear **15.8% -> 87.7%**. The
+    bbox shortcut, not the model, was responsible for most of what looked
+    like a failure to identify consumer garments. A bbox drags the floor,
+    the wall and the person's legs into the encoder; the proposer blanks
+    every pixel outside the garment inside that same box, which is exactly
+    why its precision beat SAM2's.
+
+    Runs the proposer locally (free) and sends only the crop bytes to the
+    already-deployed endpoint, so this costs the same per garment as the
+    bbox pass -- the extra time is local CPU/MPS, not billed GPU. The
+    proposer dominates, so its photos are processed serially while the
+    identify calls for each photo's crops go through a small pool.
+
+    Nothing is written to disk but labels: 20,681 crops at ~50 KB would be
+    a gigabyte, and this machine does not have one to spare.
+    """
+    import requests
+    from transformers import AutoModelForZeroShotImageClassification, AutoProcessor
+
+    sys.path.insert(0, str(REPO_ROOT))
+    import garment_proposer
+
+    key = load_api_key()
+    out_path = REPO_ROOT / "outfit_dataset" / args.out
+    existing = json.loads(out_path.read_text()) if (args.resume and out_path.exists()) else {}
+    done_photos = {record["rel"] for record in existing.values()}
+
+    records = json.loads(OUTFIT_METADATA.read_text())
+    photos = []
+    for record in records:
+        for path in (record.get("images") or [])[:args.images_per_post]:
+            if (REPO_ROOT / path).exists():
+                photos.append((record, path))
+    rng = random.Random(args.seed)
+    rng.shuffle(photos)
+    photos = [p for p in photos[:args.n] if p[1] not in done_photos]
+    print(f"  {len(photos):,} photos to process ({len(done_photos):,} already done)")
+    if not photos:
+        return
+
+    print(f"  loading proposer + FashionCLIP on {args.device}…")
+    processor, model = garment_proposer.load_human_parser(args.device)
+    clip_processor = AutoProcessor.from_pretrained("patrickjohncyh/fashion-clip")
+    clip_model = AutoModelForZeroShotImageClassification.from_pretrained(
+        "patrickjohncyh/fashion-clip").to(args.device)
+
+    session = requests.Session()
+    started = time.time()
+    labelled = failed = 0
+    # The bbox pass's wall-clock budget guard is WRONG here: in this mode
+    # almost all wall time is the local proposer, which Modal does not
+    # bill. Charging it as GPU time would stop a free run early. Bill per
+    # garment instead, from the measured rate of the full bbox pass --
+    # 17,682 garments moved metered spend $20.07 -> $20.34.
+    dollars_per_garment = 0.27 / 17682
+    max_garments = int(args.budget / dollars_per_garment)
+    print(f"  budget ${args.budget:.2f} ~= {max_garments:,} garments "
+          f"(local proposer time is free and not counted)")
+
+    def identify(payload_and_meta):
+        payload, meta = payload_and_meta
+        try:
+            response = session.post(
+                f"{args.url.rstrip('/')}/identify",
+                json={"image_base64": base64.b64encode(payload).decode(),
+                      "top_k": args.top_k},
+                headers={"Authorization": f"Bearer {key}"}, timeout=300)
+            response.raise_for_status()
+            return meta, response.json()
+        except Exception:  # noqa: BLE001
+            return meta, None
+
+    with ThreadPoolExecutor(max_workers=args.workers) as pool:
+        for index, (record, rel) in enumerate(photos, 1):
+            try:
+                proposals = garment_proposer.propose_garment_items(
+                    str(REPO_ROOT / rel), processor, model,
+                    clip_processor, clip_model, args.device)
+            except Exception as error:  # noqa: BLE001
+                failed += 1
+                if failed <= 3:
+                    print(f"  [warn] proposer {rel}: {error}")
+                continue
+
+            import io
+
+            jobs = []
+            post_id = f"{record.get('source')}:{record.get('source_id')}"
+            for order, proposal in enumerate(proposals[:args.per_photo]):
+                buffer = io.BytesIO()
+                proposal["crop"].convert("RGB").save(buffer, "JPEG", quality=90)
+                jobs.append((buffer.getvalue(), {
+                    "id": f"{post_id}#{rel}#{order}",
+                    "post_id": post_id,
+                    "rel": rel,
+                    "bbox": proposal.get("bbox"),
+                    "detected_category": proposal.get("category"),
+                    "detected_group": proposal.get("category_group"),
+                    "detected_color": None,
+                    "detector_confidence": proposal.get("confidence"),
+                    "parser_score": proposal.get("parser_score"),
+                    "post_url": record.get("post_url"),
+                    "source": record.get("source"),
+                    "crop_style": "masked",
+                }))
+
+            for meta, result in pool.map(identify, jobs):
+                if result is None:
+                    failed += 1
+                    continue
+                products = [{"rank": r["rank"], "product_code": r["product_code"],
+                             "brand": r["brand"], "name": r["name"],
+                             "category": r.get("category"), "score": r["score"]}
+                            for r in result.get("results", [])]
+                existing[meta["id"]] = {
+                    **meta, "products": products,
+                    "top1_score": result.get("confidence"),
+                    "margin": (products[0]["score"] - products[1]["score"])
+                              if len(products) > 1 else None,
+                    "garment_gate": result.get("garment_gate"),
+                    "rejected_open_set": result.get("rejected_open_set")}
+                labelled += 1
+
+            if index % args.checkpoint == 0:
+                out_path.write_text(json.dumps(existing, indent=2))
+                elapsed = time.time() - started
+                rate = index / elapsed
+                print(f"  {index:5d}/{len(photos)} photos · {labelled:,} garments · "
+                      f"{rate:.2f} photo/s · ~{(len(photos)-index)/rate/60:.0f} min left "
+                      f"· ~${labelled * dollars_per_garment:.2f}")
+            if labelled >= max_garments:
+                print(f"  STOPPED ON BUDGET at {labelled:,} garments")
+                break
+
+    out_path.write_text(json.dumps(existing, indent=2))
+    print(f"\n  {labelled:,} garments labelled from MASKED crops ({failed} failed) in "
+          f"{(time.time()-started)/60:.1f} min")
+    print(f"  -> {out_path}")
+
+
 def report(args):
-    if not LABELS_PATH.exists():
-        raise SystemExit(f"{LABELS_PATH} not found — run the labelling pass first")
-    labels = json.loads(LABELS_PATH.read_text())
+    path = (REPO_ROOT / "outfit_dataset" / args.labels) if args.labels else LABELS_PATH
+    if not path.exists():
+        raise SystemExit(f"{path} not found — run the labelling pass first")
+    print(f"  source: {path.name}")
+    labels = json.loads(path.read_text())
     import collections
     import statistics
 
@@ -326,10 +472,25 @@ def main():
         parser.add_argument("--report", action="store_true",
                             help="summarise existing labels and exit")
         parser.add_argument("--url", default=os.environ.get("FASHION_API_URL", DEFAULT_URL))
+        # Masked-crop mode: re-runs the proposer so the encoder sees the
+        # garment without its background. Worth +31.2pt group agreement,
+        # +71.9pt on footwear (crop_style_ab.py).
+        parser.add_argument("--masked", action="store_true",
+                            help="re-run the proposer and label its MASKED crops "
+                                 "(slower, much more accurate) instead of bbox cuts")
+        parser.add_argument("--device", default="mps",
+                            help="proposer device for --masked (mps/cpu/cuda)")
+        parser.add_argument("--images-per-post", type=int, default=1)
+        parser.add_argument("--out", default="product_labels.json",
+                            help="output filename under outfit_dataset/")
+        parser.add_argument("--labels", default=None,
+                            help="--report: which labels file to summarise")
 
     args = ap.parse_args()
     if args.report:
         report(args)
+    elif args.masked:
+        label_masked(args)
     else:
         label(args)
 
