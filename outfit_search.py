@@ -386,49 +386,72 @@ class OutfitSearch:
                   if c and c in lowered][:2]
         return categories, colors
 
-    def search(self, image_path=None, text=None, top_k=24,
-               image_weight=0.5, use_filters=True):
-        """Item-anchored outfit retrieval.
+    def search(self, parts, top_k=24, use_filters=True):
+        """Multimodal outfit retrieval over an arbitrary set of query parts.
 
-        The query is "an outfit containing something like THIS, plus
-        THAT". Those two halves are about *different garments in the same
-        photo*, so they are scored against different garments:
+        `parts` is a list of {"kind": "image"|"text", "value": ..., "weight": float}.
+        Any number, any mix, in any order. One image; three images; two
+        images and a phrase; a phrase alone; two phrases. Nothing is
+        privileged -- there is no distinguished "the image" or "the text".
 
-            item_score = max over the photo's crops of sim(query_image, crop)
-            text_score = max over its OTHER crops    of sim(query_text, crop)
+        ## The rule that makes a multi-part query mean what it says
 
-        Excluding the item-matched crop from the text half is the part
-        that makes "this jacket with baggy jeans" mean what it says. Score
-        both halves against the same region and the top result is a photo
-        of a jacket that is somewhat jeans-like -- one garment satisfying
-        both terms, which is not what was asked.
+        Each part is matched to a DIFFERENT garment in the photo.
 
-        Photos with no detections (or with no crop index built yet) fall
-        back to whole-frame similarity for both halves, so they stay
-        reachable rather than silently dropping out of the corpus.
+        A query is a set of things you want the outfit to contain
+        simultaneously, and "simultaneously" is the whole content of the
+        request. If every part scored against the photo's best-matching
+        region, the winner would be a single garment that is a bit like
+        all of them -- one jacket that is somewhat jeans-ish -- which
+        satisfies the query on paper and not at all in fact.
+
+        So parts are assigned to distinct crops, greedily by confidence:
+        the part with the strongest single match claims its garment first,
+        the next part takes the best garment still unclaimed, and so on.
+        Greedy rather than optimal (Hungarian) assignment because the
+        arrays are tiny (a few parts against a median of 3 garments) and
+        the difference has never been the limiting factor here -- the
+        encoder is, by a wide margin. See the module docstring.
+
+        A photo's score is the MEAN of its parts' assigned scores, so
+        adding a part cannot inflate a total, and a photo that satisfies
+        two of three parts brilliantly does not beat one that satisfies
+        all three well.
+
+        Parts left unassigned -- more parts than garments, no detections,
+        or no crop index yet -- fall back to whole-frame similarity, so a
+        photo is never silently unreachable.
         """
-        text = (text or "").strip()
-        if not image_path and not text:
-            raise ValueError("supply an image, text, or both")
+        parts = [p for p in (parts or []) if p.get("value") not in (None, "")]
+        if not parts:
+            raise ValueError("supply at least one image or text part")
 
-        query_image = self.encode_image(image_path) if image_path else None
-        query_text = self.encode_text(text) if text else None
+        encoded = []
+        for part in parts:
+            if part["kind"] == "image":
+                vector = self.encode_image(part["value"])
+            else:
+                vector = self.encode_text(str(part["value"]))
+            encoded.append({
+                "kind": part["kind"],
+                "label": part.get("label") or (part["value"] if part["kind"] == "text" else "image"),
+                "weight": float(part.get("weight", 1.0)),
+                "photo_sim": (self.photo_embeddings @ vector).numpy(),
+                "crop_sim": (self.crop_embeddings @ vector).numpy()
+                            if self.crop_embeddings is not None else None,
+            })
 
-        photo_image_sim = (self.photo_embeddings @ query_image).numpy() if query_image is not None else None
-        photo_text_sim = (self.photo_embeddings @ query_text).numpy() if query_text is not None else None
-        crop_image_sim = (self.crop_embeddings @ query_image).numpy() \
-            if (query_image is not None and self.crop_embeddings is not None) else None
-        crop_text_sim = (self.crop_embeddings @ query_text).numpy() \
-            if (query_text is not None and self.crop_embeddings is not None) else None
+        total_weight = sum(p["weight"] for p in encoded) or 1.0
 
-        categories, colors = self.parse_filters(text) if (use_filters and text) else ([], [])
-
-        # Weights: when only one half is present it takes the whole score,
-        # so the slider cannot silently zero out a query the user did give.
-        weight_image = image_weight if (query_image is not None and query_text is not None) \
-            else (1.0 if query_image is not None else 0.0)
-        weight_text = 1.0 - weight_image if (query_image is not None and query_text is not None) \
-            else (1.0 if query_text is not None else 0.0)
+        # Filters come from the text parts only; an image names nothing.
+        categories, colors = [], []
+        if use_filters:
+            for part in parts:
+                if part["kind"] == "text":
+                    part_categories, part_colors = self.parse_filters(str(part["value"]))
+                    categories += part_categories
+                    colors += part_colors
+        categories, colors = sorted(set(categories)), sorted(set(colors))
 
         scored = []
         for post_id, photo_rows in self.photo_rows_by_post.items():
@@ -448,77 +471,89 @@ class OutfitSearch:
                                        for c in self.photo_records[r]["categories"]}
                     post_colors = {c for r in photo_rows
                                    for c in self.photo_records[r]["colors"]}
-                if categories and not (set(categories) & post_categories):
-                    continue
+                # OR within a facet, AND across facets: several categories
+                # in one query are different garments the outfit should
+                # contain, so requiring all of them is right, but a photo
+                # only has to match one colour term to be in scope.
+                if categories and not set(categories).issubset(post_categories):
+                    if not (set(categories) & post_categories):
+                        continue
                 if colors and not (set(colors) & post_colors):
                     continue
 
-            item_score = matched_row = None
-            if query_image is not None:
-                if crop_rows and crop_image_sim is not None:
-                    best = max(crop_rows, key=lambda r: crop_image_sim[r])
-                    item_score, matched_row = float(crop_image_sim[best]), best
-                else:
-                    item_score = float(max(photo_image_sim[r] for r in photo_rows))
+            whole_frame_best = None
+            assignments, available = [], list(crop_rows)
 
-            text_score = None
-            if query_text is not None:
-                others = [r for r in crop_rows if r != matched_row]
-                if others and crop_text_sim is not None:
-                    text_score = float(max(crop_text_sim[r] for r in others))
-                elif crop_rows and crop_text_sim is not None:
-                    # Only one garment detected: scoring the text against
-                    # the same region is wrong, but dropping the photo is
-                    # worse. Use the whole frame instead.
-                    text_score = float(max(photo_text_sim[r] for r in photo_rows))
+            # Greedy: strongest single match claims its garment first.
+            order = sorted(
+                range(len(encoded)),
+                key=lambda i: max((encoded[i]["crop_sim"][r] for r in crop_rows), default=-1.0),
+                reverse=True)
+            for part_index in order:
+                part = encoded[part_index]
+                if available and part["crop_sim"] is not None:
+                    best = max(available, key=lambda r: part["crop_sim"][r])
+                    available.remove(best)
+                    assignments.append((part_index, float(part["crop_sim"][best]), best))
                 else:
-                    text_score = float(max(photo_text_sim[r] for r in photo_rows))
+                    if whole_frame_best is None:
+                        whole_frame_best = {}
+                    score = max(part["photo_sim"][r] for r in photo_rows)
+                    assignments.append((part_index, float(score), None))
 
-            total = (weight_image * (item_score or 0.0)) + (weight_text * (text_score or 0.0))
+            total = sum(encoded[i]["weight"] * score for i, score, _ in assignments) / total_weight
+
+            # Display the photo the FIRST part's garment actually came from.
             display_row = photo_rows[0]
-            if matched_row is not None:
-                # Show the photo the matched garment actually came from.
-                matched_rel = self.crop_records[matched_row]["rel"]
+            first = next((a for a in assignments if a[0] == 0 and a[2] is not None), None)
+            if first is not None:
+                matched_rel = self.crop_records[first[2]]["rel"]
                 for row in photo_rows:
                     if self.photo_records[row]["rel"] == matched_rel:
                         display_row = row
                         break
 
-            scored.append((total, item_score, text_score, display_row, matched_row))
+            scored.append((total, assignments, display_row))
 
         scored.sort(key=lambda entry: entry[0], reverse=True)
 
         hits = []
-        for total, item_score, text_score, display_row, matched_row in scored[:top_k]:
+        for total, assignments, display_row in scored[:top_k]:
             record = self.photo_records[display_row]
-            matched = self.crop_records[matched_row] if matched_row is not None else None
-            hits.append({
-                **record,
-                "score": total,
-                "item_score": item_score,
-                "text_score": text_score,
-                "matched_garment": (matched or {}).get("category"),
-                "matched_bbox": (matched or {}).get("bbox"),
-            })
+            breakdown = []
+            for part_index, score, crop_row in sorted(assignments):
+                crop = self.crop_records[crop_row] if crop_row is not None else None
+                breakdown.append({
+                    "part": encoded[part_index]["label"],
+                    "kind": encoded[part_index]["kind"],
+                    "score": score,
+                    "matched_garment": (crop or {}).get("category"),
+                    "whole_frame": crop is None,
+                })
+            hits.append({**record, "score": total, "parts": breakdown})
 
         return {"results": hits,
                 "filters_applied": {"categories": categories, "colors": colors},
                 "used_crop_index": self.crop_embeddings is not None,
+                "num_parts": len(encoded),
                 "corpus_posts": len(self.photo_rows_by_post)}
 
 
 def search_cli(args):
     engine = OutfitSearch()
-    result = engine.search(args.image, args.text, args.top_k, args.image_weight)
-    print(f"\n  {result['corpus_posts']:,} posts · crop index "
+    parts = ([{"kind": "image", "value": path, "label": Path(path).name}
+              for path in (args.image or [])] +
+             [{"kind": "text", "value": text} for text in (args.text or [])])
+    result = engine.search(parts, args.top_k)
+    print(f"\n  {result['corpus_posts']:,} posts · {result['num_parts']} query part(s) "
+          f"· crop index "
           f"{'in use' if result['used_crop_index'] else 'NOT BUILT (whole-frame fallback)'}")
     print(f"  filters: {result['filters_applied']}\n")
     for rank, hit in enumerate(result["results"], 1):
-        item = f"item {hit['item_score']:.3f}" if hit["item_score"] is not None else ""
-        text = f"text {hit['text_score']:.3f}" if hit["text_score"] is not None else ""
-        print(f"  {rank:2d}. {hit['score']:.3f}  {item:12} {text:12}  "
-              f"matched={hit['matched_garment'] or '-'}")
-        print(f"      {hit['rel']}")
+        print(f"  {rank:2d}. {hit['score']:.3f}  {hit['rel']}")
+        for part in hit["parts"]:
+            where = part["matched_garment"] or ("whole frame" if part["whole_frame"] else "?")
+            print(f"        {part['score']:.3f}  {part['part'][:34]:36} -> {where}")
 
 
 # ----------------------------------------------------------------------
@@ -554,7 +589,13 @@ PAGE = r"""<!doctype html>
  button:disabled{opacity:.5;cursor:default}
  .slider{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--muted);
          margin-top:12px;flex-wrap:wrap}
- .slider input{flex:1 1 220px;max-width:340px}
+ .parts{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px;align-items:center}
+ .chip{display:inline-flex;align-items:center;gap:6px;padding:4px 8px;font-size:12px;
+       border:1px solid var(--line);border-radius:99px;background:var(--card)}
+ .chip img{width:22px;height:22px;object-fit:cover;border-radius:50%}
+ .chip button{background:none;border:0;color:var(--muted);cursor:pointer;font-size:15px;
+              padding:0 0 0 2px;line-height:1}
+ .parts .hint{font-size:11px;color:var(--muted)}
  .status{font-size:12px;color:var(--muted);margin:16px 0 10px;font-family:ui-monospace,Menlo,monospace}
  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
  .cell{border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--card)}
@@ -572,20 +613,20 @@ PAGE = r"""<!doctype html>
 
  <div class="controls">
    <label class="drop" id="drop">
-     <input type="file" id="file" accept="image/*">
-     <span id="droptext">the ITEM<br>drop · tap · paste</span>
+     <input type="file" id="file" accept="image/*" multiple>
+     <span id="droptext">items<br>drop · tap · paste<br><small>as many as you like</small></span>
    </label>
-   <input type="text" id="text" placeholder='worn with… e.g. "baggy jeans"'>
+   <input type="text" id="text" placeholder='words (optional) — "baggy jeans", or leave empty'>
    <button id="go">Search</button>
  </div>
 
+ <div id="parts" class="parts"></div>
+
  <div class="slider">
-   <span>matters most: the words</span>
-   <input type="range" id="w" min="0" max="100" value="50">
-   <span>the item</span>
-   <span id="wlabel">50 / 50</span>
-   <label style="margin-left:auto"><input type="checkbox" id="filters" checked>
-     require the named garment</label>
+   <label><input type="checkbox" id="filters" checked>
+     require the named garment to be present</label>
+   <span style="margin-left:auto">each part is matched to a
+     <b>different</b> garment in the photo</span>
  </div>
 
  <div class="status" id="status"></div>
@@ -601,66 +642,94 @@ PAGE = r"""<!doctype html>
  </div>
 </main>
 <script>
-let imageData=null;
+// The query is a LIST of parts, not one image and one string. Images and
+// phrases are peers -- any number of either, in any combination, and a
+// query of only images is as valid as a query of only words.
+let images=[], texts=[];
 const $=id=>document.getElementById(id);
 
 fetch('/info').then(r=>r.json()).then(d=>{
   $('count').textContent=d.count.toLocaleString();
   $('posts').textContent=d.posts.toLocaleString();
   if(!d.crops) $('status').textContent =
-    'note: the garment-crop index is still building — the item half is '+
-    'falling back to whole-frame similarity until it finishes.';
+    'note: the garment-crop index is still building — parts are falling back '+
+    'to whole-frame similarity until it finishes.';
 });
 
-function loadFile(f){
-  if(!f||!f.type.startsWith('image/'))return;
-  const r=new FileReader();
-  r.onload=e=>{ imageData=e.target.result;
-    $('droptext').innerHTML='<img src="'+imageData+'">'; };
-  r.readAsDataURL(f);
+function renderParts(){
+  const chips=images.map((src,i)=>
+      '<span class="chip"><img src="'+src+'">image '+(i+1)+
+      '<button onclick="dropImage('+i+')">×</button></span>')
+    .concat(texts.map((t,i)=>
+      '<span class="chip">“'+esc(t)+'”<button onclick="dropText('+i+')">×</button></span>'));
+  $('parts').innerHTML = chips.length
+    ? chips.join('')+'<span class="hint">'+chips.length+
+      ' part'+(chips.length>1?'s':'')+' — each matched to a different garment</span>'
+    : '';
 }
-$('file').addEventListener('change',e=>loadFile(e.target.files[0]));
+function dropImage(i){ images.splice(i,1); renderParts(); }
+function dropText(i){ texts.splice(i,1); renderParts(); }
+
+function loadFiles(list){
+  for(const f of list){
+    if(!f||!f.type.startsWith('image/'))continue;
+    const r=new FileReader();
+    r.onload=e=>{ images.push(e.target.result); renderParts(); };
+    r.readAsDataURL(f);
+  }
+}
+$('file').addEventListener('change',e=>loadFiles(e.target.files));
 $('drop').addEventListener('dragover',e=>{e.preventDefault();$('drop').classList.add('over')});
 $('drop').addEventListener('dragleave',()=>$('drop').classList.remove('over'));
 $('drop').addEventListener('drop',e=>{e.preventDefault();$('drop').classList.remove('over');
-  loadFile(e.dataTransfer.files[0])});
-document.addEventListener('paste',e=>{for(const it of e.clipboardData.items)
-  if(it.type.startsWith('image/'))loadFile(it.getAsFile())});
-$('w').addEventListener('input',()=>{const v=+$('w').value;
-  $('wlabel').textContent=(100-v)+' / '+v});
+  loadFiles(e.dataTransfer.files)});
+document.addEventListener('paste',e=>{
+  const files=[...e.clipboardData.items].filter(i=>i.type.startsWith('image/'))
+    .map(i=>i.getAsFile());
+  if(files.length)loadFiles(files);
+});
+
+function commitText(){
+  const v=$('text').value.trim();
+  if(v){ texts.push(v); $('text').value=''; renderParts(); }
+}
 
 async function run(){
-  const text=$('text').value.trim();
-  if(!imageData&&!text){$('status').textContent='give me a photo or some words';return}
+  commitText();
+  if(!images.length&&!texts.length){
+    $('status').textContent='add a photo or some words (either alone is fine)';return}
   $('go').disabled=true; $('status').textContent='searching…';
   try{
     const res=await fetch('/search',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({image_base64:imageData,text,
-        image_weight:+$('w').value/100, use_filters:$('filters').checked, top_k:24})});
+      body:JSON.stringify({images, texts, use_filters:$('filters').checked, top_k:24})});
     const d=await res.json();
     if(!res.ok)throw new Error(d.detail||'failed');
-    const f=d.filters_applied;
-    const bits=[];
-    if(f.categories.length)bits.push('category '+f.categories.join('/'));
+    const f=d.filters_applied, bits=[];
+    if(f.categories.length)bits.push('category '+f.categories.join(' + '));
     if(f.colors.length)bits.push('color '+f.colors.join('/'));
-    $('status').textContent=d.results.length+' outfits'+
-      (bits.length?'  ·  must contain '+bits.join(' + '):'')+
+    $('status').textContent=d.results.length+' outfits · '+d.num_parts+' part'+
+      (d.num_parts>1?'s':'')+
+      (bits.length?'  ·  must contain '+bits.join(', '):'')+
       (d.used_crop_index?'':'  ·  whole-frame fallback (crop index not built)')+
       '  ·  '+d.ms+' ms';
-    $('grid').innerHTML=d.results.map(r=>{
-      const parts=[];
-      if(r.item_score!=null)parts.push('item '+r.item_score.toFixed(2)+
-        (r.matched_garment?' ('+r.matched_garment+')':''));
-      if(r.text_score!=null)parts.push('with '+r.text_score.toFixed(2));
-      return '<div class="cell"><a href="'+(r.post_url||'#')+'" target="_blank" rel="noopener">'+
+    $('grid').innerHTML=d.results.map(r=>
+      '<div class="cell"><a href="'+(r.post_url||'#')+'" target="_blank" rel="noopener">'+
       '<img loading="lazy" src="/photo?path='+encodeURIComponent(r.rel)+'"></a>'+
       '<div class="m"><b>'+r.score.toFixed(3)+'</b> · '+r.source+'<br>'+
-      parts.join(' · ')+'</div></div>';}).join('');
+      r.parts.map(p=>esc(String(p.part).slice(0,18))+' '+p.score.toFixed(2)+
+        ' → '+esc(p.matched_garment||'whole frame')).join('<br>')+
+      '</div></div>').join('');
   }catch(err){ $('status').textContent=err.message; }
   $('go').disabled=false;
 }
 $('go').addEventListener('click',run);
-$('text').addEventListener('keydown',e=>{if(e.key==='Enter')run()});
+// Enter adds another phrase rather than searching, so a multi-part text
+// query is possible without leaving the keyboard.
+$('text').addEventListener('keydown',e=>{
+  if(e.key==='Enter'){ e.preventDefault(); if($('text').value.trim())commitText(); else run(); }});
+
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,
+  c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 </script></body></html>
 """
 
@@ -718,25 +787,29 @@ def serve(args):
             body = json.loads(self.rfile.read(int(self.headers.get("Content-Length") or 0)))
             started = time.time()
 
-            temp = None
-            encoded = body.get("image_base64")
-            if encoded:
+            # Any number of images, any number of phrases, any mix.
+            parts, temps = [], []
+            for index, encoded in enumerate(body.get("images") or []):
                 if encoded.startswith("data:"):
                     encoded = encoded.split(",", 1)[-1]
                 handle = tempfile.NamedTemporaryFile(suffix=".jpg", delete=False)
                 handle.write(base64.b64decode(encoded))
                 handle.close()
-                temp = handle.name
+                temps.append(handle.name)
+                parts.append({"kind": "image", "value": handle.name,
+                              "label": f"image {index + 1}"})
+            for phrase in body.get("texts") or []:
+                if str(phrase).strip():
+                    parts.append({"kind": "text", "value": str(phrase).strip()})
+
             try:
-                result = engine.search(
-                    temp, body.get("text"), int(body.get("top_k") or 24),
-                    float(body.get("image_weight", 0.5)),
-                    bool(body.get("use_filters", True)))
+                result = engine.search(parts, int(body.get("top_k") or 24),
+                                       bool(body.get("use_filters", True)))
             except ValueError as error:
                 return self._send(400, json.dumps({"detail": str(error)}).encode())
             finally:
-                if temp:
-                    os.unlink(temp)
+                for path in temps:
+                    os.unlink(path)
 
             result["ms"] = round((time.time() - started) * 1000)
             self._send(200, json.dumps(result).encode())
@@ -791,10 +864,11 @@ def main():
     b.set_defaults(func=build)
 
     s = sub.add_parser("search", help="one query from the CLI")
-    s.add_argument("--image")
-    s.add_argument("--text")
+    s.add_argument("--image", action="append",
+                   help="repeatable — each image is a separate query part")
+    s.add_argument("--text", action="append",
+                   help="repeatable — each phrase is a separate query part")
     s.add_argument("--top-k", type=int, default=24)
-    s.add_argument("--image-weight", type=float, default=0.5)
     s.set_defaults(func=search_cli)
 
     v = sub.add_parser("serve", help="browse it")
