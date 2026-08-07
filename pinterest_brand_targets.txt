@@ -1,0 +1,79 @@
+# Pinterest search grids, TARGETED AT THE 18 BRANDS IN apparel_dataset/.
+# Companion to pinterest_targets.txt (generic style queries, already consumed).
+#
+# Why a brand-keyed list exists: measured 2026-08-05, the generic queries
+# produced a corpus that barely overlaps the catalog -- 22% Japan/Korea
+# sourced, 20% women's fashion against a 100% men's catalog, ~42%
+# unmatchable by construction. Exact-product matching cannot work on a
+# photo whose garments we do not stock. Selecting the photos BY the brands
+# we carry is the most direct available fix.
+#
+# Construction rule: one query per brand PRODUCT LINE, not per brand.
+# "nike outfit" returns a brand mood board; "nike air force 1 outfit men"
+# returns photos plausibly containing a specific catalog SKU. Every query
+# is men's-qualified and US-centric, because the catalog is 100% men's and
+# the generic list already over-collected women's and JP/KR street style.
+#
+# Breadth beats depth (same note as pinterest_targets.txt): one grid
+# converges on one look, so run these with a MODEST --target (~35) rather
+# than scrolling any one of them deep.
+#
+# Pinterest's robots.txt is `User-agent: * / Disallow: /`; this target is an
+# explicit, reviewed exception by the project owner (docs/outfit_sourcing_plan.md,
+# "Revision -- Pinterest is reachable"). Do NOT pass --respect-robots here or
+# every line is skipped. Requires the logged-in profile in
+# ~/.cache/fashion-tests/browser-profile.
+
+# --- nike ---
+https://www.pinterest.com/search/pins/?q=nike%20air%20force%201%20outfit%20men
+https://www.pinterest.com/search/pins/?q=nike%20dunk%20low%20outfit%20men
+https://www.pinterest.com/search/pins/?q=nike%20tech%20fleece%20outfit%20men
+# --- adidas ---
+https://www.pinterest.com/search/pins/?q=adidas%20samba%20outfit%20men
+https://www.pinterest.com/search/pins/?q=adidas%20gazelle%20outfit%20men
+https://www.pinterest.com/search/pins/?q=adidas%20track%20jacket%20outfit%20men
+# --- new balance ---
+https://www.pinterest.com/search/pins/?q=new%20balance%20990%20outfit%20men
+https://www.pinterest.com/search/pins/?q=new%20balance%20550%20outfit%20men
+https://www.pinterest.com/search/pins/?q=new%20balance%209060%20outfit%20men
+# --- vans ---
+https://www.pinterest.com/search/pins/?q=vans%20old%20skool%20outfit%20men
+https://www.pinterest.com/search/pins/?q=vans%20knu%20skool%20outfit%20men
+# --- carhartt ---
+https://www.pinterest.com/search/pins/?q=carhartt%20detroit%20jacket%20outfit%20men
+https://www.pinterest.com/search/pins/?q=carhartt%20wip%20outfit%20men
+https://www.pinterest.com/search/pins/?q=carhartt%20double%20knee%20pants%20outfit
+# --- dickies ---
+https://www.pinterest.com/search/pins/?q=dickies%20874%20outfit%20men
+https://www.pinterest.com/search/pins/?q=dickies%20work%20pants%20outfit%20men
+# --- levis ---
+https://www.pinterest.com/search/pins/?q=levis%20501%20outfit%20men
+https://www.pinterest.com/search/pins/?q=levis%20trucker%20jacket%20outfit%20men
+# --- north face ---
+https://www.pinterest.com/search/pins/?q=north%20face%20nuptse%20outfit%20men
+https://www.pinterest.com/search/pins/?q=north%20face%20puffer%20outfit%20men
+# --- uniqlo ---
+https://www.pinterest.com/search/pins/?q=uniqlo%20mens%20outfit
+https://www.pinterest.com/search/pins/?q=uniqlo%20u%20outfit%20men
+# --- stussy ---
+https://www.pinterest.com/search/pins/?q=stussy%20outfit%20men
+https://www.pinterest.com/search/pins/?q=stussy%208%20ball%20tee%20outfit
+# --- champion ---
+https://www.pinterest.com/search/pins/?q=champion%20hoodie%20outfit%20men
+https://www.pinterest.com/search/pins/?q=champion%20reverse%20weave%20outfit
+# --- obey / huf / brain dead (skate + streetwear labels) ---
+https://www.pinterest.com/search/pins/?q=obey%20clothing%20outfit%20men
+https://www.pinterest.com/search/pins/?q=huf%20outfit%20men
+https://www.pinterest.com/search/pins/?q=brain%20dead%20clothing%20outfit%20men
+# --- gap ---
+https://www.pinterest.com/search/pins/?q=gap%20mens%20outfit
+https://www.pinterest.com/search/pins/?q=gap%20hoodie%20outfit%20men
+# --- pacsun ---
+https://www.pinterest.com/search/pins/?q=pacsun%20mens%20outfit
+https://www.pinterest.com/search/pins/?q=pacsun%20jeans%20outfit%20men
+# --- american eagle ---
+https://www.pinterest.com/search/pins/?q=american%20eagle%20mens%20outfit
+https://www.pinterest.com/search/pins/?q=american%20eagle%20jeans%20outfit%20men
+# --- skechers ---
+https://www.pinterest.com/search/pins/?q=skechers%20mens%20outfit
+https://www.pinterest.com/search/pins/?q=skechers%20slip%20ins%20mens%20style

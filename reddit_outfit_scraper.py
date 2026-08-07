@@ -200,6 +200,32 @@ SUBREDDITS = [
     # 'Showcase' is a guess that it means worn rather than hauls, so treat
     # this row as the least trusted here and check it in the next review.
     ("CarharttWIP", 80, {"🧍‍♂️fit check", "📸 showcase"}, 0),
+    # ------------------------------------------------------------------
+    # Added 2026-08-06 (second US men's pass, 32 further candidates probed
+    # live at 300 posts each). Same method: flair distribution first, then 4
+    # real images downloaded and LOOKED AT per candidate flair.
+    #
+    # r/mensfashionadvice is a DIFFERENT sub from r/malefashionadvice and is
+    # the best find of this pass: 200 of 300 posts are image posts, the sub
+    # uses no flair at all, and 0 were NSFW. Eyeballed 4/4 worn men's fits
+    # (waist-down jean shots, full-body mirror shots, outdoor OOTD) with
+    # visible mainstream US basics. Highest-value US men's addition here.
+    ("mensfashionadvice", 500, None, 0),
+    # r/fits gates by gender IN THE FLAIR, which is rare and useful -- but
+    # men are the minority: 24 of 300 posts are the two male-fit flairs vs
+    # 187 female. Only the male flairs are allowed, so the target is small
+    # and the sub is scan-heavy. Eyeballed 3/3 fetchable: worn full-body.
+    ("fits", 150, {"male fit (no advice wanted)", "male fit (advice wanted)"}, 0),
+    # r/SneakerFits is the ONE exception to the sneaker trap above, and it
+    # would have been rejected on the name alone: 281 of 300 posts are image
+    # posts and its 'wdywt' (157) and 'fit check' (106) are, unlike the same
+    # words on r/Sneakers / r/Vans / r/newbalance, FULL-BODY standing shots.
+    # Eyeballed 4 per flair, 8/8 whole-outfit men's US casualwear (tees,
+    # shorts, jeans, polos) photographed to show the shoes -- i.e. the
+    # garment is in frame precisely because the shoe is the point. Nike/NB/
+    # Jordan density is the highest of any sub collected here. 'flat fit'
+    # (8/300) is the laid-out-on-the-floor variant and is excluded.
+    ("SneakerFits", 600, {"wdywt", "fit check"}, 0),
 ]
 
 # (Superseded 2026-08-06: r/malefashionadvice IS now in the list above --
@@ -277,6 +303,68 @@ SUBREDDITS = [
 #   NOTE r/streetwearfits has now fully degraded: 300/300 posts sampled in
 #   2026-03..06 were over_18. The 2023-2025 content already collected is
 #   fine; there is nothing new to take there.
+#
+# Probed 2026-08-06, SECOND US-men's pass (40 further candidates), and
+# REJECTED. Same method throughout: 300-post live sample, flair histogram,
+# then 4 images downloaded and viewed for anything that survived the
+# histogram. Do not re-probe.
+#   r/WDYWT              120 image posts/300 and unflaired -- the sub whose
+#                        NAME is the flair this whole table is built on, and
+#                        it is the sneaker trap again: 3 of 4 viewed were
+#                        shoes-on-feet shot downward at the pavement.
+#   r/Converse           217 image posts/300, all 'help identify these' and
+#                        colourway close-ups. Another catalog-adjacent brand
+#                        sub that is a product sub.
+#   r/RalphLauren        172/300 image posts but 3 of 4 viewed were flat-lays
+#                        and a sweater on a hanger, mixed with [WTS] resale.
+#   r/jeans              142/300 image posts; viewed 4 -- reposted TikTok
+#                        screenshots with overlaid UI, back-pocket close-ups
+#                        and 'what brand is this'. Not fits.
+#   r/fitpics            267/300 image posts, the highest raw density found
+#                        anywhere -- and 3 of 4 viewed were women's boudoir/
+#                        going-out selfies, one near-NSFW that over_18 did
+#                        not flag. Density is not quality.
+#   r/collegefits        42 image posts and it is a rate-me sub: 4/4 viewed
+#                        were women's mirror selfies, 2 in underwear.
+#   r/EverydayOutfits    204/300 image posts, but the sample was women's
+#                        selfies, a Poshmark listing screenshot and an
+#                        unrelated news video still. Unmoderated.
+#   r/blackfashion       225/300 image posts and genuinely GOOD worn US
+#                        street fits under 'ootd'/'fit of the day' -- but 6
+#                        of 8 viewed were women's. Rejected only because
+#                        this pass exists to fix a women's skew; it is the
+#                        strongest re-add candidate if that goal changes.
+#   r/techwear           161/300 image posts, 'waywt' 38, and 4/4 viewed
+#                        were full-body worn -- but the brands are Acronym /
+#                        0608WEAR / Guerrilla-Group, i.e. JP/CN technical
+#                        labels and none of the 18. r/techwearclothing
+#                        already covers the style at a small target.
+#   r/Thrifting          192/300 image posts, unflaired -- and the finds are
+#                        masks, dolls and homeware, not worn clothing.
+#   r/PunkFashion        188/300 image posts but the flair vocabulary is
+#                        per-GARMENT (battlevest, crustpants, pins&patches);
+#                        'outfit' is 9/300. r/altfashion already covers this.
+#   r/HighFashion        182/300 image posts: runway/editorial scans, celeb
+#                        archive photos and 'are these Miu Miu real'.
+#   r/grunge             a MUSIC sub -- discussion, playlists, gig photos.
+#   r/Patagonia          the REGION, not the brand. 56 'photo' posts of
+#                        glaciers in Santa Cruz.
+#   r/WorkBoots, r/tailors  footwear close-ups and alteration-detail shots.
+#   r/ThriftStoreHauls   confirms the earlier r/thriftstorehauls reject.
+#   Zero or near-zero posts in the archive (dead, renamed, private or never
+#   indexed -- not worth a shard): r/streetstyle, r/RateMyOutfit, r/dapper,
+#   r/Sneakerheads, r/BlackFashionAdvice, r/OldMoneyOutfits, r/GenZFashion,
+#   r/streetwearfashion, r/MensStyle, r/mensfits, r/menstyle,
+#   r/CasualFashion, r/StyleAdvice, r/whatshouldIwear, r/basketballfits,
+#   r/Fitcheckplease, r/StyleForMen, r/ThriftedFits, r/skatefashion,
+#   r/hypebeastfits, r/streetwearinspo, r/mensfashionover30, r/OUTFITS_MEN,
+#   r/goodfits, r/menswearadvice, r/menfashion, r/fashionmen, r/cargopants,
+#   r/normcore, r/OutfitInspiration, r/Flannel (50), r/MensOutfits,
+#   r/mensootd, r/OutfitsForMen, r/vintagestreetwear, r/thriftfits, r/MFA,
+#   r/UrbanFashion (14 image posts/300), r/AmericanApparel, r/OutfitCheck,
+#   r/ratemyfit, r/GrailedFits, r/DadFits, r/CollegeMenFashion,
+#   r/OutfitGrid, r/Nikefits, r/JordanFits, r/streetfits, r/dailyfits,
+#   r/FashionFits, r/BlackMenFits, r/fitcheckdaily.
 
 MAX_IMAGES_PER_POST = 4
 # PHASH_DISTANCE / MIN_IMAGE_BYTES / MIN_IMAGE_SIDE / IMAGE_SLEEP now live in

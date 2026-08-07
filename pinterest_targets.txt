@@ -5,6 +5,11 @@
 # pass --respect-robots here or every line is skipped.
 # Breadth is the point: one query's grid converges on one look, so a dozen
 # disjoint queries buy far more variety than a deeper scroll of one.
+#
+# These queries are STYLE-keyed, not brand-keyed, and all 20 were consumed on
+# 2026-08-04. The resulting corpus barely overlaps apparel_dataset's 18 US
+# men's brands, so the follow-up list is brand/product-line keyed:
+# see pinterest_brand_targets.txt.
 https://www.pinterest.com/search/pins/?q=streetwear%20outfit
 https://www.pinterest.com/search/pins/?q=mens%20outfit%20inspiration
 https://www.pinterest.com/search/pins/?q=womens%20outfit%20inspiration
