@@ -1272,6 +1272,35 @@ Four operational facts that are not obvious from the scrapers themselves:
    deepest source and the cheap one; the browser is a supplement for an
    idle machine.
 
+### Verifying a subreddit: sample the API, then audit what the shard wrote
+
+Added 2026-08-06 after two US-men's expansion passes (72 candidate subs
+probed between them). Two rules, learned the expensive way:
+
+1. **Never trust a flair name.** `WDYWT`, `Fit`, `On Feet` and `Fit Check`
+   mean "photograph of my shoes, cropped at the shin" on sneaker and brand
+   subs, and "photograph of a whole person" on outfit subs. The only way to
+   tell is to download four real images per candidate flair and look at
+   them. That check rejected r/Sneakers, r/Vans, r/newbalance, r/WDYWT and
+   r/Converse, and it is also what found the one counterexample worth
+   having, r/SneakerFits, whose identical flair names *are* full-body.
+   Brand subs for catalog brands (r/Carhartt, r/uniqlo, r/Nike, r/Dickies,
+   r/thenorthface, r/RalphLauren...) are product-photo subs, uniformly.
+2. **A 4-image sample decides whether to TRY a sub; only an audit of the
+   shard's own output decides whether to KEEP it.** r/gorpcore sampled 2/4
+   worn and delivered 8/8 product (gear macros, unboxings, flat-lays);
+   r/CarharttWIP's `📸 Showcase` was guessed to mean "worn" and delivered
+   7/8 hauls, hangers and Grailed screenshots. Both rows are commented out
+   in `reddit_outfit_scraper.py` with the evidence. The audit is cheap: a
+   contact sheet of 8 random images sampled from what the shard actually
+   wrote into `outfit_dataset/`.
+
+Both passes' verdicts -- kept subs with their exact flair gates, and every
+rejected sub with the measurement behind the rejection -- live in the
+`SUBREDDITS` table and the reject block below it, so no candidate gets
+re-probed. Density is not quality: r/fitpics had the highest image-post
+density ever measured here (267/300) and is women's boudoir selfies.
+
 ### Standing note: these are photos of real people
 
 The brand scrapers collect corporate product photography. This target

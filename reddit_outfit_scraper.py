@@ -183,10 +183,17 @@ SUBREDDITS = [
     # 'On Feet 👟' (47/300) is deliberately EXCLUDED -- see rejects.
     # Eyeballed 4/4 full-body US fits (jerseys, Nike, cargos).
     ("Sneakerhead", 150, {"fit check! 👀"}, 0),
-    # r/gorpcore: unflaired, 185/300 image posts. Directly on-catalog for
-    # northface. Mixed with 'what brand is this' gear close-ups; eyeballed
-    # 2/4 worn full-body, 2 product. Modest target because of that.
-    ("gorpcore", 150, None, 0),
+    # r/gorpcore -- REMOVED 2026-08-06 (second pass) after auditing what it
+    # actually delivered. The first pass eyeballed 4 API samples and got 2
+    # worn / 2 product; a random 8 of the 290 images it had by then were
+    # 8/8 PRODUCT: an Arc'teryx tag close-up, a Salomon unboxing, a jacket
+    # laid flat, a tote bag, a Merrell midsole macro and two feet-in-the-
+    # snow shots. Its 290 images are still in the corpus (the standing rule
+    # is scrape broadly / filter later) but nothing more should be taken
+    # here, and the brands are Arc'teryx/Salomon/Merrell, none of the 18.
+    # Lesson: 4 samples decide whether a sub is worth trying; only an audit
+    # of what a shard REALLY wrote decides whether to keep going.
+    # ("gorpcore", 150, None, 0),
     # r/Denim '📸 Fit Picture' only (18/300). Levis-dense. Eyeballed 4/4
     # worn. The rest of the vocabulary is exactly what to avoid: 'ID/Legit
     # Check' (50/300) and 'Thrifted'/'Deals & Finds' are flat-lay product.
@@ -195,11 +202,16 @@ SUBREDDITS = [
     # highest-confidence catalog-brand signal available: eyeballed 4/4 are
     # street full-body shots by people who own the brand.
     ("Stussy", 80, {"fit-pic/ wdywt"}, 0),
-    # r/CarharttWIP: 79% image posts but 142/300 are 'Legit Check' garment
-    # close-ups. Only the two worn-ish flairs are allowed. Not eyeballed --
-    # 'Showcase' is a guess that it means worn rather than hauls, so treat
-    # this row as the least trusted here and check it in the next review.
-    ("CarharttWIP", 80, {"🧍‍♂️fit check", "📸 showcase"}, 0),
+    # r/CarharttWIP -- REMOVED 2026-08-06 (second pass). The first pass
+    # flagged this row as the least trusted and asked for it to be checked;
+    # it was, and the guess was wrong. A random 8 of the 138 images it wrote
+    # were 7/8 PRODUCT: two hanger/flat-lay tees, a Grailed listing
+    # screenshot, a checkout cart screenshot, a pile of ~40 caps on a floor,
+    # a jacket on the floor, a tag close-up. '📸 Showcase' means a haul, not
+    # a fit, and '🧍‍♂️Fit Check' is too rare to carry the row. Even here the
+    # brand sub is a product sub -- consistent with r/Carhartt, r/uniqlo,
+    # r/thenorthface, r/Nike and the rest of the brand-sub rejects below.
+    # ("CarharttWIP", 80, {"🧍‍♂️fit check", "📸 showcase"}, 0),
     # ------------------------------------------------------------------
     # Added 2026-08-06 (second US men's pass, 32 further candidates probed
     # live at 300 posts each). Same method: flair distribution first, then 4
