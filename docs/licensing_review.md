@@ -1,5 +1,36 @@
 # Licensing and provenance review — 2026-08-04
 
+> ## RESOLVED 2026-08-06: risk 1 (untraceable Pinterest records) is closed
+>
+> **All 2,553 Pinterest records now carry an `author`. Zero remain
+> untraceable.** The 1,342 identified below — and the ~1,200 added since —
+> were backfilled at a **100% recovery rate** on every pin that loaded.
+> `backfill_pin_authors.py`, ~3.5 s/pin, 87 minutes total.
+>
+> **Why the original scrape could not have done this**, verified rather
+> than assumed: the search-grid DOM exposes only href/alt/image on a pin
+> card — no profile link, no domain badge — and the internal
+> `/resource/PinResource/get/` JSON route 403s even with a logged-in
+> session and a csrftoken header. The pinner is only on the **pin page**,
+> inside the `__PWS_INITIAL_PROPS__` blob, which is why this had to be a
+> second pass rather than an inline capture.
+>
+> **What this does and does not fix.** It answers "whose pin is this",
+> so a takedown request can now be traced and actioned. It does **not**
+> establish copyright: this document's own point stands that Pinterest
+> content is mostly repins of third-party images, so the pinner is often
+> not the holder. Partly for that reason the backfill also records the
+> pin's outbound destination as `source_link` where present (319 records)
+> — that link is the only thing on the page that points at the original
+> host.
+>
+> Risks 2 and 3 below are unchanged: `outfit_dataset` still carries
+> **provenance but no permission**, and the negatives set is still
+> licence-mixed. The judgement calls at the end remain the owner's.
+
+---
+
+
 Gap analysis item 12.3. `SCRAPING_PROCESS.md` has carried a standing note
 since the outfit dataset was designed: these are photos of real people,
 collected under varying terms, and displaying them in a product is a
