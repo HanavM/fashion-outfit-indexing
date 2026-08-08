@@ -192,11 +192,13 @@ def load_crop_records():
 
 
 def encode_crops(model, processor, records, fts, torch, checkpoint_path=None,
-                 checkpoint_every=64):
+                 checkpoint_seconds=120):
     """Mirror of `free_text_visual_search.encode_images`, but cropping to
     each record's bbox first. Kept local rather than generalising that
     function, because it is imported by the serving path and this is not
     the moment to change something `/search` depends on."""
+    import time
+
     import torch.nn.functional as F
     from PIL import Image, ImageOps
     from tqdm import tqdm
@@ -213,6 +215,7 @@ def encode_crops(model, processor, records, fts, torch, checkpoint_path=None,
     # at 82% with nothing saved, losing all of it. A partial index is worth
     # far more than a pristine one that may never finish on a laptop.
     done = 0
+    last_save = time.time()
     if checkpoint_path and Path(checkpoint_path).exists():
         partial = torch.load(checkpoint_path, map_location="cpu", weights_only=False)
         if partial.get("total") == len(records):
@@ -248,7 +251,13 @@ def encode_crops(model, processor, records, fts, torch, checkpoint_path=None,
         embeddings.append(F.normalize(output, dim=-1).cpu())
         kept.extend(batch_kept)
 
-        if checkpoint_path and (start // batch_size) % checkpoint_every == 0 and embeddings:
+        # Checkpoint on ELAPSED TIME, not batch count. Batch time here
+        # varies by more than an order of magnitude with what else the
+        # machine is doing (6s/batch idle, 23-86s/batch against the ANE
+        # compiler and Spotlight), so a fixed batch interval was 25 minutes
+        # apart under load -- longer than the ~10 minutes between the kills
+        # it was meant to survive, so nothing ever accumulated.
+        if checkpoint_path and embeddings and (time.time() - last_save) > checkpoint_seconds:
             merged = torch.cat(embeddings, dim=0)
             torch.save({"embeddings": merged.half(), "records": kept,
                         "done": start + batch_size, "total": len(records)},
@@ -257,6 +266,7 @@ def encode_crops(model, processor, records, fts, torch, checkpoint_path=None,
             # and every checkpoint does not re-concatenate hundreds of
             # small tensors.
             embeddings = [merged]
+            last_save = time.time()
 
     return torch.cat(embeddings, dim=0), kept
 
