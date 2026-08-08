@@ -295,11 +295,55 @@ def build(args):
         records = load_crop_records()
         if args.limit:
             records = records[:args.limit]
-        print(f"\n  {len(records):,} garment crops to encode")
-        with torch.inference_mode():
-            embeddings, kept = encode_crops(
-                model, processor, records, fts, torch,
-                checkpoint_path=CROP_INDEX_PATH.with_suffix(".partial.pt"))
+
+        # INCREMENTAL: reuse vectors for crops already in the index and
+        # encode only what is new. A crop's embedding depends on its source
+        # image and its bbox, neither of which changes once detected, so a
+        # cached vector stays valid -- the same reasoning the catalog
+        # identity index already uses.
+        #
+        # This matters because the machine is not always free: a
+        # full-corpus rebuild ran 9h36m and was killed at 82%, and a retry
+        # crawled at 40-70s/batch against an ANE compiler and Spotlight
+        # using the same silicon. After tonight's detection pass, 20,681 of
+        # 31,239 crops were already indexed, so this turns a ~2h job into
+        # a ~40min one.
+        reused_embeddings, reused_records = None, []
+        if not args.rebuild and CROP_INDEX_PATH.exists():
+            cached = torch.load(CROP_INDEX_PATH, map_location="cpu", weights_only=False)
+            if cached.get("checkpoint") == load_from:
+                index = {(r["rel"], r["detection_index"]): row
+                         for row, r in enumerate(cached["records"])}
+                keep_rows = [index[(r["rel"], r["detection_index"])]
+                             for r in records
+                             if (r["rel"], r["detection_index"]) in index]
+                if keep_rows:
+                    reused_embeddings = cached["embeddings"][keep_rows].float()
+                    reused_records = [cached["records"][row] for row in keep_rows]
+                    have = {(r["rel"], r["detection_index"]) for r in reused_records}
+                    records = [r for r in records
+                               if (r["rel"], r["detection_index"]) not in have]
+                    print(f"\n  reusing {len(reused_records):,} cached crop vectors")
+            else:
+                print("\n  checkpoint changed — rebuilding every crop vector")
+
+        print(f"  {len(records):,} garment crops to encode")
+        if records:
+            with torch.inference_mode():
+                embeddings, kept = encode_crops(
+                    model, processor, records, fts, torch,
+                    checkpoint_path=CROP_INDEX_PATH.with_suffix(".partial.pt"))
+        else:
+            embeddings, kept = None, []
+
+        # Concatenate reused and freshly-encoded vectors. Order does not
+        # matter -- every lookup is by row index into `records`.
+        if reused_embeddings is not None and embeddings is not None:
+            embeddings = torch.cat([reused_embeddings, embeddings], dim=0)
+            kept = reused_records + kept
+        elif reused_embeddings is not None:
+            embeddings, kept = reused_embeddings, reused_records
+
         torch.save({"embeddings": embeddings.half(), "records": kept,
                     "checkpoint": load_from}, CROP_INDEX_PATH)
         CROP_INDEX_PATH.with_suffix(".partial.pt").unlink(missing_ok=True)
@@ -963,6 +1007,8 @@ def main():
                    help="photos = full frames; crops = detected garments "
                         "(what the item half of a query scores against)")
     b.add_argument("--limit", type=int, help="smoke-test on the first N images")
+    b.add_argument("--rebuild", action="store_true",
+                   help="ignore cached crop vectors and re-encode everything")
     b.set_defaults(func=build)
 
     s = sub.add_parser("search", help="one query from the CLI")
