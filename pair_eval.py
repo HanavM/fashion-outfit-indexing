@@ -99,7 +99,31 @@ def load_api_key():
 # build
 # ----------------------------------------------------------------------
 
-def sample_photos(count, seed):
+NON_US_SECTIONS = ("wear.jp", "korean")
+WOMENS_SECTIONS = ("femalefashion", "femalefashionadvice", "petitefashionadvice",
+                   "womens%20outfit", "womens outfit")
+
+
+def matchable(record):
+    """Can this post's garments plausibly be in the catalog at all?
+
+    The catalog is 20 US brands and 100% men's. Measured 2026-08-06, 22% of
+    the corpus is Japan/Korea-sourced and 20% is women's fashion, so ~42%
+    could never match whatever the model does.
+
+    Labelling those is what made the first attempt useless -- the owner's
+    report was that "the exact thing is never really in the catalog", and
+    they were right, because nearly half the sample was structurally
+    incapable of matching. Sampling from the matchable half is not
+    cherry-picking the easy cases; it is removing items whose answer is
+    known in advance and which therefore measure nothing."""
+    section = str(record.get("section") or "").lower()
+    if record.get("source") == "wear" or any(k in section for k in NON_US_SECTIONS):
+        return False
+    return not any(k in section for k in WOMENS_SECTIONS)
+
+
+def sample_photos(count, seed, us_mens_only=True):
     """Seeded uniform sample of outfit photos, one image per post.
 
     One image per POST, not per image: the same outfit shot from two
@@ -107,10 +131,16 @@ def sample_photos(count, seed):
     quietly inflate whatever the sample says."""
     records = json.loads(OUTFIT_METADATA.read_text())
     usable = []
+    skipped = 0
     for record in records:
+        if us_mens_only and not matchable(record):
+            skipped += 1
+            continue
         images = [p for p in (record.get("images") or []) if (REPO_ROOT / p).exists()]
         if images:
             usable.append((record, images[0]))
+    if skipped:
+        print(f"  skipped {skipped:,} posts that cannot match a US men's catalog")
     if not usable:
         raise SystemExit(
             "no outfit images found on disk. The corpus was re-detected on Modal, "
@@ -129,7 +159,7 @@ def build(args):
 
     CROP_DIR.mkdir(parents=True, exist_ok=True)
     key = load_api_key()
-    photos = sample_photos(args.n, args.seed)
+    photos = sample_photos(args.n, args.seed, not args.all_sources)
     print(f"  sampled {len(photos)} outfit photos (seed {args.seed})")
 
     print("  loading the human parser + FashionCLIP (first run downloads weights)...")
@@ -577,6 +607,9 @@ def main():
     b = sub.add_parser("build", help="crop real photos and query the live API")
     b.add_argument("--n", type=int, default=60, help="outfit photos to sample")
     b.add_argument("--seed", type=int, default=17)
+    b.add_argument("--all-sources", action="store_true",
+                   help="include Japan/Korea and women's posts, which cannot "
+                        "match a US men's catalog (default: exclude them)")
     b.add_argument("--max-items-per-photo", type=int, default=3)
     b.add_argument("--top-k", type=int, default=10)
     b.add_argument("--device", default="cpu")
