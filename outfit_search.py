@@ -418,6 +418,14 @@ class OutfitSearch:
         except (OSError, json.JSONDecodeError) as error:
             print(f"  (section join skipped: {error}; source filters degraded)")
 
+        # Garment group per crop row, as a numpy array so the type
+        # preference is one vectorised comparison rather than a per-row
+        # dict lookup inside the scoring loop.
+        self._crop_groups = None
+        if self.crop_records:
+            self._crop_groups = np.array(
+                [self.DETECTOR_GROUP.get(r.get("category"), "") for r in self.crop_records])
+
         # post_id -> row indexes, so a photo's score can be computed from
         # its own garments without scanning the whole crop table per photo.
         self.crops_by_post = {}
@@ -481,6 +489,56 @@ class OutfitSearch:
             return True
         return False
 
+    # Zero-shot garment-group prototypes for the QUERY image. Averaged over
+    # several phrasings per group because a single prompt is noisy.
+    GROUP_PROMPTS = {
+        "tops": ["a t-shirt", "a shirt", "a sweater", "a hoodie", "a sweatshirt",
+                 "a tank top"],
+        "bottoms": ["a pair of pants", "a pair of jeans", "a pair of shorts",
+                    "trousers"],
+        "outerwear": ["a jacket", "a coat", "an overshirt", "a puffer jacket"],
+        "footwear": ["a sneaker", "a shoe", "a boot", "a loafer"],
+        "accessories": ["a hat", "a cap", "a bag", "a belt", "a pair of socks"],
+    }
+    DETECTOR_GROUP = {
+        "sneaker": "footwear", "loafer": "footwear", "pants": "bottoms",
+        "shorts": "bottoms", "jacket": "outerwear", "hat": "accessories",
+        "socks": "accessories", "shirt": "tops", "t-shirt": "tops",
+        "sweater": "tops", "hoodie": "tops", "sweatshirt": "tops",
+        "tank top": "tops",
+    }
+
+    def _group_prototypes(self):
+        """Built once, lazily — five groups x ~5 prompts is 25 text encodes."""
+        if getattr(self, "_protos", None) is None:
+            names, vectors = [], []
+            for group, prompts in self.GROUP_PROMPTS.items():
+                stacked = self.torch.stack(
+                    [self.encode_text(f"a photo of {p}") for p in prompts])
+                vectors.append(self.torch.nn.functional.normalize(
+                    stacked.mean(0), dim=-1))
+                names.append(group)
+            self._protos = (names, self.torch.stack(vectors))
+        return self._protos
+
+    def classify_group(self, vector):
+        """Which garment group is this query image? Zero-shot, SigLIP2.
+
+        Measured 88.0% on 150 catalog images with a known canonical group
+        (outerwear 100%, accessories 94%, bottoms 85%, tops 84%).
+
+        88% is why this is a PREFERENCE and not a filter. Restricting the
+        candidate crops to the predicted group would give the 12% of
+        misclassified queries nothing but wrong-type crops -- a total
+        failure on those, in exchange for fixing partial failures
+        elsewhere. That is also the shape of the mistake `--category-gate`
+        already made on the identification task, where it measured
+        net-negative on seven independent runs."""
+        names, protos = self._group_prototypes()
+        scores = (protos @ vector)
+        best = int(scores.argmax())
+        return names[best], float(scores[best])
+
     def parse_filters(self, text):
         """Pull detector-known category/color terms out of the text.
 
@@ -528,7 +586,7 @@ class OutfitSearch:
         return categories, colors
 
     def search(self, parts, top_k=24, use_filters=True,
-               drop_non_us=False, drop_womens=False):
+               drop_non_us=False, drop_womens=False, type_preference=0.05):
         """Multimodal outfit retrieval over an arbitrary set of query parts.
 
         `parts` is a list of {"kind": "image"|"text", "value": ..., "weight": float}.
@@ -574,13 +632,31 @@ class OutfitSearch:
                 vector = self.encode_image(part["value"])
             else:
                 vector = self.encode_text(str(part["value"]))
+            # An IMAGE part gets a soft same-garment-type preference.
+            # Without it, 27.3% of item matches land on the wrong garment
+            # group entirely -- measured on 150 catalog images: a top
+            # matching a pants crop, accessories worst at 27.8% correct.
+            # A crop of the wrong type cannot be what "find outfits with
+            # something like this" is asking for.
+            #
+            # Added to the similarity rather than filtering on it, because
+            # the query classifier is 88% accurate and a hard filter would
+            # hand the other 12% nothing but wrong-type crops.
+            crop_sim = (self.crop_embeddings @ vector).numpy() \
+                if self.crop_embeddings is not None else None
+            group = None
+            if (part["kind"] == "image" and crop_sim is not None
+                    and type_preference and self._crop_groups is not None):
+                group, _ = self.classify_group(vector)
+                crop_sim = crop_sim + type_preference * (self._crop_groups == group)
+
             encoded.append({
                 "kind": part["kind"],
                 "label": part.get("label") or (part["value"] if part["kind"] == "text" else "image"),
                 "weight": float(part.get("weight", 1.0)),
+                "group": group,
                 "photo_sim": (self.photo_embeddings @ vector).numpy(),
-                "crop_sim": (self.crop_embeddings @ vector).numpy()
-                            if self.crop_embeddings is not None else None,
+                "crop_sim": crop_sim,
             })
 
         total_weight = sum(p["weight"] for p in encoded) or 1.0
@@ -682,6 +758,7 @@ class OutfitSearch:
 
         return {"results": hits,
                 "filters_applied": {"categories": categories, "colors": colors},
+                "inferred_types": [p["group"] for p in encoded if p["group"]],
                 "used_crop_index": self.crop_embeddings is not None,
                 "num_parts": len(encoded),
                 "excluded_posts": excluded_posts,
@@ -778,6 +855,9 @@ PAGE = r"""<!doctype html>
      wear.jp / Korean, 22%)</span></label>
    <label><input type="checkbox" id="mens"> men's only <span class="hint">(drops
      women's subs, 20% — the catalog is 100% men's)</span></label>
+   <label><input type="checkbox" id="typepref" checked> match garment type
+     <span class="hint">(soft; without it 27% of item matches land on the
+     wrong garment type)</span></label>
  </div>
 
  <div class="status" id="status"></div>
@@ -853,7 +933,8 @@ async function run(){
   try{
     const res=await fetch('/search',{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({images, texts, use_filters:$('filters').checked,
-        drop_non_us:$('us').checked, drop_womens:$('mens').checked, top_k:24})});
+        drop_non_us:$('us').checked, drop_womens:$('mens').checked,
+        type_preference:$('typepref').checked?0.05:0, top_k:24})});
     const d=await res.json();
     if(!res.ok)throw new Error(d.detail||'failed');
     const f=d.filters_applied, bits=[];
@@ -863,6 +944,8 @@ async function run(){
       (d.num_parts>1?'s':'')+
       (d.excluded_posts?'  ·  '+d.excluded_posts.toLocaleString()+
         ' posts excluded, searching '+d.corpus_posts.toLocaleString():'')+
+      (d.inferred_types&&d.inferred_types.length?'  ·  read as '+
+        d.inferred_types.join('/'):'')+
       (bits.length?'  ·  must contain '+bits.join(', '):'')+
       (d.used_crop_index?'':'  ·  whole-frame fallback (crop index not built)')+
       '  ·  '+d.ms+' ms';
@@ -960,7 +1043,8 @@ def serve(args):
                 result = engine.search(parts, int(body.get("top_k") or 24),
                                        bool(body.get("use_filters", True)),
                                        bool(body.get("drop_non_us", False)),
-                                       bool(body.get("drop_womens", False)))
+                                       bool(body.get("drop_womens", False)),
+                                       float(body.get("type_preference", 0.05)))
             except ValueError as error:
                 return self._send(400, json.dumps({"detail": str(error)}).encode())
             finally:
