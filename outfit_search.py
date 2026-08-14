@@ -428,6 +428,29 @@ class OutfitSearch:
                 [self.DETECTOR_GROUP.get(r.get("category"), "") for r in self.crop_records])
             self._crop_colors = np.array(
                 [r.get("color") or "" for r in self.crop_records])
+            # Per-crop mean RGB, joined from metadata like `section`: the
+            # crop index predates the field, and rebuilding 31,239 vectors
+            # to add a colour column would be hours of GPU for data that
+            # is already on disk.
+            self._crop_lab = None
+            try:
+                rgb_by_key = {}
+                for record in json.loads(OUTFIT_METADATA.read_text()):
+                    for order, item in enumerate(record.get("detected_items") or []):
+                        mean_rgb = (item.get("color") or {}).get("mean_rgb")
+                        if mean_rgb:
+                            rgb_by_key[(item.get("source_image"), order)] = mean_rgb
+                rgb = [rgb_by_key.get((r["rel"], r["detection_index"])) for r in self.crop_records]
+                found = sum(v is not None for v in rgb)
+                if found:
+                    filled = np.array([v if v is not None else [0, 0, 0] for v in rgb],
+                                      dtype=float)
+                    self._crop_lab = self._srgb_to_lab(filled)
+                    self._crop_has_rgb = np.array([v is not None for v in rgb])
+                    if found < len(rgb):
+                        print(f"  ({len(rgb) - found:,} crops have no mean_rgb)")
+            except (OSError, json.JSONDecodeError) as error:
+                print(f"  (crop colour join skipped: {error})")
 
         # post_id -> row indexes, so a photo's score can be computed from
         # its own garments without scanning the whole crop table per photo.
@@ -564,6 +587,50 @@ class OutfitSearch:
         "bag": "accessories", "belt": "accessories", "socks": "accessories",
     }
 
+    @staticmethod
+    def _srgb_to_lab(rgb):
+        """sRGB (0-255, shape (...,3)) -> CIELAB. Pure numpy, D65.
+
+        Colour distance has to be perceptual. In RGB, navy and black are
+        further apart than two visibly different mid-greys, so an RGB
+        threshold either floods the results or misses obvious matches.
+        The catalog colour pipeline already made this call for the same
+        reason (`build_color_index.py` uses CIELAB + CIEDE2000)."""
+        import numpy as np
+
+        srgb = np.asarray(rgb, dtype=float) / 255.0
+        linear = np.where(srgb <= 0.04045, srgb / 12.92,
+                          ((srgb + 0.055) / 1.055) ** 2.4)
+        matrix = np.array([[0.4124, 0.3576, 0.1805],
+                           [0.2126, 0.7152, 0.0722],
+                           [0.0193, 0.1192, 0.9505]])
+        xyz = linear @ matrix.T
+        white = np.array([0.95047, 1.0, 1.08883])
+        scaled = xyz / white
+        epsilon = 216 / 24389
+        kappa = 24389 / 27
+        f = np.where(scaled > epsilon, np.cbrt(scaled),
+                     (kappa * scaled + 16) / 116)
+        return np.stack([116 * f[..., 1] - 16,
+                         500 * (f[..., 0] - f[..., 1]),
+                         200 * (f[..., 1] - f[..., 2])], axis=-1)
+
+    def colour_similarity(self, rgb, falloff=25.0):
+        """Per-crop closeness to a target colour, 1.0 at exact, ->0 far away.
+
+        Continuous rather than a hard radius, so "that exact colour" ranks
+        the closest crops first instead of returning an unordered bucket of
+        everything inside a threshold. `falloff` is in CIELAB delta-E,
+        where ~2.3 is the just-noticeable difference and 25 is comfortably
+        'the same colour family'."""
+        import numpy as np
+
+        if self._crop_lab is None:
+            return None
+        target = self._srgb_to_lab(np.asarray(rgb, dtype=float))
+        delta = np.linalg.norm(self._crop_lab - target, axis=-1)
+        return np.exp(-(delta / falloff) ** 2)
+
     def parse_text_attributes(self, text):
         """Pull a garment GROUP and a COLOUR out of one text part.
 
@@ -646,7 +713,8 @@ class OutfitSearch:
         return categories, colors
 
     def search(self, parts, top_k=24, use_filters=True,
-               drop_non_us=False, drop_womens=False, type_preference=0.05):
+               drop_non_us=False, drop_womens=False, type_preference=0.05,
+               colour_name=None, colour_rgb=None, colour_weight=0.10):
         """Multimodal outfit retrieval over an arbitrary set of query parts.
 
         `parts` is a list of {"kind": "image"|"text", "value": ..., "weight": float}.
@@ -728,6 +796,19 @@ class OutfitSearch:
                 "photo_sim": (self.photo_embeddings @ vector).numpy(),
                 "crop_sim": crop_sim,
             })
+
+        # An EXPLICIT colour, from the dropdown or the eyedropper, applies
+        # to every part's crop scores. Unlike a colour word inside a text
+        # part it is unambiguous, so it gets a larger weight.
+        colour_bonus = None
+        if colour_rgb is not None:
+            colour_bonus = self.colour_similarity(colour_rgb)
+        elif colour_name and self._crop_colors is not None:
+            colour_bonus = (self._crop_colors == colour_name).astype(float)
+        if colour_bonus is not None:
+            for part in encoded:
+                if part["crop_sim"] is not None:
+                    part["crop_sim"] = part["crop_sim"] + colour_weight * colour_bonus
 
         total_weight = sum(p["weight"] for p in encoded) or 1.0
 
@@ -830,6 +911,9 @@ class OutfitSearch:
                 "filters_applied": {"categories": categories, "colors": colors},
                 "inferred_types": [p["group"] for p in encoded if p["group"]],
                 "inferred_colours": [p["colour"] for p in encoded if p.get("colour")],
+                "colour_applied": ("rgb" if colour_rgb is not None
+                                   else (colour_name or None)),
+                "colour_vocab": self.color_vocab,
                 "used_crop_index": self.crop_embeddings is not None,
                 "num_parts": len(encoded),
                 "excluded_posts": excluded_posts,
@@ -893,6 +977,13 @@ PAGE = r"""<!doctype html>
  .chip button{background:none;border:0;color:var(--muted);cursor:pointer;font-size:15px;
               padding:0 0 0 2px;line-height:1}
  .parts .hint{font-size:11px;color:var(--muted)}
+ select{padding:5px 7px;border:1px solid var(--line);border-radius:7px;
+        background:var(--bg);color:var(--fg);font-size:12px}
+ .eyedrop{display:inline-flex;align-items:center;gap:7px}
+ .eyedrop input[type=file]{width:118px;font-size:11px}
+ #cv{border:1px solid var(--line);border-radius:6px;cursor:crosshair;display:none}
+ .swatch{width:20px;height:20px;border-radius:50%;border:1px solid var(--line);
+         display:inline-block}
  .status{font-size:12px;color:var(--muted);margin:16px 0 10px;font-family:ui-monospace,Menlo,monospace}
  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
  .cell{border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--card)}
@@ -926,6 +1017,15 @@ PAGE = r"""<!doctype html>
      wear.jp / Korean, 22%)</span></label>
    <label><input type="checkbox" id="mens"> men's only <span class="hint">(drops
      women's subs, 20% — the catalog is 100% men's)</span></label>
+   <label>colour
+     <select id="colour"><option value="">any</option></select></label>
+   <label class="eyedrop" id="eyewrap">or pick from a photo
+     <input type="file" id="colourfile" accept="image/*">
+     <canvas id="cv" width="120" height="120"
+             title="click a pixel to use that exact colour"></canvas>
+     <span id="swatch" class="swatch" hidden></span>
+     <button type="button" id="clearcol" hidden>clear</button>
+   </label>
    <label><input type="checkbox" id="typepref" checked> match garment type
      <span class="hint">(soft; without it 27% of item matches land on the
      wrong garment type)</span></label>
@@ -950,7 +1050,11 @@ PAGE = r"""<!doctype html>
 let images=[], texts=[];
 const $=id=>document.getElementById(id);
 
+let pickedRGB=null;
+
 fetch('/info').then(r=>r.json()).then(d=>{
+  for(const c of (d.colours||[]))
+    $('colour').insertAdjacentHTML('beforeend','<option>'+c+'</option>');
   $('count').textContent=d.count.toLocaleString();
   $('posts').textContent=d.posts.toLocaleString();
   if(!d.crops) $('status').textContent =
@@ -996,6 +1100,37 @@ function commitText(){
   if(v){ texts.push(v); $('text').value=''; renderParts(); }
 }
 
+// Eyedropper: draw the uploaded photo into a canvas and read the pixel the
+// user clicks. Exact colour beats a 19-name vocabulary for "this shade".
+$('colourfile').addEventListener('change',e=>{
+  const f=e.target.files[0]; if(!f) return;
+  const img=new Image();
+  img.onload=()=>{
+    const cv=$('cv'), ctx=cv.getContext('2d');
+    const scale=Math.min(cv.width/img.width, cv.height/img.height);
+    const w=img.width*scale, h=img.height*scale;
+    ctx.clearRect(0,0,cv.width,cv.height);
+    ctx.drawImage(img,(cv.width-w)/2,(cv.height-h)/2,w,h);
+    cv.style.display='block';
+  };
+  img.src=URL.createObjectURL(f);
+});
+$('cv').addEventListener('click',ev=>{
+  const cv=$('cv'), r=cv.getBoundingClientRect();
+  const x=Math.round((ev.clientX-r.left)*cv.width/r.width);
+  const y=Math.round((ev.clientY-r.top)*cv.height/r.height);
+  const d=cv.getContext('2d').getImageData(x,y,1,1).data;
+  if(d[3]===0) return;
+  pickedRGB=[d[0],d[1],d[2]];
+  $('swatch').style.background='rgb('+pickedRGB.join(',')+')';
+  $('swatch').hidden=false; $('clearcol').hidden=false;
+  $('colour').value='';   // an exact pick overrides the dropdown
+});
+$('clearcol').addEventListener('click',()=>{
+  pickedRGB=null; $('swatch').hidden=true; $('clearcol').hidden=true;
+  $('cv').style.display='none'; $('colourfile').value='';
+});
+
 async function run(){
   commitText();
   if(!images.length&&!texts.length){
@@ -1005,7 +1140,9 @@ async function run(){
     const res=await fetch('/search',{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({images, texts, use_filters:$('filters').checked,
         drop_non_us:$('us').checked, drop_womens:$('mens').checked,
-        type_preference:$('typepref').checked?0.05:0, top_k:24})});
+        type_preference:$('typepref').checked?0.05:0,
+        colour_name:$('colour').value||null, colour_rgb:pickedRGB,
+        top_k:24})});
     const d=await res.json();
     if(!res.ok)throw new Error(d.detail||'failed');
     const f=d.filters_applied, bits=[];
@@ -1017,6 +1154,8 @@ async function run(){
         ' posts excluded, searching '+d.corpus_posts.toLocaleString():'')+
       (d.inferred_types&&d.inferred_types.length?'  ·  read as '+
         d.inferred_types.join('/'):'')+
+      (d.colour_applied?'  ·  colour '+
+        (d.colour_applied==='rgb'?'(exact pick)':d.colour_applied):'')+
       (bits.length?'  ·  must contain '+bits.join(', '):'')+
       (d.used_crop_index?'':'  ·  whole-frame fallback (crop index not built)')+
       '  ·  '+d.ms+' ms';
@@ -1078,6 +1217,7 @@ def serve(args):
                     "count": len(engine.photo_records),
                     "posts": len(engine.photo_rows_by_post),
                     "crops": engine.crop_embeddings is not None,
+                    "colours": engine.color_vocab,
                 }).encode())
             if self.path.startswith("/photo"):
                 raw = parse_qs(urlparse(self.path).query).get("path", [""])[0]
@@ -1115,7 +1255,9 @@ def serve(args):
                                        bool(body.get("use_filters", True)),
                                        bool(body.get("drop_non_us", False)),
                                        bool(body.get("drop_womens", False)),
-                                       float(body.get("type_preference", 0.05)))
+                                       float(body.get("type_preference", 0.05)),
+                                       body.get("colour_name") or None,
+                                       body.get("colour_rgb") or None)
             except ValueError as error:
                 return self._send(400, json.dumps({"detail": str(error)}).encode())
             finally:
