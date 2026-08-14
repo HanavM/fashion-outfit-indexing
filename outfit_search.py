@@ -74,6 +74,7 @@ not something to guess.
 import argparse
 import json
 import os
+import re
 import sys
 from pathlib import Path
 
@@ -425,6 +426,8 @@ class OutfitSearch:
         if self.crop_records:
             self._crop_groups = np.array(
                 [self.DETECTOR_GROUP.get(r.get("category"), "") for r in self.crop_records])
+            self._crop_colors = np.array(
+                [r.get("color") or "" for r in self.crop_records])
 
         # post_id -> row indexes, so a photo's score can be computed from
         # its own garments without scanning the whole crop table per photo.
@@ -539,6 +542,63 @@ class OutfitSearch:
         best = int(scores.argmax())
         return names[best], float(scores[best])
 
+    # Words people type that name a garment GROUP but are not taxonomy
+    # leaves, so `parse_text_fragment` finds nothing for them. "shoes" is
+    # the one that started this: `parse_filters("yellow shoes")` returned
+    # no category at all, so nothing constrained the garment type and the
+    # top-20 crops came back 8 footwear / 12 jackets, hats, pants and tees.
+    GROUP_WORDS = {
+        "shoe": "footwear", "shoes": "footwear", "sneaker": "footwear",
+        "sneakers": "footwear", "trainers": "footwear", "kicks": "footwear",
+        "boot": "footwear", "boots": "footwear", "loafer": "footwear",
+        "loafers": "footwear", "sandal": "footwear", "sandals": "footwear",
+        "top": "tops", "tops": "tops", "shirt": "tops", "shirts": "tops",
+        "tee": "tops", "tees": "tops", "t-shirt": "tops", "sweater": "tops",
+        "hoodie": "tops", "sweatshirt": "tops", "jumper": "tops",
+        "pants": "bottoms", "trousers": "bottoms", "jeans": "bottoms",
+        "denim": "bottoms", "shorts": "bottoms", "bottoms": "bottoms",
+        "joggers": "bottoms", "sweatpants": "bottoms", "chinos": "bottoms",
+        "jacket": "outerwear", "coat": "outerwear", "outerwear": "outerwear",
+        "puffer": "outerwear", "parka": "outerwear", "windbreaker": "outerwear",
+        "hat": "accessories", "cap": "accessories", "beanie": "accessories",
+        "bag": "accessories", "belt": "accessories", "socks": "accessories",
+    }
+
+    def parse_text_attributes(self, text):
+        """Pull a garment GROUP and a COLOUR out of one text part.
+
+        This is what makes "yellow shoes" mean yellow shoes. SigLIP2 does
+        not bind attributes to objects reliably -- a well-known
+        CLIP-family weakness, and measured here: the top-20 crops for
+        "yellow shoes" were 8 footwear and 3 actually yellow, with yellow
+        jackets and yellow hats scoring above black sneakers. The text
+        embedding encodes "yellow" and "shoe-ish" without tying them
+        together.
+
+        Binding them structurally -- reward the crop that is BOTH -- is
+        cheaper and more reliable than hoping the encoder does it."""
+        lowered = (text or "").lower()
+        words = set(re.findall(r"[a-z][a-z-]*", lowered))
+
+        group = None
+        for word in words:
+            if word in self.GROUP_WORDS:
+                group = self.GROUP_WORDS[word]
+                break
+        if group is None:
+            # Fall back to the real taxonomy, which knows leaves and slang
+            # ("jorts") that the flat table above does not.
+            categories, _ = self.parse_filters(text)
+            if categories:
+                group = self.DETECTOR_GROUP.get(categories[0])
+
+        colour = None
+        for candidate in sorted(self.color_vocab, key=len, reverse=True):
+            if candidate and candidate in lowered:
+                colour = candidate
+                break
+        return group, colour
+
     def parse_filters(self, text):
         """Pull detector-known category/color terms out of the text.
 
@@ -644,17 +704,27 @@ class OutfitSearch:
             # hand the other 12% nothing but wrong-type crops.
             crop_sim = (self.crop_embeddings @ vector).numpy() \
                 if self.crop_embeddings is not None else None
-            group = None
-            if (part["kind"] == "image" and crop_sim is not None
-                    and type_preference and self._crop_groups is not None):
-                group, _ = self.classify_group(vector)
-                crop_sim = crop_sim + type_preference * (self._crop_groups == group)
+            group = colour = None
+            if crop_sim is not None and type_preference and self._crop_groups is not None:
+                if part["kind"] == "image":
+                    group, _ = self.classify_group(vector)
+                else:
+                    group, colour = self.parse_text_attributes(str(part["value"]))
+
+                if group:
+                    crop_sim = crop_sim + type_preference * (self._crop_groups == group)
+                if colour:
+                    # The SAME crop earns both bonuses, which is the whole
+                    # point: a yellow shoe gets type+colour, a yellow
+                    # jacket gets colour only, a black shoe gets type only.
+                    crop_sim = crop_sim + type_preference * (self._crop_colors == colour)
 
             encoded.append({
                 "kind": part["kind"],
                 "label": part.get("label") or (part["value"] if part["kind"] == "text" else "image"),
                 "weight": float(part.get("weight", 1.0)),
                 "group": group,
+                "colour": colour,
                 "photo_sim": (self.photo_embeddings @ vector).numpy(),
                 "crop_sim": crop_sim,
             })
@@ -759,6 +829,7 @@ class OutfitSearch:
         return {"results": hits,
                 "filters_applied": {"categories": categories, "colors": colors},
                 "inferred_types": [p["group"] for p in encoded if p["group"]],
+                "inferred_colours": [p["colour"] for p in encoded if p.get("colour")],
                 "used_crop_index": self.crop_embeddings is not None,
                 "num_parts": len(encoded),
                 "excluded_posts": excluded_posts,
