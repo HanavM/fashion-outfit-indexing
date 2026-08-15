@@ -631,6 +631,42 @@ class OutfitSearch:
         delta = np.linalg.norm(self._crop_lab - target, axis=-1)
         return np.exp(-(delta / falloff) ** 2)
 
+    # Words that separate one garment from the next in a typed sentence.
+    CLAUSE_SPLIT = re.compile(
+        r"\b(?:with|and|plus|over|under|paired with|worn with)\b|[,+&/]")
+
+    def split_constraints(self, text):
+        """One sentence -> one constraint per garment mentioned.
+
+        "jorts with red shoes" names TWO garments, and parsing it as a
+        single (group, colour) pair silently dropped one of them: the
+        parse returned ('footwear', 'red') and nothing whatsoever required
+        the photo to contain jorts, so the results were red-shoe photos
+        whose other red items were incidental. That is exactly what the
+        owner saw -- "a lot of stuff are definitely red, but they are the
+        shirts mostly".
+
+        Each clause becomes its own query part, gets its own text
+        embedding, and claims its own crop -- so the photo has to satisfy
+        all of them at once, which is what "A with B" means.
+
+        Returns [(phrase, group, colour), ...] with at least one entry.
+        """
+        raw = [fragment.strip() for fragment in self.CLAUSE_SPLIT.split(text or "")]
+        fragments = [f for f in raw if f]
+        parsed = []
+        for fragment in fragments:
+            group, colour = self.parse_text_attributes(fragment)
+            if group or colour:
+                parsed.append((fragment, group, colour))
+        # Only split when the clauses genuinely name different garments;
+        # "a black and white jacket" must stay one constraint.
+        groups = [g for _, g, _ in parsed if g]
+        if len(parsed) > 1 and len(set(groups)) > 1:
+            return parsed
+        group, colour = self.parse_text_attributes(text)
+        return [(text, group, colour)]
+
     def parse_text_attributes(self, text):
         """Pull a garment GROUP and a COLOUR out of one text part.
 
@@ -645,7 +681,9 @@ class OutfitSearch:
         Binding them structurally -- reward the crop that is BOTH -- is
         cheaper and more reliable than hoping the encoder does it."""
         lowered = (text or "").lower()
-        words = set(re.findall(r"[a-z][a-z-]*", lowered))
+        # In READING order. This iterated a set, so which garment won was
+        # decided by hash order rather than by the sentence.
+        words = re.findall(r"[a-z][a-z-]*", lowered)
 
         group = None
         for word in words:
@@ -753,6 +791,21 @@ class OutfitSearch:
         parts = [p for p in (parts or []) if p.get("value") not in (None, "")]
         if not parts:
             raise ValueError("supply at least one image or text part")
+
+        # Expand a multi-garment sentence into one part per garment, so
+        # each claims a different crop and the photo must satisfy them all.
+        expanded = []
+        for part in parts:
+            if part["kind"] != "text":
+                expanded.append(part)
+                continue
+            clauses = self.split_constraints(str(part["value"]))
+            if len(clauses) <= 1:
+                expanded.append(part)
+                continue
+            for phrase, _, _ in clauses:
+                expanded.append({**part, "value": phrase, "label": phrase})
+        parts = expanded
 
         encoded = []
         for part in parts:
