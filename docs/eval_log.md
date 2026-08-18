@@ -159,3 +159,52 @@ new fault.
 products; the gallery is now 3,522 and K scales with catalog size. 400 is
 a floor, not a tuned value. Latency does not constrain the sweep: the
 dense scan is 0.108 ms/query against a ~890–1180 ms encoder forward.
+
+---
+
+## 2026-08-18 — outfit search gets its FIRST evaluation (VLM-judged)
+
+Outfit search had no evaluation of any kind. Every number in this log
+measures item identification; none said whether "red sweater" returns red
+sweaters. `outfit_search_eval.py` fixes that without needing a human:
+gpt-4o-mini vision (the project's existing Azure Foundry deployment) labels
+outfit photos with the garments and colours it sees, and queries are scored
+against those labels.
+
+**938 photos labelled**, 847 (90%) judged to be real worn-outfit photos.
+2 API failures. 4.8 minutes, 8 workers.
+
+**precision@15, colour+garment queries, 20 queries, ~275 judged results:**
+
+| arm | micro | macro |
+|---|---:|---:|
+| `type_preference=0` (no type/colour binding) | 40.9% | 39.2% |
+| **`type_preference=0.05` (shipped)** | **46.0%** | **44.0%** |
+| | **+5.1pt** | **+4.8pt** |
+
+So the structural binding added on 2026-08-17 — parse a garment group,
+category and colour out of the text and reward the crop that satisfies all
+of them — is worth **+5.1pt micro precision**, measured rather than
+eyeballed. It was previously justified only by crop-level counts
+("yellow shoes" 2/20 → 13/20) and by looking at results.
+
+**Method notes, both of which matter for reading the number:**
+
+- Results are ranked **within the judged pool** (retrieve 3,000 deep, keep
+  the top k that the judge saw). A plain top-20 gave 1–5 judged results per
+  query, because the labelled pool is ~9% of the corpus — precisions of
+  0/1 and 3/3, and an aggregate that was noise. Ranking within the judged
+  pool measures ORDERING rather than label coverage. It also makes the task
+  easier than production, so the ABSOLUTE value is optimistic; comparisons
+  across arms remain valid, which is what this is for.
+- **One model grading another, not human ground truth.** The judge is
+  independent of the retrieval stack — no shared weights or training data
+  with SigLIP2 or the ATR parser — which is what makes disagreement
+  informative rather than circular. But VLMs miscall colours under coloured
+  lighting and confuse sweater/sweatshirt/hoodie exactly as this pipeline
+  does. Trust the delta more than the level.
+
+**Weakest queries** (`black t-shirt` 7%, `white socks` 0%, `white t-shirt`
+20%) point at the same place: black and white garments are where the
+detector's own colour naming is least reliable, and socks are barely
+visible in a full-body frame.
