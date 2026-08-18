@@ -208,3 +208,48 @@ eyeballed. It was previously justified only by crop-level counts
 20%) point at the same place: black and white garments are where the
 detector's own colour naming is least reliable, and socks are barely
 visible in a full-body frame.
+
+### 2026-08-18 — is colour "poor"? Decomposed, and three fixes measured as failures
+
+Owner asked whether colour handling is poor. Decomposing precision@15 over
+20 colour+garment queries (276 judged results):
+
+| | |
+|---|---:|
+| garment correct | **72.5%** |
+| colour correct **given** the garment is right | **63.5%** |
+| combined | 46.0% |
+
+So colour is the weaker half, and the two multiply.
+
+**Three candidate fixes, all measured, all failed:**
+
+| fix | result |
+|---|---|
+| match the query colour in CIELAB instead of by name | 46.0% → 46.4% (noise) |
+| re-derive each crop's colour name from stored `mean_rgb` in CIELAB | 38.5% → 26.7% agreement, **worse** |
+| vote in CIELAB on the actual pixels instead of RGB | 28.6% → 25.6% agreement, **no better** |
+
+The second fails because `mean_rgb` is a MEAN while the stored name comes
+from a per-pixel VOTE, and the vote survives patterns (a striped shirt's
+mean is a grey that appears nowhere in the photo). The third says the
+colour SPACE was never the problem.
+
+**What the disagreements actually show.** Stored colour agrees with the VLM
+on 38.5% of 1,632 garments, and the errors are one-directional:
+
+    brown -> black (54)   gray -> charcoal (52)   black -> charcoal (51)
+    navy  -> black (45)   blue -> black    (45)   white -> light gray (43)
+
+Everything dark collapses onto black/charcoal. That is not a colour-space
+bug — it is the two labellers **answering different questions**. Our
+estimator reports the colour of the PIXELS, which for a navy jacket in
+shadow really is near-black. The VLM reports the colour of the GARMENT,
+which a person would also call navy. For search, the VLM's reading is what
+users mean.
+
+**So the fix is not a better colour metric, it is a better labeller.** The
+VLM labelled 938 photos in 4.8 minutes at 8 workers with 2 failures, so
+labelling the whole corpus is roughly an hour and replaces the heuristic
+palette vote with labels that match user intent. Not run yet — it costs
+real Azure spend and is the owner's call.

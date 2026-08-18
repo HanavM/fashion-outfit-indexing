@@ -283,7 +283,8 @@ def score(args):
         # valid, which is what this is for.
         result = engine.search([{"kind": "text", "value": query["text"]}],
                                top_k=args.pool, drop_non_us=True, drop_womens=True,
-                               type_preference=args.type_preference)
+                               type_preference=args.type_preference,
+                               colour_match=args.colour_match)
         judged = hits = 0
         for hit in result["results"]:
             entry = truth.get(hit["rel"])
@@ -363,6 +364,7 @@ def main():
                    help="retrieval depth searched to find k judged results")
     s.add_argument("--min-support", type=int, default=8)
     s.add_argument("--max-queries", type=int, default=25)
+    s.add_argument("--colour-match", default="both", choices=("name","lab","both"))
     s.add_argument("--type-preference", type=float, default=0.05,
                    help="0 disables the type/colour binding, for A/B")
     s.set_defaults(func=score)

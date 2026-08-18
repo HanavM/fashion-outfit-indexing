@@ -93,6 +93,19 @@ CROP_INDEX_PATH = REPO_ROOT / "outfit_dataset" / "outfit_crop_index.pt"
 os.environ.setdefault("APPAREL_DATASET_ROOT", str(REPO_ROOT / "apparel_dataset"))
 
 
+# The palette index_outfits.dominant_color votes against. Reused here so a
+# named colour can be matched perceptually (CIELAB) as well as by name.
+COLOUR_PALETTE_RGB = {
+    "black": (25, 25, 27), "charcoal": (65, 65, 68), "gray": (128, 128, 130),
+    "light gray": (190, 190, 192), "white": (240, 240, 240),
+    "cream": (238, 226, 200), "beige": (214, 196, 166), "brown": (110, 78, 52),
+    "tan": (170, 132, 88), "olive": (110, 112, 62), "green": (60, 130, 70),
+    "navy": (36, 46, 82), "blue": (60, 100, 180), "light blue": (145, 180, 220),
+    "purple": (110, 70, 150), "red": (170, 45, 45), "pink": (225, 150, 165),
+    "orange": (215, 125, 50), "yellow": (225, 200, 70),
+}
+
+
 # ----------------------------------------------------------------------
 # index
 # ----------------------------------------------------------------------
@@ -806,7 +819,8 @@ class OutfitSearch:
     def search(self, parts, top_k=24, use_filters=True,
                drop_non_us=False, drop_womens=False, type_preference=0.05,
                colour_name=None, colour_rgb=None, colour_weight=0.10,
-               skin_lab=None, skin_weight=0.08, skin_min_confidence=0.10):
+               skin_lab=None, skin_weight=0.08, skin_min_confidence=0.10,
+               colour_match="both"):
         """Multimodal outfit retrieval over an arbitrary set of query parts.
 
         `parts` is a list of {"kind": "image"|"text", "value": ..., "weight": float}.
@@ -898,7 +912,29 @@ class OutfitSearch:
                     # The SAME crop earns both bonuses, which is the whole
                     # point: a yellow shoe gets type+colour, a yellow
                     # jacket gets colour only, a black shoe gets type only.
-                    crop_sim = crop_sim + type_preference * (self._crop_colors == colour)
+                    #
+                    # The stored colour NAME comes from a nearest-palette
+                    # vote in RGB Euclidean distance (index_outfits.
+                    # dominant_color), which places boundaries badly:
+                    # black/charcoal/navy and gray/white/light-gray sit
+                    # close together in RGB but not perceptually. Matching
+                    # the stored mean_rgb in CIELAB instead is continuous
+                    # and perceptually spaced. Neither dominates -- the
+                    # name survives patterns (a striped shirt's MEAN is a
+                    # grey that is nowhere in the photo, which is why the
+                    # vote exists), so "both" takes whichever is stronger.
+                    bonus = None
+                    if colour_match in ("name", "both"):
+                        bonus = (self._crop_colors == colour).astype(float)
+                    if colour_match in ("lab", "both"):
+                        target = COLOUR_PALETTE_RGB.get(colour)
+                        if target is not None:
+                            lab_bonus = self.colour_similarity(target)
+                            if lab_bonus is not None:
+                                bonus = lab_bonus if bonus is None else \
+                                    __import__("numpy").maximum(bonus, lab_bonus)
+                    if bonus is not None:
+                        crop_sim = crop_sim + type_preference * bonus
 
             encoded.append({
                 "kind": part["kind"],
