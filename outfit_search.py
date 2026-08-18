@@ -1043,6 +1043,15 @@ class OutfitSearch:
                 "inferred_types": [p["group"] for p in encoded if p["group"]],
                 "inferred_colours": [p["colour"] for p in encoded if p.get("colour")],
                 "inferred_categories": [p["category"] for p in encoded if p.get("category")],
+                # Per-part parse, so the UI can show one control group per
+                # garment. The flat lists above lose the association: with
+                # "baggy jeans" + "blue hoodie" they render as
+                # [colour blue][item pants][item hoodie], and nothing says
+                # the blue belongs to the hoodie.
+                "parts_parsed": [{"label": p["label"], "kind": p["kind"],
+                                  "colour": p.get("colour"),
+                                  "category": p.get("category")}
+                                 for p in encoded],
                 "category_vocab": sorted({c for c in self.CATEGORY_WORDS.values()}),
                 "colour_applied": ("rgb" if colour_rgb is not None
                                    else (colour_name or None)),
@@ -1112,13 +1121,15 @@ PAGE = r"""<!doctype html>
  .chip button{background:none;border:0;color:var(--muted);cursor:pointer;font-size:15px;
               padding:0 0 0 2px;line-height:1}
  .parts .hint{font-size:11px;color:var(--muted)}
- .refine{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px}
- .refine .rc{display:inline-flex;align-items:center;gap:5px;padding:4px 9px;
-     border:1px solid var(--accent);border-radius:99px;font-size:12px;
-     background:var(--card)}
- .refine select{border:0;background:none;font-size:12px;color:var(--fg);
-     font-weight:600;padding:0}
- .refine .lbl{color:var(--muted)}
+ .card{display:inline-flex;flex-direction:column;gap:6px;padding:8px 10px;
+       border:1px solid var(--line);border-radius:10px;background:var(--card)}
+ .card .hdr{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600}
+ .card .hdr button{background:none;border:0;color:var(--muted);cursor:pointer;
+       font-size:15px;line-height:1;padding:0;margin-left:auto}
+ .card .ctl{display:flex;gap:6px;align-items:center}
+ .card select{border:1px solid var(--line);border-radius:6px;background:var(--bg);
+       color:var(--fg);font-size:12px;padding:3px 5px}
+ .card img{width:34px;height:34px;object-fit:cover;border-radius:6px}
  select{padding:5px 7px;border:1px solid var(--line);border-radius:7px;
         background:var(--bg);color:var(--fg);font-size:12px}
  .eyedrop{display:inline-flex;align-items:center;gap:7px}
@@ -1154,7 +1165,6 @@ PAGE = r"""<!doctype html>
  </div>
 
  <div id="parts" class="parts"></div>
- <div id="refine" class="refine"></div>
 
  <div class="slider">
    <label><input type="checkbox" id="filters" checked>
@@ -1212,7 +1222,7 @@ PAGE = r"""<!doctype html>
 let images=[], texts=[];
 const $=id=>document.getElementById(id);
 
-let pickedRGB=null;
+let pickedRGB=null, lastColourVocab=[], lastCategoryVocab=[];
 
 fetch('/info').then(r=>r.json()).then(d=>{
   for(const c of (d.colours||[]))
@@ -1224,16 +1234,55 @@ fetch('/info').then(r=>r.json()).then(d=>{
     'to whole-frame similarity until it finishes.';
 });
 
+// One CARD per query part. Each card owns its own colour and item
+// dropdowns, so it is visually unambiguous which colour belongs to which
+// garment -- the previous flat row rendered "blue hoodie" + "baggy jeans"
+// as [colour blue][item pants][item hoodie] with nothing tying them.
+let lastParsed=null;
 function renderParts(){
-  const chips=images.map((src,i)=>
-      '<span class="chip"><img src="'+src+'">image '+(i+1)+
-      '<button onclick="dropImage('+i+')">×</button></span>')
-    .concat(texts.map((t,i)=>
-      '<span class="chip">“'+esc(t)+'”<button onclick="dropText('+i+')">×</button></span>'));
-  $('parts').innerHTML = chips.length
-    ? chips.join('')+'<span class="hint">'+chips.length+
-      ' part'+(chips.length>1?'s':'')+' — each matched to a different garment</span>'
+  const cards=images.map((src,i)=>
+      '<span class="card"><span class="hdr"><img src="'+src+'">image '+(i+1)+
+      '<button onclick="dropImage('+i+')" title="remove">×</button></span></span>');
+
+  texts.forEach((t,i)=>{
+    const parsed=(lastParsed||[]).find(p=>p.kind==='text'&&p.label===t)||{};
+    const cols=(lastColourVocab||[]), cats=(lastCategoryVocab||[]);
+    const sel=(id,val,opts,any)=>
+      '<select onchange="editPart('+i+',\''+id+'\',this.value)">'+
+      '<option value=""'+(val?'':' selected')+'>'+any+'</option>'+
+      opts.map(o=>'<option'+(o===val?' selected':'')+'>'+o+'</option>').join('')+
+      '</select>';
+    cards.push('<span class="card"><span class="hdr">“'+esc(t)+'”'+
+      '<button onclick="dropText('+i+')" title="remove">×</button></span>'+
+      (lastParsed ? '<span class="ctl">'+
+        sel('colour',parsed.colour||'',cols,'any colour')+
+        sel('category',parsed.category||'',cats,'any item')+'</span>' : '')+
+      '</span>');
+  });
+
+  $('parts').innerHTML = cards.length
+    ? cards.join('')+'<span class="hint">'+cards.length+
+      ' part'+(cards.length>1?'s':'')+' — each matched to a different garment</span>'
     : '';
+}
+
+// Rewrite one part's phrase from its dropdowns, preserving any words the
+// parser did not claim ("baggy" in "baggy jeans" survives a jeans->shorts
+// change) by replacing the matched word in place rather than rebuilding.
+function editPart(i,field,value){
+  const parsed=(lastParsed||[]).find(p=>p.kind==='text'&&p.label===texts[i])||{};
+  const old=parsed[field];
+  let phrase=texts[i];
+  if(old && value){
+    phrase=phrase.replace(new RegExp('\\b'+old.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'\\b','i'),value);
+  } else if(old && !value){
+    phrase=phrase.replace(new RegExp('\\b'+old.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'\\b','i'),'').replace(/\s+/g,' ').trim();
+  } else if(!old && value){
+    phrase=(field==='colour') ? value+' '+phrase : phrase+' '+value;
+  }
+  if(!phrase.trim()){ dropText(i); run(); return; }
+  texts[i]=phrase.trim();
+  renderParts(); run();
 }
 function dropImage(i){ images.splice(i,1); renderParts(); }
 function dropText(i){ texts.splice(i,1); renderParts(); }
@@ -1345,7 +1394,10 @@ async function run(){
       (bits.length?'  ·  must contain '+bits.join(', '):'')+
       (d.used_crop_index?'':'  ·  whole-frame fallback (crop index not built)')+
       '  ·  '+d.ms+' ms';
-    renderRefine(d);
+    lastParsed=d.parts_parsed||null;
+    lastColourVocab=d.colour_vocab||lastColourVocab;
+    lastCategoryVocab=d.category_vocab||lastCategoryVocab;
+    renderParts();
     $('grid').innerHTML=d.results.map(r=>
       '<div class="cell"><a href="'+(r.post_url||'#')+'" target="_blank" rel="noopener">'+
       '<img loading="lazy" src="/photo?path='+encodeURIComponent(r.rel)+'"></a>'+
@@ -1361,40 +1413,6 @@ $('go').addEventListener('click',run);
 // query is possible without leaving the keyboard.
 $('text').addEventListener('keydown',e=>{
   if(e.key==='Enter'){ e.preventDefault(); if($('text').value.trim())commitText(); else run(); }});
-
-// After a search, show what it PARSED as editable chips. Changing one
-// rewrites that word in the query box and re-runs -- so "black pants" is
-// one click from "olive pants" without retyping.
-let lastParse=null;
-function renderRefine(d){
-  const box=$('refine');
-  const cols=d.colour_vocab||[], types=d.category_vocab||[];
-  const chips=[];
-  (d.inferred_colours||[]).forEach(c=>{
-    chips.push('<span class="rc"><span class="lbl">colour</span>'+
-      '<select onchange="swap(\''+c+'\',this.value)">'+
-      cols.map(o=>'<option'+(o===c?' selected':'')+'>'+o+'</option>').join('')+
-      '</select></span>');
-  });
-  (d.inferred_categories||[]).forEach(t=>{
-    chips.push('<span class="rc"><span class="lbl">item</span>'+
-      '<select onchange="swap(\''+t+'\',this.value)">'+
-      types.map(o=>'<option'+(o===t?' selected':'')+'>'+o+'</option>').join('')+
-      '</select></span>');
-  });
-  box.innerHTML = chips.length
-    ? chips.join('')+'<span class="hint">change one to re-search</span>' : '';
-}
-function swap(from,to){
-  if(from===to) return;
-  const re=new RegExp('\\b'+from.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'\\b','i');
-  let changed=false;
-  texts=texts.map(t=>{ if(re.test(t)){changed=true; return t.replace(re,to);} return t; });
-  if(!changed && $('text').value && re.test($('text').value))
-    { $('text').value=$('text').value.replace(re,to); changed=true; }
-  if(!changed) return;
-  renderParts(); run();
-}
 
 function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,
   c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
