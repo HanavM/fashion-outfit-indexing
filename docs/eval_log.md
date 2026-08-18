@@ -253,3 +253,44 @@ VLM labelled 938 photos in 4.8 minutes at 8 workers with 2 failures, so
 labelling the whole corpus is roughly an hour and replaces the heuristic
 palette vote with labels that match user intent. Not run yet — it costs
 real Azure spend and is the owner's call.
+
+### 2026-08-18 — "don't use an LLM for colour, it won't scale": validated in principle, but distillation beats both
+
+Owner's position: a per-image LLM call is not a scalable colour source as
+the corpus grows. **Correct in principle, with one correction to the
+framing, and the right answer is neither option.**
+
+Correction: it is a one-time OFFLINE cost per image, not per query, and it
+is not the pipeline's bottleneck — the VLM labelled at **3.2 photos/s**
+against `garment_proposer`'s **~1 photo/s** locally. It is cheaper per
+image than the detection pass already being run. The real objections are
+the ones that survive: linear external cost at 10M images, rate limits,
+and labels that are not reproducible once the model is deprecated.
+
+**So: use the VLM ONCE to generate labels, distil into a local head.**
+`attribute_heads.py` already establishes the pattern (MLP on frozen
+SigLIP2 embeddings), and all 31,239 crops already have embeddings.
+
+Trained a 768→256→19 head on VLM colour labels. 1,618 aligned pairs from
+748 photos; alignment only accepts a crop when the photo has exactly one
+crop of that category AND the VLM named exactly one colour for it, since a
+wrong training pair is worse than a missing one. **Split by photo**, so no
+photo's crops straddle train and test.
+
+| on the same 416 held-out crops | accuracy |
+|---|---:|
+| majority class ("black") | 29.1% |
+| heuristic palette vote (current) | 36.3% |
+| **distilled head on frozen SigLIP2 embeddings** | **43.5%** |
+
+**+7.2pt over the incumbent, at zero marginal cost per image** — it is a
+matrix multiply on an embedding that already exists. Scales to any corpus
+size with no API in the loop, which is exactly the property the owner
+asked for.
+
+Caveats worth carrying: 1,618 training pairs is small, and the curve was
+still improving, so more VLM labels should buy more accuracy — the
+labelling cost is bounded and one-time rather than proportional to corpus
+size. And 43.5% is still agreement with a VLM on a 19-way task where the
+two labellers partly disagree by construction (pixel colour vs garment
+colour, see the previous entry).
