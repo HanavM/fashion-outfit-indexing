@@ -428,6 +428,8 @@ class OutfitSearch:
                 [self.DETECTOR_GROUP.get(r.get("category"), "") for r in self.crop_records])
             self._crop_colors = np.array(
                 [r.get("color") or "" for r in self.crop_records])
+            self._crop_categories = np.array(
+                [r.get("category") or "" for r in self.crop_records])
             # Per-crop mean RGB, joined from metadata like `section`: the
             # crop index predates the field, and rebuilding 31,239 vectors
             # to add a colour column would be hours of GPU for data that
@@ -451,6 +453,22 @@ class OutfitSearch:
                         print(f"  ({len(rgb) - found:,} crops have no mean_rgb)")
             except (OSError, json.JSONDecodeError) as error:
                 print(f"  (crop colour join skipped: {error})")
+
+        # Skin tone per POST, joined from metadata. Relative only -- see
+        # extract_skin_tone.py: absolute Monk binning is measurably broken
+        # on photographed skin (the light half of the scale is unreachable
+        # at these exposures), so the filter compares a photo against a
+        # REFERENCE photo, where the shared lighting bias largely cancels.
+        self._skin_lab, self._skin_conf = {}, {}
+        try:
+            for record in json.loads(OUTFIT_METADATA.read_text()):
+                tone = record.get("skin_tone") or {}
+                if tone.get("lab"):
+                    key = f"{record.get('source')}:{record.get('source_id')}"
+                    self._skin_lab[key] = tone["lab"]
+                    self._skin_conf[key] = tone.get("confidence", 0.0)
+        except (OSError, json.JSONDecodeError):
+            pass
 
         # post_id -> row indexes, so a photo's score can be computed from
         # its own garments without scanning the whole crop table per photo.
@@ -656,16 +674,43 @@ class OutfitSearch:
         fragments = [f for f in raw if f]
         parsed = []
         for fragment in fragments:
-            group, colour = self.parse_text_attributes(fragment)
+            group, colour, category = self.parse_text_attributes(fragment)
             if group or colour:
-                parsed.append((fragment, group, colour))
+                parsed.append((fragment, group, colour, category))
         # Only split when the clauses genuinely name different garments;
         # "a black and white jacket" must stay one constraint.
-        groups = [g for _, g, _ in parsed if g]
+        groups = [g for _, g, _, _ in parsed if g]
         if len(parsed) > 1 and len(set(groups)) > 1:
             return parsed
-        group, colour = self.parse_text_attributes(text)
-        return [(text, group, colour)]
+        group, colour, category = self.parse_text_attributes(text)
+        return [(text, group, colour, category)]
+
+    # Word -> the DETECTOR'S OWN category, one level finer than group.
+    #
+    # Group-level binding cannot separate "red sweater" from "red hoodie":
+    # sweater, hoodie, t-shirt, shirt, sweatshirt and tank top are all the
+    # group `tops`, so every one of them earned the same bonus. This is
+    # the level at which those differ.
+    CATEGORY_WORDS = {
+        "sweater": "sweater", "jumper": "sweater", "knit": "sweater",
+        "cardigan": "sweater",
+        "hoodie": "hoodie", "hooded": "hoodie",
+        "sweatshirt": "sweatshirt", "crewneck": "sweatshirt",
+        "t-shirt": "t-shirt", "tshirt": "t-shirt", "tee": "t-shirt",
+        "shirt": "shirt", "button-up": "shirt", "button-down": "shirt",
+        "oxford": "shirt", "flannel": "shirt",
+        "tank": "tank top", "tank top": "tank top", "vest": "tank top",
+        "jacket": "jacket", "coat": "jacket", "puffer": "jacket",
+        "parka": "jacket", "windbreaker": "jacket", "bomber": "jacket",
+        "pants": "pants", "trousers": "pants", "jeans": "pants",
+        "chinos": "pants", "joggers": "pants", "sweatpants": "pants",
+        "shorts": "shorts", "jorts": "shorts",
+        "sneaker": "sneaker", "sneakers": "sneaker", "trainers": "sneaker",
+        "kicks": "sneaker",
+        "loafer": "loafer", "loafers": "loafer",
+        "hat": "hat", "cap": "hat", "beanie": "hat",
+        "socks": "socks", "sock": "socks",
+    }
 
     def parse_text_attributes(self, text):
         """Pull a garment GROUP and a COLOUR out of one text part.
@@ -697,12 +742,20 @@ class OutfitSearch:
             if categories:
                 group = self.DETECTOR_GROUP.get(categories[0])
 
+        # The finer category, when the text names one. "shirt" is a
+        # substring of "t-shirt", so scan longest-first.
+        category = None
+        for word in sorted(self.CATEGORY_WORDS, key=len, reverse=True):
+            if re.search(rf"\b{re.escape(word)}\b", lowered):
+                category = self.CATEGORY_WORDS[word]
+                break
+
         colour = None
         for candidate in sorted(self.color_vocab, key=len, reverse=True):
             if candidate and candidate in lowered:
                 colour = candidate
                 break
-        return group, colour
+        return group, colour, category
 
     def parse_filters(self, text):
         """Pull detector-known category/color terms out of the text.
@@ -752,7 +805,8 @@ class OutfitSearch:
 
     def search(self, parts, top_k=24, use_filters=True,
                drop_non_us=False, drop_womens=False, type_preference=0.05,
-               colour_name=None, colour_rgb=None, colour_weight=0.10):
+               colour_name=None, colour_rgb=None, colour_weight=0.10,
+               skin_lab=None, skin_weight=0.08, skin_min_confidence=0.10):
         """Multimodal outfit retrieval over an arbitrary set of query parts.
 
         `parts` is a list of {"kind": "image"|"text", "value": ..., "weight": float}.
@@ -803,7 +857,7 @@ class OutfitSearch:
             if len(clauses) <= 1:
                 expanded.append(part)
                 continue
-            for phrase, _, _ in clauses:
+            for phrase, _, _, _ in clauses:
                 expanded.append({**part, "value": phrase, "label": phrase})
         parts = expanded
 
@@ -825,15 +879,21 @@ class OutfitSearch:
             # hand the other 12% nothing but wrong-type crops.
             crop_sim = (self.crop_embeddings @ vector).numpy() \
                 if self.crop_embeddings is not None else None
-            group = colour = None
+            group = colour = category = None
             if crop_sim is not None and type_preference and self._crop_groups is not None:
                 if part["kind"] == "image":
                     group, _ = self.classify_group(vector)
                 else:
-                    group, colour = self.parse_text_attributes(str(part["value"]))
+                    group, colour, category = self.parse_text_attributes(str(part["value"]))
 
                 if group:
                     crop_sim = crop_sim + type_preference * (self._crop_groups == group)
+                if category is not None and self._crop_categories is not None:
+                    # On TOP of the group bonus, so a red sweater outranks a
+                    # red hoodie (both are `tops`) while a red hoodie still
+                    # outranks red trousers.
+                    crop_sim = crop_sim + type_preference * (
+                        self._crop_categories == category)
                 if colour:
                     # The SAME crop earns both bonuses, which is the whole
                     # point: a yellow shoe gets type+colour, a yellow
@@ -846,6 +906,7 @@ class OutfitSearch:
                 "weight": float(part.get("weight", 1.0)),
                 "group": group,
                 "colour": colour,
+                "category": category,
                 "photo_sim": (self.photo_embeddings @ vector).numpy(),
                 "crop_sim": crop_sim,
             })
@@ -874,6 +935,21 @@ class OutfitSearch:
                     categories += part_categories
                     colors += part_colors
         categories, colors = sorted(set(categories)), sorted(set(colors))
+
+        # Skin-tone closeness per post, if a reference was given.
+        skin_bonus = {}
+        if skin_lab is not None and self._skin_lab:
+            import numpy as np
+
+            reference = np.asarray(skin_lab, dtype=float)
+            for key, value in self._skin_lab.items():
+                if self._skin_conf.get(key, 0.0) < skin_min_confidence:
+                    continue
+                # Hue and chroma carry this; lightness is the axis most
+                # corrupted by exposure, so it is down-weighted the same
+                # way the extractor does.
+                delta = (np.asarray(value) - reference) * np.array([0.4, 1.0, 1.0])
+                skin_bonus[key] = float(np.exp(-(np.linalg.norm(delta) / 12.0) ** 2))
 
         scored = []
         excluded_posts = 0
@@ -930,6 +1006,8 @@ class OutfitSearch:
                     assignments.append((part_index, float(score), None))
 
             total = sum(encoded[i]["weight"] * score for i, score, _ in assignments) / total_weight
+            if skin_bonus:
+                total += skin_weight * skin_bonus.get(post_id, 0.0)
 
             # Display the photo the FIRST part's garment actually came from.
             display_row = photo_rows[0]
@@ -964,9 +1042,13 @@ class OutfitSearch:
                 "filters_applied": {"categories": categories, "colors": colors},
                 "inferred_types": [p["group"] for p in encoded if p["group"]],
                 "inferred_colours": [p["colour"] for p in encoded if p.get("colour")],
+                "inferred_categories": [p["category"] for p in encoded if p.get("category")],
+                "category_vocab": sorted({c for c in self.CATEGORY_WORDS.values()}),
                 "colour_applied": ("rgb" if colour_rgb is not None
                                    else (colour_name or None)),
                 "colour_vocab": self.color_vocab,
+                "skin_reference_used": skin_lab is not None,
+                "skin_coverage": len(self._skin_lab),
                 "used_crop_index": self.crop_embeddings is not None,
                 "num_parts": len(encoded),
                 "excluded_posts": excluded_posts,
@@ -1030,10 +1112,20 @@ PAGE = r"""<!doctype html>
  .chip button{background:none;border:0;color:var(--muted);cursor:pointer;font-size:15px;
               padding:0 0 0 2px;line-height:1}
  .parts .hint{font-size:11px;color:var(--muted)}
+ .refine{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px}
+ .refine .rc{display:inline-flex;align-items:center;gap:5px;padding:4px 9px;
+     border:1px solid var(--accent);border-radius:99px;font-size:12px;
+     background:var(--card)}
+ .refine select{border:0;background:none;font-size:12px;color:var(--fg);
+     font-weight:600;padding:0}
+ .refine .lbl{color:var(--muted)}
  select{padding:5px 7px;border:1px solid var(--line);border-radius:7px;
         background:var(--bg);color:var(--fg);font-size:12px}
  .eyedrop{display:inline-flex;align-items:center;gap:7px}
- .eyedrop input[type=file]{width:118px;font-size:11px}
+ .eyedrop input[type=file]{display:none}
+ .filebtn{padding:5px 9px;border:1px solid var(--line);border-radius:7px;
+          background:var(--card);cursor:pointer;font-size:12px}
+ .filebtn:hover{border-color:var(--accent)}
  #cv{border:1px solid var(--line);border-radius:6px;cursor:crosshair;display:none}
  .swatch{width:20px;height:20px;border-radius:50%;border:1px solid var(--line);
          display:inline-block}
@@ -1062,6 +1154,7 @@ PAGE = r"""<!doctype html>
  </div>
 
  <div id="parts" class="parts"></div>
+ <div id="refine" class="refine"></div>
 
  <div class="slider">
    <label><input type="checkbox" id="filters" checked>
@@ -1072,13 +1165,24 @@ PAGE = r"""<!doctype html>
      women's subs, 20% — the catalog is 100% men's)</span></label>
    <label>colour
      <select id="colour"><option value="">any</option></select></label>
-   <label class="eyedrop" id="eyewrap">or pick from a photo
-     <input type="file" id="colourfile" accept="image/*">
-     <canvas id="cv" width="120" height="120"
-             title="click a pixel to use that exact colour"></canvas>
+   <span class="eyedrop">
+     <!-- The canvas must NOT live inside the label: a click anywhere in a
+          label activates its form control, so putting the canvas in here
+          re-opened the file picker instead of picking a pixel. -->
+     <label class="filebtn">pick colour from a photo
+       <input type="file" id="colourfile" accept="image/*"></label>
+     <canvas id="cv" width="150" height="150"
+             title="click any pixel to use that exact colour"></canvas>
+     <span id="eyehint" class="hint" hidden>← click a pixel</span>
      <span id="swatch" class="swatch" hidden></span>
      <button type="button" id="clearcol" hidden>clear</button>
-   </label>
+   </span>
+   <span class="eyedrop">
+     <label class="filebtn">similar skin tone
+       <input type="file" id="skinfile" accept="image/*"></label>
+     <span id="skinstate" class="hint"></span>
+     <button type="button" id="clearskin" hidden>clear</button>
+   </span>
    <label><input type="checkbox" id="typepref" checked> match garment type
      <span class="hint">(soft; without it 27% of item matches land on the
      wrong garment type)</span></label>
@@ -1094,6 +1198,11 @@ PAGE = r"""<!doctype html>
    distribution it was trained on, and how well it transfers has not been
    measured. The garment filter uses detector labels that are unvalidated
    model output. Nothing here is evaluated yet; judge it by looking at it.
+   The skin-tone reference is <b>relative</b> — it finds photos whose skin
+   reads similarly to your reference under similar lighting. Absolute tone
+   binning measured badly here (photographed skin is far darker than the
+   reference swatches), so it is deliberately not offered, and extraction
+   is still running so coverage is partial.
  </div>
 </main>
 <script>
@@ -1164,24 +1273,46 @@ $('colourfile').addEventListener('change',e=>{
     const w=img.width*scale, h=img.height*scale;
     ctx.clearRect(0,0,cv.width,cv.height);
     ctx.drawImage(img,(cv.width-w)/2,(cv.height-h)/2,w,h);
-    cv.style.display='block';
+    cv.style.display='block'; $('eyehint').hidden=false;
   };
   img.src=URL.createObjectURL(f);
 });
 $('cv').addEventListener('click',ev=>{
+  ev.preventDefault(); ev.stopPropagation();
   const cv=$('cv'), r=cv.getBoundingClientRect();
   const x=Math.round((ev.clientX-r.left)*cv.width/r.width);
   const y=Math.round((ev.clientY-r.top)*cv.height/r.height);
-  const d=cv.getContext('2d').getImageData(x,y,1,1).data;
-  if(d[3]===0) return;
-  pickedRGB=[d[0],d[1],d[2]];
+  // Average a small patch, not one pixel: JPEG noise and compression make
+  // a single sample unreliable, and people aim at a region anyway.
+  const ctx=cv.getContext('2d',{willReadFrequently:true});
+  const half=3, sx=Math.max(0,x-half), sy=Math.max(0,y-half);
+  const d=ctx.getImageData(sx,sy,half*2+1,half*2+1).data;
+  let rr=0,gg=0,bb=0,n=0;
+  for(let i=0;i<d.length;i+=4){ if(d[i+3]===0) continue; rr+=d[i];gg+=d[i+1];bb+=d[i+2];n++; }
+  if(!n) return;
+  pickedRGB=[Math.round(rr/n),Math.round(gg/n),Math.round(bb/n)];
   $('swatch').style.background='rgb('+pickedRGB.join(',')+')';
   $('swatch').hidden=false; $('clearcol').hidden=false;
+  $('eyehint').hidden=true;
   $('colour').value='';   // an exact pick overrides the dropdown
+  run();                  // searching immediately is the point of picking
 });
 $('clearcol').addEventListener('click',()=>{
   pickedRGB=null; $('swatch').hidden=true; $('clearcol').hidden=true;
-  $('cv').style.display='none'; $('colourfile').value='';
+  $('eyehint').hidden=true; $('cv').style.display='none'; $('colourfile').value='';
+});
+
+let skinImage=null;
+$('skinfile').addEventListener('change',e=>{
+  const f=e.target.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=ev=>{ skinImage=ev.target.result;
+    $('skinstate').textContent='reference set'; $('clearskin').hidden=false; run(); };
+  r.readAsDataURL(f);
+});
+$('clearskin').addEventListener('click',()=>{
+  skinImage=null; $('skinstate').textContent=''; $('clearskin').hidden=true;
+  $('skinfile').value=''; run();
 });
 
 async function run(){
@@ -1195,7 +1326,7 @@ async function run(){
         drop_non_us:$('us').checked, drop_womens:$('mens').checked,
         type_preference:$('typepref').checked?0.05:0,
         colour_name:$('colour').value||null, colour_rgb:pickedRGB,
-        top_k:24})});
+        skin_image:skinImage, top_k:24})});
     const d=await res.json();
     if(!res.ok)throw new Error(d.detail||'failed');
     const f=d.filters_applied, bits=[];
@@ -1209,9 +1340,12 @@ async function run(){
         d.inferred_types.join('/'):'')+
       (d.colour_applied?'  ·  colour '+
         (d.colour_applied==='rgb'?'(exact pick)':d.colour_applied):'')+
+      (d.skin_reference_used?'  ·  skin tone ref ('+
+        (d.skin_coverage||0).toLocaleString()+' photos measured so far)':'')+
       (bits.length?'  ·  must contain '+bits.join(', '):'')+
       (d.used_crop_index?'':'  ·  whole-frame fallback (crop index not built)')+
       '  ·  '+d.ms+' ms';
+    renderRefine(d);
     $('grid').innerHTML=d.results.map(r=>
       '<div class="cell"><a href="'+(r.post_url||'#')+'" target="_blank" rel="noopener">'+
       '<img loading="lazy" src="/photo?path='+encodeURIComponent(r.rel)+'"></a>'+
@@ -1227,6 +1361,40 @@ $('go').addEventListener('click',run);
 // query is possible without leaving the keyboard.
 $('text').addEventListener('keydown',e=>{
   if(e.key==='Enter'){ e.preventDefault(); if($('text').value.trim())commitText(); else run(); }});
+
+// After a search, show what it PARSED as editable chips. Changing one
+// rewrites that word in the query box and re-runs -- so "black pants" is
+// one click from "olive pants" without retyping.
+let lastParse=null;
+function renderRefine(d){
+  const box=$('refine');
+  const cols=d.colour_vocab||[], types=d.category_vocab||[];
+  const chips=[];
+  (d.inferred_colours||[]).forEach(c=>{
+    chips.push('<span class="rc"><span class="lbl">colour</span>'+
+      '<select onchange="swap(\''+c+'\',this.value)">'+
+      cols.map(o=>'<option'+(o===c?' selected':'')+'>'+o+'</option>').join('')+
+      '</select></span>');
+  });
+  (d.inferred_categories||[]).forEach(t=>{
+    chips.push('<span class="rc"><span class="lbl">item</span>'+
+      '<select onchange="swap(\''+t+'\',this.value)">'+
+      types.map(o=>'<option'+(o===t?' selected':'')+'>'+o+'</option>').join('')+
+      '</select></span>');
+  });
+  box.innerHTML = chips.length
+    ? chips.join('')+'<span class="hint">change one to re-search</span>' : '';
+}
+function swap(from,to){
+  if(from===to) return;
+  const re=new RegExp('\\b'+from.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'\\b','i');
+  let changed=false;
+  texts=texts.map(t=>{ if(re.test(t)){changed=true; return t.replace(re,to);} return t; });
+  if(!changed && $('text').value && re.test($('text').value))
+    { $('text').value=$('text').value.replace(re,to); changed=true; }
+  if(!changed) return;
+  renderParts(); run();
+}
 
 function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,
   c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
@@ -1303,6 +1471,39 @@ def serve(args):
                 if str(phrase).strip():
                     parts.append({"kind": "text", "value": str(phrase).strip()})
 
+            # A skin reference photo: parse it once here, so the client
+            # sends an image and the server does the extraction.
+            skin_lab = body.get("skin_lab")
+            skin_image = body.get("skin_image")
+            if skin_lab is None and skin_image:
+                try:
+                    import extract_skin_tone as skin
+
+                    encoded_skin = skin_image.split(",", 1)[-1]
+                    handle = tempfile.NamedTemporaryFile(suffix=".jpg", delete=False)
+                    handle.write(base64.b64decode(encoded_skin))
+                    handle.close()
+                    temps.append(handle.name)
+                    from PIL import Image as PILImage, ImageOps as PILOps
+
+                    with PILImage.open(handle.name) as raw:
+                        reference_image = PILOps.exif_transpose(raw).convert("RGB")
+                    import numpy as np
+
+                    import garment_proposer
+
+                    if getattr(engine, "_skin_parser", None) is None:
+                        engine._skin_parser = garment_proposer.load_human_parser("cpu")
+                    proc, mdl = engine._skin_parser
+                    label_map, probs = garment_proposer.parse_person(
+                        reference_image, proc, mdl, "cpu")
+                    estimate = skin.estimate(reference_image, np.asarray(label_map),
+                                             np.asarray(probs), skin.monk_lab())
+                    skin_lab = (estimate or {}).get("lab")
+                except Exception as error:  # noqa: BLE001
+                    print(f"[skin] reference failed: {error}")
+                    skin_lab = None
+
             try:
                 result = engine.search(parts, int(body.get("top_k") or 24),
                                        bool(body.get("use_filters", True)),
@@ -1310,7 +1511,8 @@ def serve(args):
                                        bool(body.get("drop_womens", False)),
                                        float(body.get("type_preference", 0.05)),
                                        body.get("colour_name") or None,
-                                       body.get("colour_rgb") or None)
+                                       body.get("colour_rgb") or None,
+                                       skin_lab=skin_lab)
             except ValueError as error:
                 return self._send(400, json.dumps({"detail": str(error)}).encode())
             finally:
