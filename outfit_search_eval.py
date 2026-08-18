@@ -259,6 +259,21 @@ def score(args):
         raise SystemExit("no VLM labels yet — run `label` first")
     labels = json.loads(LABELS_PATH.read_text())
     truth = {rel: entry for rel, entry in labels.items() if entry.get("is_outfit_photo")}
+
+    # The colour head trains on these same VLM labels, so scoring it on
+    # photos it saw measures memorisation rather than generalisation.
+    if args.held_out_only:
+        import torch
+
+        head = REPO_ROOT / "outfit_dataset" / "colour_head.pt"
+        if head.exists():
+            payload = torch.load(head, map_location="cpu", weights_only=False)
+            allowed = set(payload.get("held_out_photos") or [])
+            if allowed:
+                before = len(truth)
+                truth = {k: v for k, v in truth.items() if k in allowed}
+                print(f"  restricted to the colour head's held-out photos: "
+                      f"{before:,} -> {len(truth):,}")
     print(f"  {len(truth):,} labelled outfit photos "
           f"({len(labels) - len(truth):,} judged not-an-outfit and excluded)")
 
@@ -284,7 +299,8 @@ def score(args):
         result = engine.search([{"kind": "text", "value": query["text"]}],
                                top_k=args.pool, drop_non_us=True, drop_womens=True,
                                type_preference=args.type_preference,
-                               colour_match=args.colour_match)
+                               colour_match=args.colour_match,
+                               use_colour_head=not args.no_colour_head)
         judged = hits = 0
         for hit in result["results"]:
             entry = truth.get(hit["rel"])
@@ -365,6 +381,10 @@ def main():
     s.add_argument("--min-support", type=int, default=8)
     s.add_argument("--max-queries", type=int, default=25)
     s.add_argument("--colour-match", default="both", choices=("name","lab","both"))
+    s.add_argument("--no-colour-head", action="store_true",
+                   help="force the heuristic palette colour, for A/B")
+    s.add_argument("--held-out-only", action="store_true",
+                   help="score only photos the colour head did NOT train on")
     s.add_argument("--type-preference", type=float, default=0.05,
                    help="0 disables the type/colour binding, for A/B")
     s.set_defaults(func=score)

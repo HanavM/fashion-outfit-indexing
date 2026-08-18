@@ -294,3 +294,49 @@ labelling cost is bounded and one-time rather than proportional to corpus
 size. And 43.5% is still agreement with a VLM on a 19-way task where the
 two labellers partly disagree by construction (pixel colour vs garment
 colour, see the previous entry).
+
+### 2026-08-18 — the distilled colour head: +10.5pt as a classifier, ~0 in retrieval
+
+Trained on 6,792 aligned pairs from 3,155 VLM-labelled photos (4,431 photos
+labelled total; 3,493 added in a 17.9 min run, 7 content-policy refusals).
+Split by photo, class-weighted because "black" is 30% of the data and an
+unweighted head would reproduce the incumbent's own dark-collapse bug.
+
+| on 1,717 held-out crops | accuracy |
+|---|---:|
+| majority class | 30.6% |
+| heuristic palette vote | 37.7% |
+| **distilled head** | **48.2%** |
+| | **+10.5pt** |
+
+**But it does not move retrieval.** Scored only on the head's held-out
+photos, since the retrieval eval uses the same VLM labels the head trained
+on and scoring it on photos it memorised would be meaningless:
+
+| precision@15, 280 judged results | micro |
+|---|---:|
+| heuristic colour | 39.5% |
+| learned head | **40.0%** |
+
++0.5pt, noise at this sample size. And sweeping the binding weight
+0.05 → 0.40 returns **byte-identical results** — verified directly on
+"black pants", where the top-15 judged photos are the same list at both
+weights.
+
+That identity is not the degenerate-eval bug it first looked like (I
+checked: queries have 30-183 supporting photos, well above k=15, so
+selection is genuinely happening). It is **saturation**: at 0.05 the crops
+matching group+category+colour already fill the top of the ranking, so
+raising the weight widens a gap that has already decided the order.
+
+**What this means.** The colour signal is not the binding constraint on
+retrieval precision at this operating point — the SigLIP2 text-image
+similarity is, and colour only breaks ties among crops it has already
+ranked. A better tiebreaker cannot fix an ordering that is decided before
+the tiebreak.
+
+The head is kept: it is strictly more accurate, costs one matmul over
+embeddings that already exist, and removes the palette heuristic's
+systematic dark-collapse from any downstream consumer (filters, facets,
+per-crop colour display). But it should not be claimed as a retrieval win,
+and the honest next lever is the encoder, not the colour label.
