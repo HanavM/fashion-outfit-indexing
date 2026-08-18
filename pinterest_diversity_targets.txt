@@ -1,0 +1,177 @@
+# Pinterest search grids -- BREADTH PASS 3. One query per line.
+#
+# Companions: pinterest_targets.txt (20 generic style queries, consumed
+# 2026-08-04) and pinterest_brand_targets.txt (per-brand product lines,
+# consumed 2026-08-05). Neither query appears twice across the three files.
+#
+# Why this list exists: after both passes the owner still reported "not that
+# much outfit image diversity". Passes 1 and 2 were keyed on LOOK (streetwear,
+# techwear, ootd) and on BRAND SKU (nike dunk low, carhartt detroit jacket).
+# Both axes were exhausted, and a grid keyed on either converges hard -- one
+# query's grid is one look. So this pass keys on five axes that neither
+# earlier list touched at all:
+#
+#   occasion/context  (interview, wedding guest, airport, game day)
+#   season/weather    (layering, rainy day, transitional fall, snow day)
+#   aesthetic         (prep, ivy, normcore, gorpcore, blokecore, western)
+#   garment           (chore coat, henley, corduroy, painter pants, overshirt)
+#   colour            (red sneakers, yellow jacket, orange hoodie, all black)
+#   body/region       (tall, big, over 40, NYC, LA, Pacific Northwest)
+#
+# The colour block is deliberate and measured: across 31,239 catalog crops
+# there are only 55 red-FOOTWEAR crops and 389 red crops of any type, and the
+# owner searches by colour. Saturated colours are the corpus's thinnest axis.
+#
+# Every query is men's-qualified and US-centric, for the same reason
+# pinterest_brand_targets.txt is: the catalog is 20 US brands, 100% men's,
+# while 22% of the existing corpus is JP/KR-sourced and 20% is women's --
+# ~42% unmatchable by construction. Nothing here should add to that pile.
+#
+# Queries deliberately NOT repeated, measured as failures in earlier passes:
+# `skechers mens outfit` and `skechers slip ins mens style` (retail ads, no
+# organic outfit-pin culture), `gap mens outfit` (23 items) and
+# `pacsun mens outfit` (19 items).
+#
+# Run with a MODEST --target (~40). Breadth beats depth: a dozen disjoint
+# queries buy far more variety than a deeper scroll of one.
+#
+# Pinterest's robots.txt is `User-agent: * / Disallow: /`; this target is an
+# explicit, reviewed exception by the project owner (docs/outfit_sourcing_plan.md,
+# "Revision -- Pinterest is reachable"). Do NOT pass --respect-robots here or
+# every line is skipped. Requires the logged-in profile in
+# ~/.cache/fashion-tests/browser-profile.
+#
+# The grid DOM carries no pinner, so ALWAYS follow a run with
+# `python3 backfill_pin_authors.py` (no --ids-file) -- docs/licensing_review.md
+# requires an author on every Pinterest record.
+# --- occasion / context ---
+https://www.pinterest.com/search/pins/?q=interview%20outfit%20men
+https://www.pinterest.com/search/pins/?q=wedding%20guest%20outfit%20men
+https://www.pinterest.com/search/pins/?q=first%20date%20outfit%20men
+https://www.pinterest.com/search/pins/?q=gym%20to%20street%20outfit%20men
+https://www.pinterest.com/search/pins/?q=travel%20outfit%20men
+https://www.pinterest.com/search/pins/?q=smart%20casual%20outfit%20men
+https://www.pinterest.com/search/pins/?q=graduation%20outfit%20men
+https://www.pinterest.com/search/pins/?q=concert%20outfit%20men
+https://www.pinterest.com/search/pins/?q=game%20day%20outfit%20men
+https://www.pinterest.com/search/pins/?q=college%20campus%20outfit%20men
+https://www.pinterest.com/search/pins/?q=airport%20outfit%20men
+https://www.pinterest.com/search/pins/?q=night%20out%20outfit%20men
+https://www.pinterest.com/search/pins/?q=festival%20outfit%20men
+https://www.pinterest.com/search/pins/?q=casual%20friday%20outfit%20men
+# --- season / weather ---
+https://www.pinterest.com/search/pins/?q=layering%20outfit%20men
+https://www.pinterest.com/search/pins/?q=rainy%20day%20outfit%20men
+https://www.pinterest.com/search/pins/?q=summer%20heat%20outfit%20men
+https://www.pinterest.com/search/pins/?q=transitional%20fall%20outfit%20men
+https://www.pinterest.com/search/pins/?q=spring%20outfit%20men
+https://www.pinterest.com/search/pins/?q=cold%20weather%20outfit%20men
+https://www.pinterest.com/search/pins/?q=snow%20day%20outfit%20men
+https://www.pinterest.com/search/pins/?q=beach%20day%20outfit%20men
+https://www.pinterest.com/search/pins/?q=early%20spring%20outfit%20men
+https://www.pinterest.com/search/pins/?q=fall%20layering%20men
+# --- aesthetic ---
+https://www.pinterest.com/search/pins/?q=minimalist%20menswear
+https://www.pinterest.com/search/pins/?q=prep%20style%20men
+https://www.pinterest.com/search/pins/?q=americana%20workwear%20outfit
+https://www.pinterest.com/search/pins/?q=skate%20style%20outfit%20men
+https://www.pinterest.com/search/pins/?q=normcore%20outfit%20men
+https://www.pinterest.com/search/pins/?q=vintage%2090s%20outfit%20men
+https://www.pinterest.com/search/pins/?q=gorpcore%20outfit%20men
+https://www.pinterest.com/search/pins/?q=y2k%20outfit%20men
+https://www.pinterest.com/search/pins/?q=grunge%20outfit%20men
+https://www.pinterest.com/search/pins/?q=ivy%20style%20menswear
+https://www.pinterest.com/search/pins/?q=old%20money%20style%20men
+https://www.pinterest.com/search/pins/?q=dark%20academia%20outfit%20men
+https://www.pinterest.com/search/pins/?q=military%20surplus%20outfit%20men
+https://www.pinterest.com/search/pins/?q=heritage%20menswear
+https://www.pinterest.com/search/pins/?q=blokecore%20outfit
+https://www.pinterest.com/search/pins/?q=nautical%20outfit%20men
+https://www.pinterest.com/search/pins/?q=western%20outfit%20men
+https://www.pinterest.com/search/pins/?q=90s%20hip%20hop%20outfit%20men
+https://www.pinterest.com/search/pins/?q=punk%20outfit%20men
+https://www.pinterest.com/search/pins/?q=mod%20style%20outfit%20men
+https://www.pinterest.com/search/pins/?q=rugged%20outdoor%20outfit%20men
+https://www.pinterest.com/search/pins/?q=skater%20grunge%20outfit%20men
+# --- garment-led ---
+https://www.pinterest.com/search/pins/?q=cargo%20pants%20outfit%20men
+https://www.pinterest.com/search/pins/?q=flannel%20outfit%20men
+https://www.pinterest.com/search/pins/?q=oxford%20shirt%20outfit%20men
+https://www.pinterest.com/search/pins/?q=chore%20coat%20outfit%20men
+https://www.pinterest.com/search/pins/?q=sweater%20over%20collared%20shirt%20men
+https://www.pinterest.com/search/pins/?q=corduroy%20outfit%20men
+https://www.pinterest.com/search/pins/?q=striped%20tee%20outfit%20men
+https://www.pinterest.com/search/pins/?q=bomber%20jacket%20outfit%20men
+https://www.pinterest.com/search/pins/?q=leather%20jacket%20outfit%20men
+https://www.pinterest.com/search/pins/?q=varsity%20jacket%20outfit%20men
+https://www.pinterest.com/search/pins/?q=crewneck%20sweatshirt%20outfit%20men
+https://www.pinterest.com/search/pins/?q=quarter%20zip%20outfit%20men
+https://www.pinterest.com/search/pins/?q=polo%20shirt%20outfit%20men
+https://www.pinterest.com/search/pins/?q=chinos%20outfit%20men
+https://www.pinterest.com/search/pins/?q=wide%20leg%20jeans%20outfit%20men
+https://www.pinterest.com/search/pins/?q=baggy%20jeans%20outfit%20men
+https://www.pinterest.com/search/pins/?q=summer%20shorts%20outfit%20men
+https://www.pinterest.com/search/pins/?q=overshirt%20outfit%20men
+https://www.pinterest.com/search/pins/?q=fleece%20jacket%20outfit%20men
+https://www.pinterest.com/search/pins/?q=cardigan%20outfit%20men
+https://www.pinterest.com/search/pins/?q=turtleneck%20outfit%20men
+https://www.pinterest.com/search/pins/?q=henley%20shirt%20outfit%20men
+https://www.pinterest.com/search/pins/?q=coach%20jacket%20outfit%20men
+https://www.pinterest.com/search/pins/?q=windbreaker%20outfit%20men
+https://www.pinterest.com/search/pins/?q=trench%20coat%20outfit%20men
+https://www.pinterest.com/search/pins/?q=vest%20outfit%20men
+https://www.pinterest.com/search/pins/?q=knit%20polo%20outfit%20men
+https://www.pinterest.com/search/pins/?q=sweatpants%20outfit%20men
+https://www.pinterest.com/search/pins/?q=track%20pants%20outfit%20men
+https://www.pinterest.com/search/pins/?q=painter%20pants%20outfit%20men
+https://www.pinterest.com/search/pins/?q=overalls%20outfit%20men
+https://www.pinterest.com/search/pins/?q=linen%20shirt%20outfit%20men
+https://www.pinterest.com/search/pins/?q=graphic%20tee%20outfit%20men
+https://www.pinterest.com/search/pins/?q=tank%20top%20outfit%20men
+https://www.pinterest.com/search/pins/?q=beanie%20outfit%20men
+https://www.pinterest.com/search/pins/?q=boots%20outfit%20men
+https://www.pinterest.com/search/pins/?q=loafers%20outfit%20men
+https://www.pinterest.com/search/pins/?q=white%20sneakers%20outfit%20men
+https://www.pinterest.com/search/pins/?q=skate%20shoes%20outfit%20men
+# --- colour-led ---
+https://www.pinterest.com/search/pins/?q=red%20sneakers%20outfit%20men
+https://www.pinterest.com/search/pins/?q=yellow%20jacket%20outfit%20men
+https://www.pinterest.com/search/pins/?q=green%20pants%20outfit%20men
+https://www.pinterest.com/search/pins/?q=orange%20hoodie%20outfit%20men
+https://www.pinterest.com/search/pins/?q=all%20black%20outfit%20men
+https://www.pinterest.com/search/pins/?q=monochrome%20beige%20outfit%20men
+https://www.pinterest.com/search/pins/?q=brown%20outfit%20men
+https://www.pinterest.com/search/pins/?q=grey%20outfit%20men
+https://www.pinterest.com/search/pins/?q=all%20white%20outfit%20men
+https://www.pinterest.com/search/pins/?q=burgundy%20outfit%20men
+https://www.pinterest.com/search/pins/?q=olive%20green%20outfit%20men
+https://www.pinterest.com/search/pins/?q=navy%20outfit%20men
+https://www.pinterest.com/search/pins/?q=pink%20outfit%20men
+https://www.pinterest.com/search/pins/?q=purple%20outfit%20men
+https://www.pinterest.com/search/pins/?q=cream%20outfit%20men
+https://www.pinterest.com/search/pins/?q=red%20jacket%20outfit%20men
+https://www.pinterest.com/search/pins/?q=green%20sweater%20outfit%20men
+https://www.pinterest.com/search/pins/?q=yellow%20hoodie%20outfit%20men
+https://www.pinterest.com/search/pins/?q=orange%20pants%20outfit%20men
+https://www.pinterest.com/search/pins/?q=red%20pants%20outfit%20men
+https://www.pinterest.com/search/pins/?q=blue%20jacket%20outfit%20men
+# --- US city / regional ---
+https://www.pinterest.com/search/pins/?q=new%20york%20street%20style%20men
+https://www.pinterest.com/search/pins/?q=la%20street%20style%20men
+https://www.pinterest.com/search/pins/?q=chicago%20street%20style%20men
+https://www.pinterest.com/search/pins/?q=american%20college%20style%20men
+https://www.pinterest.com/search/pins/?q=california%20casual%20outfit%20men
+https://www.pinterest.com/search/pins/?q=miami%20outfit%20men
+https://www.pinterest.com/search/pins/?q=pacific%20northwest%20outfit%20men
+# --- body / age variation ---
+https://www.pinterest.com/search/pins/?q=outfit%20men%20over%2040
+https://www.pinterest.com/search/pins/?q=tall%20guy%20outfit%20men
+https://www.pinterest.com/search/pins/?q=short%20guy%20outfit%20men%20style
+https://www.pinterest.com/search/pins/?q=big%20guy%20outfit%20men%20style
+https://www.pinterest.com/search/pins/?q=plus%20size%20men%20outfit
+https://www.pinterest.com/search/pins/?q=teen%20boy%20outfit%20ideas
+# --- wardrobe framing ---
+https://www.pinterest.com/search/pins/?q=mens%20capsule%20wardrobe%20outfit
+https://www.pinterest.com/search/pins/?q=mens%20everyday%20uniform%20outfit
+https://www.pinterest.com/search/pins/?q=thrifted%20outfit%20men
+https://www.pinterest.com/search/pins/?q=mens%20outfit%20ideas%202026

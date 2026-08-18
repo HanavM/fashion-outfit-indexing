@@ -68,6 +68,13 @@ def main():
     with sync_playwright() as p:
         ctx = p.chromium.launch_persistent_context(
             PROFILE, headless=True, viewport={"width": 1200, "height": 800},
+            # A run visits thousands of pin pages in one persistent profile,
+            # and Chromium's on-disk HTTP cache grows without bound across
+            # them: measured 2026-08-18, 500 pins put 765 MB in Default/Cache
+            # plus 187 MB in Code Cache, on a machine with ~6 GiB free. Nothing
+            # is ever re-visited, so the cache buys nothing -- pin the caches
+            # to ~0 rather than periodically stopping the run to purge them.
+            args=["--disk-cache-size=1", "--media-cache-size=1"],
             user_agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
                        "(KHTML, like Gecko) Chrome/120.0 Safari/537.36")
         pg = ctx.pages[0] if ctx.pages else ctx.new_page()
