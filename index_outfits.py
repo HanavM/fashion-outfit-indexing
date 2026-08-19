@@ -54,9 +54,11 @@ import numpy as np
 import torch
 from transformers import AutoProcessor, AutoModelForZeroShotImageClassification
 
-from sam2.build_sam import build_sam2
-from sam2.automatic_mask_generator import SAM2AutomaticMaskGenerator
-
+# sam2 is imported LAZILY, at the one call site that needs it (the
+# --proposer sam2 path). At module scope it made `dominant_color` --
+# which is pure PIL and numpy -- unimportable anywhere sam2 is not
+# installed, including the Modal GPU image, where installing it means
+# building a CUDA extension for a proposer that is no longer the default.
 import segment_outfit
 from segment_outfit import (
     detect_outfit_items,
@@ -268,6 +270,9 @@ def main():
     clip_model = AutoModelForZeroShotImageClassification.from_pretrained(FASHION_CLIP_MODEL).to(device)
 
     print("Loading SAM2...")
+    from sam2.automatic_mask_generator import SAM2AutomaticMaskGenerator
+    from sam2.build_sam import build_sam2
+
     sam2 = build_sam2(SAM2_CONFIG, SAM2_CHECKPOINT, device=device)
     mask_generator = SAM2AutomaticMaskGenerator(sam2, **MASK_GENERATOR_KWARGS)
 

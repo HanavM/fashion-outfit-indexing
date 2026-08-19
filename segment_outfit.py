@@ -58,8 +58,10 @@ import torch
 from PIL import Image, ImageOps
 from transformers import AutoProcessor, AutoModelForZeroShotImageClassification
 
-from sam2.build_sam import build_sam2
-from sam2.automatic_mask_generator import SAM2AutomaticMaskGenerator
+# sam2 imported LAZILY at its one call site: this module also holds
+# CATEGORY_LABELS and crop helpers that garment_proposer (the default
+# proposer, which uses no SAM2 at all) imports, and a module-scope import
+# made those unreachable wherever sam2 is not installed.
 
 # Same device/checkpoint/resize choices as segment_apparel.py -- see that
 # script's comment for why (MPS measured >2min/image vs. ~7s on CPU for
@@ -453,6 +455,9 @@ def main():
                                       processor, clip_model, device)
     else:
         print("Loading SAM2...")
+        from sam2.automatic_mask_generator import SAM2AutomaticMaskGenerator
+        from sam2.build_sam import build_sam2
+
         sam2 = build_sam2(SAM2_CONFIG, SAM2_CHECKPOINT, device=device)
         mask_generator = SAM2AutomaticMaskGenerator(sam2, **MASK_GENERATOR_KWARGS)
 

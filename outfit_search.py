@@ -217,13 +217,29 @@ def encode_crops(model, processor, records, fts, torch, checkpoint_path=None,
     from PIL import Image, ImageOps
     from tqdm import tqdm
 
+    from concurrent.futures import ThreadPoolExecutor
+
     batch_size = fts.IMAGE_BATCH_SIZE
     embeddings, kept = [], []
     # Open each source photo once even though several crops share it --
     # decoding a 1536px JPEG per crop would dominate the runtime. Records
     # arrive sorted by path (see load_crop_records) so this single entry is
-    # enough.
+    # enough on LOCAL disk.
+    #
+    # On a NETWORK filesystem (Modal volume) the bottleneck is not decoding
+    # but the per-file round trip: measured 0.46 s/image there, with the
+    # GPU idle. So each batch's distinct source photos are opened in
+    # parallel first, then cropped from memory. IMAGE_LOADER_WORKERS is 1
+    # locally, 32 on Modal.
+    workers = fts.IMAGE_LOADER_WORKERS
     cache_path, cache_image = None, None
+
+    def _open(path):
+        try:
+            with Image.open(path) as handle:
+                return path, ImageOps.exif_transpose(handle).convert("RGB")
+        except Exception:  # noqa: BLE001
+            return path, None
 
     # Resume support. The first full-corpus rebuild ran 9h36m and was killed
     # at 82% with nothing saved, losing all of it. A partial index is worth
@@ -243,11 +259,21 @@ def encode_crops(model, processor, records, fts, torch, checkpoint_path=None,
     for start in tqdm(range(done, len(records), batch_size), desc="Encoding garment crops"):
         batch = records[start:start + batch_size]
         images, batch_kept = [], []
+        opened = {}
+        if workers > 1:
+            wanted = {r["path"] for r in batch if r["path"] != cache_path}
+            if wanted:
+                with ThreadPoolExecutor(max_workers=workers) as pool:
+                    opened = {p: im for p, im in pool.map(_open, sorted(wanted))
+                              if im is not None}
         for record in batch:
             try:
                 if record["path"] != cache_path:
-                    with Image.open(record["path"]) as handle:
-                        cache_image = ImageOps.exif_transpose(handle).convert("RGB")
+                    if record["path"] in opened:
+                        cache_image = opened[record["path"]]
+                    else:
+                        with Image.open(record["path"]) as handle:
+                            cache_image = ImageOps.exif_transpose(handle).convert("RGB")
                     cache_path = record["path"]
                 left, top, right, bottom = record["bbox"]
                 if right - left < 8 or bottom - top < 8:

@@ -140,19 +140,48 @@ def load_catalog_records():
     return records
 
 
+IMAGE_LOADER_WORKERS = int(os.environ.get("IMAGE_LOADER_WORKERS", "1"))
+
+
+def _load_one(record):
+    """-> (record, PIL image) or (record, None). Never raises: one unreadable
+    file must not take down a batch of 32."""
+    try:
+        with Image.open(record["path"]) as image:
+            return record, ImageOps.exif_transpose(image).convert("RGB")
+    except Exception:  # noqa: BLE001
+        return record, None
+
+
 @torch.inference_mode()
 def encode_images(model, processor, records):
+    """Batch-encode, loading each batch's files in PARALLEL.
+
+    Serial loading is fine on local disk and catastrophic on a network
+    filesystem, which is where this runs on Modal. Measured there: 14.9 s
+    per 32-image batch, i.e. ~0.46 s/image, all of it per-file round trip
+    while the A10G idled -- slower than the same job on a laptop's MPS.
+    The GPU was never the constraint.
+
+    IMAGE_LOADER_WORKERS defaults to 1 so local behaviour is unchanged;
+    Modal sets 32, matching what modal_app_serve.py already does for the
+    catalog for exactly this reason.
+    """
+    from concurrent.futures import ThreadPoolExecutor
+
     embeddings, kept = [], []
+    pool = ThreadPoolExecutor(max_workers=IMAGE_LOADER_WORKERS) \
+        if IMAGE_LOADER_WORKERS > 1 else None
     for start in tqdm(range(0, len(records), IMAGE_BATCH_SIZE), desc="Encoding catalog images"):
         batch = records[start:start + IMAGE_BATCH_SIZE]
         images, batch_kept = [], []
-        for r in batch:
-            try:
-                with Image.open(r["path"]) as image:
-                    images.append(ImageOps.exif_transpose(image).convert("RGB"))
-                batch_kept.append(r)
-            except Exception:
+        # map() preserves order, so embeddings stay aligned with `kept`.
+        loaded = pool.map(_load_one, batch) if pool else map(_load_one, batch)
+        for r, image in loaded:
+            if image is None:
                 continue
+            images.append(image)
+            batch_kept.append(r)
         if not images:
             continue
         inputs = processor(images=images, return_tensors="pt")

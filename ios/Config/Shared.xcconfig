@@ -1,0 +1,37 @@
+// Shared build configuration.
+//
+// Order matters here. Defaults are declared first and the gitignored secrets
+// file is included LAST, because in an xcconfig the later assignment wins —
+// so anything you put in Secrets.xcconfig overrides what's below. `#include?`
+// (with the question mark) makes it optional, so a fresh clone with no
+// Secrets.xcconfig still builds; it just starts with no credentials and says
+// so in the UI.
+
+PRODUCT_BUNDLE_IDENTIFIER = com.hanavm.fashion
+PRODUCT_NAME = Fashion
+MARKETING_VERSION = 0.1
+CURRENT_PROJECT_VERSION = 1
+
+IPHONEOS_DEPLOYMENT_TARGET = 17.0
+SWIFT_VERSION = 5.9
+TARGETED_DEVICE_FAMILY = 1,2
+
+INFOPLIST_FILE = Config/Info.plist
+CODE_SIGN_STYLE = Automatic
+CODE_SIGNING_ALLOWED = YES
+ENABLE_PREVIEWS = YES
+SWIFT_EMIT_LOC_STRINGS = YES
+ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon
+ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor
+
+// Public hostname, not a secret, so it lives here rather than in Secrets.
+// The `$()` splits the `//` — xcconfig would otherwise read it as a comment.
+FASHION_API_BASE_URL = https:/$()/hanavm--fashion-serve-fashionservice-api.modal.run
+
+// Deliberately empty defaults. Without these the `$(...)` references in
+// Info.plist would survive into the built plist as literal text.
+FASHION_API_KEY =
+AZURE_TRYON_ENDPOINT =
+AZURE_TRYON_API_KEY =
+
+#include? "Secrets.xcconfig"

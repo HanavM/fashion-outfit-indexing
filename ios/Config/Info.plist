@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>$(DEVELOPMENT_LANGUAGE)</string>
+	<key>CFBundleDisplayName</key>
+	<string>Fashion</string>
+	<key>CFBundleExecutable</key>
+	<string>$(EXECUTABLE_NAME)</string>
+	<key>CFBundleIdentifier</key>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>$(PRODUCT_NAME)</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>$(MARKETING_VERSION)</string>
+	<key>CFBundleVersion</key>
+	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>LSRequiresIPhoneOS</key>
+	<true/>
+	<key>UILaunchScreen</key>
+	<dict>
+		<key>UIColorName</key>
+		<string></string>
+	</dict>
+	<key>UISupportedInterfaceOrientations</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+	<key>UISupportedInterfaceOrientations~ipad</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationPortraitUpsideDown</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+
+	<key>NSCameraUsageDescription</key>
+	<string>Photograph the clothes you own so they can be identified and added to your closet.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Choose photos of clothes to add to your closet or to search with.</string>
+
+	<!-- Deep links, so a Siri result can open straight onto the outfit it
+	     spoke about: fashion://outfit/<id> and fashion://search?q=... -->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.hanavm.fashion.deeplink</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>fashion</string>
+			</array>
+		</dict>
+	</array>
+
+	<!-- Credentials, injected from Config/Secrets.xcconfig at build time.
+	     Empty on a fresh clone; the app then falls back to the environment
+	     variable, then the Keychain, then demo mode. -->
+	<key>FashionAPIKey</key>
+	<string>$(FASHION_API_KEY)</string>
+	<key>FashionAPIBaseURL</key>
+	<string>$(FASHION_API_BASE_URL)</string>
+	<key>AzureTryOnEndpoint</key>
+	<string>$(AZURE_TRYON_ENDPOINT)</string>
+	<key>AzureTryOnAPIKey</key>
+	<string>$(AZURE_TRYON_API_KEY)</string>
+</dict>
+</plist>
