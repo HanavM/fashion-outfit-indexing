@@ -1,0 +1,206 @@
+{
+  "k": 15,
+  "type_preference": 0.4,
+  "rows": [
+    {
+      "text": "black pants",
+      "kind": "colour+garment",
+      "colour": "black",
+      "garment": "pants",
+      "support": 833,
+      "judged": 15,
+      "hits": 13,
+      "precision": 0.8666666666666667
+    },
+    {
+      "text": "white sneaker",
+      "kind": "colour+garment",
+      "colour": "white",
+      "garment": "sneaker",
+      "support": 695,
+      "judged": 15,
+      "hits": 11,
+      "precision": 0.7333333333333333
+    },
+    {
+      "text": "black sneaker",
+      "kind": "colour+garment",
+      "colour": "black",
+      "garment": "sneaker",
+      "support": 612,
+      "judged": 15,
+      "hits": 10,
+      "precision": 0.6666666666666666
+    },
+    {
+      "text": "blue pants",
+      "kind": "colour+garment",
+      "colour": "blue",
+      "garment": "pants",
+      "support": 552,
+      "judged": 14,
+      "hits": 5,
+      "precision": 0.35714285714285715
+    },
+    {
+      "text": "gray pants",
+      "kind": "colour+garment",
+      "colour": "gray",
+      "garment": "pants",
+      "support": 404,
+      "judged": 15,
+      "hits": 9,
+      "precision": 0.6
+    },
+    {
+      "text": "black jacket",
+      "kind": "colour+garment",
+      "colour": "black",
+      "garment": "jacket",
+      "support": 400,
+      "judged": 15,
+      "hits": 14,
+      "precision": 0.9333333333333333
+    },
+    {
+      "text": "white t-shirt",
+      "kind": "colour+garment",
+      "colour": "white",
+      "garment": "t-shirt",
+      "support": 392,
+      "judged": 15,
+      "hits": 1,
+      "precision": 0.06666666666666667
+    },
+    {
+      "text": "beige pants",
+      "kind": "colour+garment",
+      "colour": "beige",
+      "garment": "pants",
+      "support": 366,
+      "judged": 15,
+      "hits": 10,
+      "precision": 0.6666666666666666
+    },
+    {
+      "text": "white shirt",
+      "kind": "colour+garment",
+      "colour": "white",
+      "garment": "shirt",
+      "support": 359,
+      "judged": 15,
+      "hits": 7,
+      "precision": 0.4666666666666667
+    },
+    {
+      "text": "brown loafer",
+      "kind": "colour+garment",
+      "colour": "brown",
+      "garment": "loafer",
+      "support": 317,
+      "judged": 9,
+      "hits": 4,
+      "precision": 0.4444444444444444
+    },
+    {
+      "text": "black t-shirt",
+      "kind": "colour+garment",
+      "colour": "black",
+      "garment": "t-shirt",
+      "support": 285,
+      "judged": 15,
+      "hits": 0,
+      "precision": 0.0
+    },
+    {
+      "text": "black loafer",
+      "kind": "colour+garment",
+      "colour": "black",
+      "garment": "loafer",
+      "support": 276,
+      "judged": 15,
+      "hits": 2,
+      "precision": 0.13333333333333333
+    },
+    {
+      "text": "black shirt",
+      "kind": "colour+garment",
+      "colour": "black",
+      "garment": "shirt",
+      "support": 241,
+      "judged": 15,
+      "hits": 7,
+      "precision": 0.4666666666666667
+    },
+    {
+      "text": "light blue pants",
+      "kind": "colour+garment",
+      "colour": "light blue",
+      "garment": "pants",
+      "support": 214,
+      "judged": 15,
+      "hits": 4,
+      "precision": 0.26666666666666666
+    },
+    {
+      "text": "gray sneaker",
+      "kind": "colour+garment",
+      "colour": "gray",
+      "garment": "sneaker",
+      "support": 174,
+      "judged": 15,
+      "hits": 1,
+      "precision": 0.06666666666666667
+    },
+    {
+      "text": "brown sneaker",
+      "kind": "colour+garment",
+      "colour": "brown",
+      "garment": "sneaker",
+      "support": 170,
+      "judged": 15,
+      "hits": 3,
+      "precision": 0.2
+    },
+    {
+      "text": "brown pants",
+      "kind": "colour+garment",
+      "colour": "brown",
+      "garment": "pants",
+      "support": 163,
+      "judged": 15,
+      "hits": 2,
+      "precision": 0.13333333333333333
+    },
+    {
+      "text": "brown jacket",
+      "kind": "colour+garment",
+      "colour": "brown",
+      "garment": "jacket",
+      "support": 162,
+      "judged": 15,
+      "hits": 5,
+      "precision": 0.3333333333333333
+    },
+    {
+      "text": "black hat",
+      "kind": "colour+garment",
+      "colour": "black",
+      "garment": "hat",
+      "support": 155,
+      "judged": 15,
+      "hits": 4,
+      "precision": 0.26666666666666666
+    },
+    {
+      "text": "white socks",
+      "kind": "colour+garment",
+      "colour": "white",
+      "garment": "socks",
+      "support": 151,
+      "judged": 2,
+      "hits": 0,
+      "precision": 0.0
+    }
+  ]
+}
