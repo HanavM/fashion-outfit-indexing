@@ -55,3 +55,11 @@ pair_eval/crops/
 
 # outfit search indexes: regenerable from metadata.json + the checkpoint (20-35 MB each)
 outfit_dataset/*.pt
+
+# Pre-migration safety copies written by one-off backfills before they
+# rewrote a manifest in place. Git already holds the previous revision, so
+# these are local belt-and-braces only — same rule as metadata.backup-*.
+outfit_dataset/metadata.sam2-backup.json
+outfit_cooccurrence.sam2-backup.json
+apparel_dataset/metadata.pre-taxonomy-backfill.json
+docs/hierarchy.pre-backfill.json

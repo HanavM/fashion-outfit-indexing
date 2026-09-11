@@ -67,6 +67,8 @@
 	<string>$(FASHION_API_KEY)</string>
 	<key>FashionAPIBaseURL</key>
 	<string>$(FASHION_API_BASE_URL)</string>
+	<key>FashionOutfitBaseURL</key>
+	<string>$(FASHION_OUTFIT_BASE_URL)</string>
 	<key>AzureTryOnEndpoint</key>
 	<string>$(AZURE_TRYON_ENDPOINT)</string>
 	<key>AzureTryOnAPIKey</key>

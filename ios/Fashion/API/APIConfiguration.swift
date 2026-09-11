@@ -23,7 +23,22 @@ final class APIConfiguration {
     private static let keychainService = "com.hanavm.fashion"
 
     private(set) var apiKey: String?
+
+    /// The **identifier** service: `/health`, `/identify`, `/query`. It knows
+    /// the catalog.
     let baseURL: URL
+
+    /// The **outfit search** service: `/outfit_search`, `/photo`. It knows the
+    /// corpus of real outfit photos, and it is a different Modal app on a
+    /// different host — outfit search is CPU-only, the identifier needs an
+    /// A10G, so they were never going to be one deployment.
+    ///
+    /// These were collapsed into a single `baseURL` until 2026-09-11, which
+    /// meant every `/outfit_search` call went to the identifier host and came
+    /// back 404. The client dutifully translated that into "Outfit search is
+    /// not deployed" and the app said so, convincingly, for a month — while
+    /// the service was up the whole time.
+    let outfitBaseURL: URL
 
     /// Where the currently-active key came from. Surfaced in Settings so it
     /// is obvious which of the three sources actually won — otherwise a
@@ -40,9 +55,15 @@ final class APIConfiguration {
 
     init(bundle: Bundle = .main,
          environment: [String: String] = ProcessInfo.processInfo.environment) {
-        let configuredURL = (bundle.object(forInfoDictionaryKey: "FashionAPIBaseURL") as? String)?.trimmed
-        baseURL = URL(string: configuredURL?.isEmpty == false ? configuredURL! : APIConfiguration.fallbackBaseURL)
-            ?? URL(string: APIConfiguration.fallbackBaseURL)!
+        baseURL = APIConfiguration.resolveURL(
+            environment: environment["FASHION_API_BASE_URL"],
+            plistValue: bundle.object(forInfoDictionaryKey: "FashionAPIBaseURL") as? String,
+            fallback: APIConfiguration.fallbackBaseURL)
+
+        outfitBaseURL = APIConfiguration.resolveURL(
+            environment: environment["FASHION_OUTFIT_BASE_URL"],
+            plistValue: bundle.object(forInfoDictionaryKey: "FashionOutfitBaseURL") as? String,
+            fallback: APIConfiguration.fallbackOutfitBaseURL)
 
         if let fromEnvironment = environment["FASHION_API_KEY"]?.trimmed, !fromEnvironment.isEmpty {
             apiKey = fromEnvironment
@@ -60,11 +81,33 @@ final class APIConfiguration {
         }
     }
 
-    /// The base URL is duplicated here as a literal only so that a clone with
-    /// no xcconfig at all still points somewhere sensible. It is a public
-    /// hostname, not a secret.
+    /// Environment first, then Info.plist, then the literal — the same
+    /// precedence the key uses, so a scheme variable can repoint either
+    /// service at a local `serve` without touching the project.
+    ///
+    /// The plist value is checked for emptiness because the xcconfig declares
+    /// empty defaults: without them the `$(...)` reference survives into the
+    /// built plist as literal text, and `URL(string:)` would happily accept
+    /// `$(FASHION_OUTFIT_BASE_URL)` as a relative URL.
+    private static func resolveURL(environment: String?,
+                                   plistValue: String?,
+                                   fallback: String) -> URL {
+        for candidate in [environment?.trimmed, plistValue?.trimmed] {
+            guard let candidate, !candidate.isEmpty,
+                  let url = URL(string: candidate), url.scheme != nil else { continue }
+            return url
+        }
+        return URL(string: fallback)!
+    }
+
+    /// The base URLs are duplicated here as literals only so that a clone with
+    /// no xcconfig at all still points somewhere sensible. They are public
+    /// hostnames, not secrets.
     private static let fallbackBaseURL =
         "https://hanavm--fashion-serve-fashionservice-api.modal.run"
+
+    private static let fallbackOutfitBaseURL =
+        "https://hanavm--outfit-serve-outfitservice-api.modal.run"
 
     var isConfigured: Bool { apiKey?.isEmpty == false }
 

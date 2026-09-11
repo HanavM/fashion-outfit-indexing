@@ -14,7 +14,11 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		A1000000000000000000020 /* Fashion */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Fashion; sourceTree = "<group>"; };
+		A1000000000000000000020 /* Fashion */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Fashion;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -189,6 +193,7 @@
 			baseConfigurationReference = A1000000000000000000010 /* Shared.xcconfig */;
 			buildSettings = {
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = USV557N97C;
 				GENERATE_INFOPLIST_FILE = NO;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -204,6 +209,7 @@
 			baseConfigurationReference = A1000000000000000000010 /* Shared.xcconfig */;
 			buildSettings = {
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = USV557N97C;
 				GENERATE_INFOPLIST_FILE = NO;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -217,20 +223,20 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		A1000000000000000000100 /* Build configuration list for PBXProject "Fashion" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				A1000000000000000000110 /* Debug */,
-				A1000000000000000000111 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
 		A1000000000000000000060 /* Build configuration list for PBXNativeTarget "Fashion" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				A1000000000000000000120 /* Debug */,
 				A1000000000000000000121 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A1000000000000000000100 /* Build configuration list for PBXProject "Fashion" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A1000000000000000000110 /* Debug */,
+				A1000000000000000000111 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

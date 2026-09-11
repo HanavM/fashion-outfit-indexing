@@ -24,9 +24,20 @@ SWIFT_EMIT_LOC_STRINGS = YES
 ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon
 ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor
 
-// Public hostname, not a secret, so it lives here rather than in Secrets.
+// Public hostnames, not secrets, so they live here rather than in Secrets.
 // The `$()` splits the `//` — xcconfig would otherwise read it as a comment.
+//
+// There are TWO services and they are not interchangeable:
+//
+// - `FASHION_API_BASE_URL` is the **identifier** (A10G): /health, /identify,
+//   /query, /compose, /search. It knows the 3,922-product catalog.
+// - `FASHION_OUTFIT_BASE_URL` is **outfit search** (CPU), which is the
+//   product: /outfit_search and /photo. It knows the 20,532-photo corpus.
+//
+// Pointing one at the other is not a degraded experience, it is a 404 on
+// every request — /outfit_search does not exist on the identifier host.
 FASHION_API_BASE_URL = https:/$()/hanavm--fashion-serve-fashionservice-api.modal.run
+FASHION_OUTFIT_BASE_URL = https:/$()/hanavm--outfit-serve-outfitservice-api.modal.run
 
 // Deliberately empty defaults. Without these the `$(...)` references in
 // Info.plist would survive into the built plist as literal text.

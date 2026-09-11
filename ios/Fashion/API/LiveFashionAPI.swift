@@ -8,9 +8,14 @@ import Foundation
 ///   generous (90s) rather than the URLSession default of 60, and callers are
 ///   expected to describe the wait honestly instead of showing a spinner that
 ///   reads as a hang. See `LoadingState`.
-/// - **`/outfit_search` is not deployed.** A 404 from that path is translated
-///   into `.notDeployed` rather than a generic server error, so the UI can
-///   say the true thing: this part is still being built.
+/// - **There are two hosts.** `/health`, `/identify` and `/query` are the
+///   identifier; `/outfit_search` and `/photo` are outfit search, which is a
+///   separate Modal app. Every request picks its host from the path, because
+///   sending one to the other is a 404, not a slow answer.
+///
+/// A 404 from `/outfit_search` is still translated into `.notDeployed`, but
+/// that is now a genuine signal rather than the permanent state it was while
+/// both paths shared the identifier's host.
 struct LiveFashionAPI: FashionAPI {
     /// Credentials are copied out of `APIConfiguration` at construction
     /// rather than held by reference. `APIConfiguration` is an `@Observable`
@@ -20,11 +25,13 @@ struct LiveFashionAPI: FashionAPI {
     /// live reference would buy nothing.
     private let apiKey: String?
     let baseURL: URL
+    let outfitBaseURL: URL
     private let session: URLSession
 
     init(configuration: APIConfiguration, session: URLSession? = nil) {
         self.apiKey = configuration.apiKey
         self.baseURL = configuration.baseURL
+        self.outfitBaseURL = configuration.outfitBaseURL
         if let session {
             self.session = session
         } else {
@@ -61,23 +68,34 @@ struct LiveFashionAPI: FashionAPI {
 
     func outfitSearch(_ request: OutfitSearchRequest) async throws -> OutfitSearchResponse {
         do {
-            return try await send(path: "/outfit_search", method: "POST", body: request)
+            return try await send(path: "/outfit_search", method: "POST",
+                                  body: request, host: outfitBaseURL)
         } catch FashionAPIError.server(let status, _) where status == 404 || status == 501 {
             throw FashionAPIError.notDeployed("Outfit search")
         }
     }
 
+    /// Three shapes arrive here and only one of them used to work.
+    ///
+    /// 1. An absolute URL — a corpus hosted somewhere public. Used as-is.
+    /// 2. `/photo?path=<rel>` — what the deployed service actually emits.
+    ///    Resolved against the outfit host, keeping its query intact. The old
+    ///    code fell through to case 3 for this and produced
+    ///    `/photo?path=/photo%3Fpath%3D...`, which the server resolved to a
+    ///    path that is not a file and answered 404. Every photo, every time.
+    /// 3. A bare corpus-relative path — what the local engine emits. Wrapped
+    ///    in the photo endpoint.
     func imageURL(for outfit: OutfitResult) -> URL? {
         let reference = outfit.imageURL
         guard !reference.isEmpty else { return nil }
 
-        // Already absolute: the deployed service is expected to hand back
-        // full URLs to wherever the corpus is hosted.
         if let url = URL(string: reference), url.scheme != nil { return url }
 
-        // Otherwise it is a corpus-relative path, which is what the local
-        // engine emits. Route it through the service's photo endpoint.
-        var components = URLComponents(url: baseURL.appendingPathComponent("photo"),
+        if reference.hasPrefix("/") {
+            return URL(string: reference, relativeTo: outfitBaseURL)?.absoluteURL
+        }
+
+        var components = URLComponents(url: outfitBaseURL.appendingPathComponent("photo"),
                                        resolvingAgainstBaseURL: false)
         components?.queryItems = [URLQueryItem(name: "path", value: reference)]
         return components?.url
@@ -85,14 +103,17 @@ struct LiveFashionAPI: FashionAPI {
 
     // MARK: Transport
 
+    /// `host` defaults to the identifier, so only the outfit paths have to
+    /// say which service they mean.
     private func send<Body: Encodable, Response: Decodable>(
-        path: String, method: String, body: Body?
+        path: String, method: String, body: Body?, host: URL? = nil
     ) async throws -> Response {
         guard let apiKey, !apiKey.isEmpty else {
             throw FashionAPIError.notConfigured
         }
 
-        var request = URLRequest(url: baseURL.appendingPathComponent(path.trimmingCharacters(in: CharacterSet(charactersIn: "/"))))
+        let target = host ?? baseURL
+        var request = URLRequest(url: target.appendingPathComponent(path.trimmingCharacters(in: CharacterSet(charactersIn: "/"))))
         request.httpMethod = method
         request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
         if let body {

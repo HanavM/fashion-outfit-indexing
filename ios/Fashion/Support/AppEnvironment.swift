@@ -44,6 +44,16 @@ final class AppEnvironment {
         }
         self.tryOn = tryOn ?? AzureTryOnService()
         self.closet = closet ?? ClosetStore()
+        configureImageLoader()
+    }
+
+    /// Corpus photographs come from an authenticated endpoint, so the image
+    /// loader needs the same key the API client has — and needs to be told
+    /// which hosts may receive it.
+    private func configureImageLoader() {
+        AuthorizedImageLoader.shared.configure(
+            apiKey: configuration.apiKey,
+            hosts: [configuration.outfitBaseURL, configuration.baseURL])
     }
 
     /// Called after the user enters a key in Settings, so the app switches to
@@ -56,6 +66,7 @@ final class AppEnvironment {
             api = StubFashionAPI()
             isDemoData = true
         }
+        configureImageLoader()
     }
 
     func refreshHealth() async {
