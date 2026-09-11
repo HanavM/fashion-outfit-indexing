@@ -1,8 +1,61 @@
-# Session handoff — 2026-08-26
+# Session handoff — 2026-09-11
 
 Read this first. Then `docs/eval_log.md` for every number, and
 `docs/production_plan.md` (whose top section carries the product
 correction that reframed the whole project).
+
+---
+
+## 0. 2026-09-11: the app runs, and it never could have worked
+
+**The single most important fact: outfit search now works end to end from
+the iOS app, and before today it could not have, under any circumstances.**
+
+The app had been written, compiled and never launched. Launching it found
+three independent faults, each fatal on its own, all invisible to a build:
+
+1. **One base URL for two services.** `/outfit_search` was being sent to
+   the *identifier* host, where that route does not exist. The client
+   turned the 404 into `.notDeployed` and the UI reported "Outfit search is
+   not deployed" — accurately, in its own terms, for a month, while
+   `outfit-serve` was up the whole time. There are now two URLs.
+2. **The photo URL was wrapped twice.** The service emits
+   `image_url = "/photo?path=<rel>"`; the client only checked for an
+   *absolute* URL, fell through to its bare-corpus-path branch and built
+   `/photo?path=/photo%3Fpath%3D...`. Every photo, every time.
+3. **`AsyncImage` cannot authenticate.** `/photo` answers 401 without a
+   Bearer header like every other route, and `AsyncImage` has no way to
+   attach one — so every tile said "Photo unavailable" on top of a search
+   that had already succeeded. `AuthorizedImageLoader` now carries the key,
+   caches, and de-duplicates in-flight requests. **It attaches the header
+   only to known hosts**: `image_url` may point at third-party corpus URLs
+   (reddit previews among them), and the key must not go to strangers.
+
+The lesson generalises past iOS: **every one of these is a seam between two
+components that were each correct.** Compiling proved the Swift was
+well-formed. Health checks proved the services were up. Neither could see
+that the app was talking to the wrong one, and nothing in the project's
+evaluation stack covers the client at all.
+
+### Judged by eye, which was the other open item
+
+`a black leather jacket with baggy jeans` — 4/4 on-query, and genuinely
+good. `a green jacket with white sneakers` — 4/4 green, but *white
+sneakers* is clearly satisfied in only 1 of 4. That is the documented
+decomposition showing up in the wild (garment 72.5%, colour-given-garment
+63.5%), and it is the **second clause** that gets dropped.
+
+Two corpus problems visible in four tiles: one result is a **womenswear
+catalog product shot** in a corpus that is supposed to be men's-only and
+real people — `drop_womens` defaults to *false* in the API — and another
+is a flat-lay rather than a person. Both are ranking-visible at position 4
+of the very first queries tried, so they are not rare.
+
+### Still not verified in the app
+
+Camera, closet capture, Keychain entry via Settings (the key was injected
+through the scheme environment variable instead), the Siri App Intent, and
+the try-on surface. Running it once does not mean running all of it.
 
 ---
 
@@ -65,10 +118,28 @@ Release** (verified independently with `xcodebuild`). Closet, Search,
 Result detail, Feed, App Intents/Siri, and a try-on surface. Every screen
 previews against a stub, so none needs the network.
 
-**Nothing in it has ever been RUN** — no simulator, no device existed in
-the session that wrote it. Compiling is not rendering. Camera, Keychain,
-deep links, the Siri snippet and `/outfit_search` end-to-end are all
-unverified.
+**Run 2026-09-11 for the first time** — see section 0. It builds, launches,
+renders, and completes a real `/outfit_search` against the live service
+with photographs, after three fixes. Deep links work (`fashion://search?q=`
+is how the search was driven). Camera, Keychain-via-Settings, the Siri
+snippet and try-on remain unverified.
+
+To drive it from a terminal without touching Xcode:
+
+```bash
+xcodebuild -project ios/Fashion.xcodeproj -scheme Fashion \
+  -destination 'platform=iOS Simulator,name=iPhone 17 Pro' build
+xcrun simctl install <udid> <path>/Fashion.app
+SIMCTL_CHILD_FASHION_API_KEY="$FASHION_API_KEY" \
+  xcrun simctl launch <udid> com.hanavm.fashion
+xcrun simctl openurl <udid> "fashion://search?q=black%20leather%20jacket"
+```
+
+`SIMCTL_CHILD_` is the whole trick: it puts the key in the app's
+environment, which `APIConfiguration` already checks first, so no Keychain
+or xcconfig is needed. `openurl` raises a system "Open in Fashion?"
+confirmation — its default button is Open, so a Return keystroke through
+`osascript` clears it without any coordinate maths.
 
 ---
 
@@ -231,20 +302,33 @@ shared lighting bias cancels. **Never label it with tone categories.**
 
 ## 7. What to do next, in order
 
-1. **Open the iOS app.** `ios/Fashion.xcodeproj`, Run. It works on demo
-   data immediately. This is the only way to find out whether any of it
-   renders, which is entirely unverified.
-2. **Judge outfit search by using it**, now that corpus, catalog and
-   ranking finally point the same way. There is no metric for "is this a
-   good outfit"; your eye is the measurement.
-3. **Top up skin tone** — 9,515 of 14,684; ~5,000 new photos have none.
+1. **Decide the licensing question — it now blocks the stated goal.** The
+   README says "working on getting it into the app store right now", and
+   `docs/licensing_decision_memo.md` (2026-09-11) measured what that would
+   ship: **0 of 20,532 corpus photos carry any licence information.** Not
+   zero permissive — the field does not exist in the schema. So
+   `licensing_review.md`'s "exclude the NC/ND subset" cannot be executed;
+   that row was about `negatives_dataset`, which contributes no photos to
+   the product. Worse, its closing reassurance that images are "never
+   redistributed" **was reversed by deployment**: `/photo` serves image
+   bytes off the volume. The memo ranks the real options; the one that
+   keeps the product intact is link-out plus thumbnail, and it is a
+   lawyer's question, not an engineering one.
+2. **Fix what four tiles exposed.** `drop_womens` defaults to `false`, so
+   womenswear catalog shots rank into a men's-only corpus; flat-lays rank
+   as outfits. Both appeared at position 4 of the first two queries.
+3. **Cover the client.** Nothing in the eval stack touches the app, which
+   is how three fatal bugs survived a month and a clean build. A single
+   smoke test that runs a real query against the live service and asserts
+   a photo actually decodes would have caught all three.
+4. **Top up skin tone** — 9,515 of 14,684; ~5,000 new photos have none.
    Local, free, ~90 min: `nohup .venv/bin/python -u extract_skin_tone.py &`
-4. **Sweep K on the identifier.** 400 was tuned at 2,230 products, the
+5. **Sweep K on the identifier.** 400 was tuned at 2,230 products, the
    gallery is 3,922. Cheap, and probably worth points.
-5. **The encoder.** If results still feel like near-ties, that is the
-   ceiling and fine-tuning SigLIP2 on outfit photos stops being
-   speculative. It needs labels — and `outfit_search_eval.py` already
-   produces exactly the kind it needs, at 3.2 photos/s.
+6. **The encoder.** Still the binding constraint, and today's queries look
+   exactly like the documented near-ties (top-4 spread 0.31→0.30). See
+   `docs/encoder_finetune_plan.md` for the costed plan and what the label
+   data actually supports. **Budget-blocked, not idea-blocked.**
 
 ### Budget
 
@@ -274,11 +358,15 @@ the limit or plan around it before the next big job.
   outscored the right one 0.922 to 0.854.
 - **`reject_threshold` is uncalibrated**, so `rejected_open_set` never
   fires; the API reports `reject_threshold_calibrated: false`.
-- **Photographs of real people**, with provenance but not permission
-  (`docs/licensing_review.md`). Every Pinterest record now carries an
-  author — 7 remain of 1,342 — which answers *whose pin*, not *who owns
-  the photograph*. Private development storage is not publication; a public
-  link would be.
+- **Photographs of real people**, with provenance but not permission.
+  Measured 2026-09-11 (`docs/licensing_decision_memo.md`): **0 of 20,532
+  photos carry licence information of any kind**, 99.97% are traceable to
+  an author and post_url, and of the 920 Pinterest records with a
+  `source_link`, **38.6% point at ad/affiliate redirectors** — so a source
+  link is not a chain of title. These are also **identifiable people**,
+  which puts right-of-publicity and GDPR alongside copyright; `skin_tone`
+  is stored for 10,640 posts and used as a ranking signal. Private
+  development storage is not publication; the App Store would be.
 
 ---
 
