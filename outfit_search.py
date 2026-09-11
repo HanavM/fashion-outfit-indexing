@@ -159,17 +159,27 @@ def load_crop_records():
     question is asking for.
 
     Uses the stored bbox rather than the proposer's own masked crop,
-    because `crop_path` points at files that were written on Modal during
-    the corpus re-detection and only 13 of 20,681 exist locally.
-    Re-running `garment_proposer` over the whole corpus to regenerate them
-    is ~4 hours on this machine's CPU; the bboxes are already here and
-    cost nothing.
+    because re-running `garment_proposer` over the whole corpus is ~4 hours
+    on this machine's CPU, and the bboxes are already here and cost nothing.
+
+    **Corrected 2026-09-11.** This docstring used to say "only 13 of 20,681
+    exist locally". That was true of the `product_labels` subset and is
+    badly misleading about the corpus: **10,571 of 43,712 detections have
+    their masked crop on disk right now** (counted, not estimated). So the
+    choice below is a convenience, not a necessity, and a masked-crop index
+    over a quarter of the corpus needs no regeneration at all.
+
+    That matters more than a bbox-vs-mask footnote usually would, because
+    the difference was measured and it is enormous: **72.4% group agreement
+    for masked crops against 37.7% for plain bbox crops**, and 89% against
+    15% on footwear. A bbox drags the floor, the wall and the person's legs
+    into the encoder.
 
     The honest difference: the proposer blanks everything outside the
     garment INSIDE its bbox, and a plain bbox crop does not, so these
     carry some background the shipped crops would not. That is a real
-    (unmeasured) difference between this index and what `/identify`
-    consumes, and it is why this is recorded here rather than glossed.
+    (unmeasured *in this index*) difference between what this consumes and
+    what `/identify` does, and it is why it is recorded rather than glossed.
     """
     records = json.loads(OUTFIT_METADATA.read_text())
     out = []

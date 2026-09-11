@@ -51,6 +51,69 @@ real people — `drop_womens` defaults to *false* in the API — and another
 is a flat-lay rather than a person. Both are ranking-visible at position 4
 of the very first queries tried, so they are not rare.
 
+### A claim I made today and had to withdraw
+
+Commit `0ca42ce`'s message says `product_labels.json` and
+`product_labels.bbox.json` are "gpt-4o-mini output". **They are not, and
+the message is wrong.** They are the deployed *identifier's* output —
+ranked catalog products per crop from SigLIP2+DINOv3 — plus the detector's
+own category/group. `label_outfit_products.py` says so in its first line.
+The only VLM labels in the project are `outfit_eval/vlm_labels.json`
+(4,431 photos), which was already tracked.
+
+Committing them was still right: they are ~36,550 crops of deployed-pipeline
+output that cost GPU wall time to regenerate, against $1.87 of remaining
+budget. The reasoning was wrong, not the action. Two consequences worth
+carrying:
+
+- the masked file's `detected_color` is `None` on **all 15,869** records,
+  and the bbox file's colour is the heuristic palette vote measured at
+  38.5% agreement — the very bug the colour head exists to fix. **Neither
+  is a colour training label.**
+- the two files share **15,795 identical `(rel, bbox)` pairs**: the masked
+  file is a re-run of the bbox file with the crop style changed, not a
+  second population.
+
+### Masked crops are on disk, and the docstring said otherwise
+
+`outfit_search.py::load_crop_records` claimed "only 13 of 20,681 exist
+locally". True of the `product_labels` subset, badly misleading about the
+corpus: **10,571 of 43,712 detections have their masked crop on disk**
+(counted 2026-09-11, not estimated). Docstring corrected. This matters
+because masked-vs-bbox is the 72.4%-vs-37.7% measurement, so "the masks are
+gone" would have silently steered the next person to the worse crop.
+
+### The encoder: planned, costed, and deliberately not run
+
+`prepare_outfit_finetune_data.py` + `docs/encoder_finetune_plan.md`.
+
+The usable training signal is **much smaller than the label count
+suggests**: 11,041 pairs over 3,765 photos (6,789 trainable today, 4,252
+pending a free local mask pass), not 36,550. Catalog product *names* are
+excluded on purpose — R@1 is 47.65% catalog-to-catalog, `rejected_open_set`
+is True on 0 of 36,550 because the threshold is uncalibrated, so more than
+half those texts are wrong *and wrong in a way aligned with the encoder's
+existing mistakes*. Training on them would teach the model its own errors.
+
+Split by photo, 0 straddling. The crop view carries only **85 distinct
+texts** across 7,377 rows, so **100% of train rows share their text with
+another row** — a plain in-batch contrastive loss there trains mostly on
+false negatives. The script emits `text_id` for masking and the plan routes
+it to a multi-positive SupCon-style loss.
+
+**Cost: ~3–4 h and $3.20–$4.45 per run at the repo's own $1.10/hr A10G.
+Budget is $28.13 of $30, so $1.87 — one run does not fit, and neither does
+the re-embed needed to measure it.** v4 was a measured regression against
+v3, so budget 2–3 runs plus re-embeds: **$10–15**, i.e. raise the limit
+to $50.
+
+**The recommendation is to NOT train yet**, and it is an ordering argument
+rather than a doubt: 4,015 of 20,532 photos are VLM-labelled, and labelling
+the remaining ~16,500 costs ~85 min and roughly **$5 on Azure** — *not*
+Modal money — taking the photo view from 3,664 to ~19,000 pairs. Spending
+$4 of a $1.87 budget to train on 6,789 rows, when $5 of non-Modal money
+buys five times the data, is the wrong order.
+
 ### Still not verified in the app
 
 Camera, closet capture, Keychain entry via Settings (the key was injected

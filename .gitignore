@@ -63,3 +63,7 @@ outfit_dataset/metadata.sam2-backup.json
 outfit_cooccurrence.sam2-backup.json
 apparel_dataset/metadata.pre-taxonomy-backfill.json
 docs/hierarchy.pre-backfill.json
+
+# Fine-tune pair manifest: regenerable from the label files in one CPU pass
+# by prepare_outfit_finetune_data.py. Data, not source.
+outfit_finetune/
