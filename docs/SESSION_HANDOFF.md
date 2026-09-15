@@ -62,8 +62,8 @@ The only VLM labels in the project are `outfit_eval/vlm_labels.json`
 (4,431 photos), which was already tracked.
 
 Committing them was still right: they are ~36,550 crops of deployed-pipeline
-output that cost GPU wall time to regenerate, against $1.87 of remaining
-budget. The reasoning was wrong, not the action. Two consequences worth
+output that cost GPU wall time to regenerate. The reasoning was wrong,
+not the action. Two consequences worth
 carrying:
 
 - the masked file's `detected_color` is `None` on **all 15,869** records,
@@ -101,17 +101,18 @@ another row** — a plain in-batch contrastive loss there trains mostly on
 false negatives. The script emits `text_id` for masking and the plan routes
 it to a multi-positive SupCon-style loss.
 
-**Cost: ~3–4 h and $3.20–$4.45 per run at the repo's own $1.10/hr A10G.
-Budget is $28.13 of $30, so $1.87 — one run does not fit, and neither does
-the re-embed needed to measure it.** v4 was a measured regression against
-v3, so budget 2–3 runs plus re-embeds: **$10–15**, i.e. raise the limit
-to $50.
+**Cost: ~3–4 h and $3.20–$4.45 per run** at the repo's own $1.10/hr A10G.
+This was written as budget-blocked against "$1.87 remaining". **That was
+wrong** — the $30 is a monthly allowance and billed cost is $0.00 (see
+§7 Budget), so a run and its re-embed both fit comfortably. v4 was a
+measured regression against v3, so budget 2–3 runs plus re-embeds,
+**$10–15** — which is half of one month's free compute, not a limit raise.
 
 **The recommendation is to NOT train yet**, and it is an ordering argument
 rather than a doubt: 4,015 of 20,532 photos are VLM-labelled, and labelling
 the remaining ~16,500 costs ~85 min and roughly **$5 on Azure** — *not*
 Modal money — taking the photo view from 3,664 to ~19,000 pairs. Spending
-$4 of a $1.87 budget to train on 6,789 rows, when $5 of non-Modal money
+$4 to train on 6,789 rows, when $5 of non-Modal money
 buys five times the data, is the wrong order.
 
 ### Still not verified in the app
@@ -149,8 +150,8 @@ product.
 | Detected garments | **43,712** |
 | Skin tone measured | 9,515 of 14,684 |
 | Untraceable Pinterest records | **7** (was 1,342) |
-| Modal spend | **$28.13 of a $30 limit** — this is now tight |
-| Local disk | 14 GiB free (it has hit zero twice) |
+| Modal spend | **$0.00 billed** — $30/mo free compute + 1 TiB free volume, RESETS monthly (corrected 2026-09-15) |
+| Local disk | **1.6 GiB free** (2026-09-15; has hit zero twice). The corpus is fully mirrored on the `outfit-index` volume — verified — so the local image tree is redundant |
 
 ### Deployed services
 
@@ -391,13 +392,49 @@ shared lighting bias cancels. **Never label it with tone categories.**
 6. **The encoder.** Still the binding constraint, and today's queries look
    exactly like the documented near-ties (top-4 spread 0.31→0.30). See
    `docs/encoder_finetune_plan.md` for the costed plan and what the label
-   data actually supports. **Budget-blocked, not idea-blocked.**
+   data actually supports. **No longer budget-blocked** (see Budget below);
+   the real deadline is losing Azure in November, which is what labels.
 
-### Budget
+### Budget — **CORRECTED 2026-09-15, and the old reading was wrong**
 
-**$28.13 of $30.** The outfit-serve container bills while warm (5-minute
-scaledown). There is **not** enough left for another full GPU pass. Raise
-the limit or plan around it before the next big job.
+The "$28.13 of a $30 limit, not enough left for another GPU pass" that
+appears throughout this project's history **misread a recurring monthly
+allowance as a lifetime cap.** Modal's Starter plan is *"$30 / month free
+compute"* plus *"1 TiB / mo free"* volume storage. It resets. Verified
+against the account rather than the pricing page:
+
+```
+$ modal billing summary
+  Metered Cost:       2.25        $ modal billing report --for "this month"
+    Volumes:          1.20          fashion-serve  2026-09-11   0.85
+    Deployed Apps:    1.05          outfit-serve   2026-09-11   0.14
+  Free Storage:      -1.20          outfit-serve   2026-09-15   0.06
+  Credits:           -1.05
+  Billed Cost:       $0.00
+```
+
+**Billed cost is $0.00**, and the $1.05 of September compute is almost
+entirely this session's own testing. August's spend sits in a closed
+period.
+
+What this unblocks, immediately:
+
+- **The encoder fine-tune fits.** `docs/encoder_finetune_plan.md` costs it
+  at $3.20–4.45/run and calls it budget-blocked. It is not. Two or three
+  runs plus re-embeds (~$10–15) fit inside a single month's allowance.
+- **Storage is effectively free.** 1 TiB holds ~13M photos at the 384px
+  derivative tier, or ~6.6M at 1024px. The corpus is 20,532.
+- **A 500k-photo corpus ingest** costs ~$34 of compute — one month's
+  allowance, or two months if spread.
+
+The genuinely scarce resources are **local disk** (1.6 GiB free, and the
+corpus is already mirrored on the volume so the local copy is redundant)
+and **Azure**, which the owner expects to lose in **November** and which is
+what runs the VLM labelling the encoder actually needs.
+
+Still true and still worth care: the outfit-serve container bills while
+warm (5-minute scaledown), and cost is **wall time, not request count** —
+the same detection work cost $0.27 densely fed and $2.35 sparsely fed.
 
 ---
 
