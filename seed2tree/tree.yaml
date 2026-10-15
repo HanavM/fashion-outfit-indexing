@@ -1,0 +1,135 @@
+# seed2tree tree for fashion outfit search. Maintained by the gardener (see GARDENER.md).
+# Owner: edit freely — change value/status, prune, or add nodes. Keep ids unique.
+garden: fashion-outfit-indexing
+prefix: fash
+next_id: 7
+lock: null
+
+nodes:
+- id: fash-000
+  parent: null
+  title: "SEED: item photo + text -> real outfit photos, via Siri/iOS (see SEED.md)"
+  why: The owner's outline; everything below serves it.
+  done_when: Every item in SEED.md 'Definition of done' is met.
+  status: seed
+  needs: cloud
+  value: 5
+  effort: 5
+  confidence: 0.5
+  momentum: 0.5
+  depth: 0
+  watered: 0
+  last_watered: null
+  blocked_on: null
+  outputs: []
+  log:
+  - "2026-10-15: planted from README, docs/production_plan.md, docs/SESSION_HANDOFF.md. App runs end to end as of 2026-09-11."
+
+- id: fash-001
+  parent: fash-000
+  title: A two-clause eval for outfit search (item AND text satisfied)
+  why: Everything else needs a ruler. Handoff shows the second clause is what gets dropped (1 of 4 for 'white sneakers').
+  done_when: A fixed query set (≥40 item+text queries) with a scorer that reports item-match and text-match separately and jointly; baseline numbers recorded in docs/eval_log.md. Labels may come from outfit_eval/vlm_labels.json + tracked metadata.
+  status: open
+  needs: cloud
+  value: 5
+  effort: 3
+  confidence: 0.6
+  momentum: 0.5
+  depth: 1
+  watered: 0
+  last_watered: null
+  blocked_on: null
+  outputs: []
+  log: []
+
+- id: fash-002
+  parent: fash-000
+  title: Corpus hygiene filters on by default (womenswear, product shots, flat-lays)
+  why: Both leaked into the very first 4-result queries; drop_womens defaults to False in outfit_search.py.
+  done_when: Filters default on in outfit_search.py + modal_app_outfit_serve.py, unit-tested on tracked metadata, with counts of what each removes. (Deploying is the owner's call.)
+  status: open
+  needs: cloud
+  value: 4
+  effort: 2
+  confidence: 0.7
+  momentum: 0.5
+  depth: 1
+  watered: 0
+  last_watered: null
+  blocked_on: null
+  outputs: []
+  log: []
+
+- id: fash-003
+  parent: fash-000
+  title: Stop dropping the second clause — query composition for item + text
+  why: colour-given-garment 63.5%; the text half loses to the image half.
+  done_when: A change to how image and text scores combine that improves the joint score on fash-001's eval, measured (needs fash-001 first).
+  status: open
+  needs: local
+  value: 5
+  effort: 3
+  confidence: 0.5
+  momentum: 0.5
+  depth: 1
+  watered: 0
+  last_watered: null
+  blocked_on: null
+  outputs: []
+  log:
+  - "2026-10-15: tagged local because scoring real results needs the embeddings/index on the Mac or Modal."
+
+- id: fash-004
+  parent: fash-000
+  title: Licensing / corpus path decision
+  why: 0 of 20,532 photos carry a licence and /photo serves image bytes; nothing ships publicly until the owner decides.
+  done_when: The owner has picked a path from docs/licensing_decision_memo.md.
+  status: blocked-on-human
+  needs: cloud
+  value: 5
+  effort: 1
+  confidence: 1.0
+  momentum: 0.5
+  depth: 1
+  watered: 0
+  last_watered: null
+  blocked_on: "Which corpus path do you want (see docs/licensing_decision_memo.md and docs/scaling_licensed_channels.md)? Until you answer, the gardener won't do work that assumes a public launch with the current corpus."
+  outputs: []
+  log: []
+
+- id: fash-005
+  parent: fash-000
+  title: Siri / App Intents path from the iOS app to outfit search
+  why: The product's headline interaction; siri/ holds only a stub server today.
+  done_when: App Intent + Shortcut code in ios/ that sends a photo + text to the outfit-search endpoint, with a written manual test plan (building in Xcode is the owner's step).
+  status: open
+  needs: cloud
+  value: 4
+  effort: 3
+  confidence: 0.5
+  momentum: 0.5
+  depth: 1
+  watered: 0
+  last_watered: null
+  blocked_on: null
+  outputs: []
+  log: []
+
+- id: fash-006
+  parent: fash-000
+  title: Extend client_smoke_test.py into CI-runnable checks (no live keys)
+  why: Three fatal seams survived a month because nothing covered the client; the smoke test needs the live deployment.
+  done_when: A mocked-transport version of the seam checks runs in the cloud with no secrets, plus a GitHub Actions workflow file (not enabled until the owner merges).
+  status: open
+  needs: cloud
+  value: 3
+  effort: 2
+  confidence: 0.7
+  momentum: 0.5
+  depth: 1
+  watered: 0
+  last_watered: null
+  blocked_on: null
+  outputs: []
+  log: []
