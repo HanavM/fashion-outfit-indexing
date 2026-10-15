@@ -10,6 +10,10 @@ Gardens (one per repo, same layout in each):
 |---|---|---|
 | `HanavM/sketch-to-code` | `seed2tree` | `main` |
 | `HanavM/fashion-outfit-indexing` | `seed2tree` | `main` |
+| `HanavM/sidequest` | `seed2tree` | `main` |
+
+(A garden whose repo doesn't exist or has no `seed2tree/` on `main` yet is
+skipped.)
 
 ```
 seed2tree/
@@ -36,6 +40,44 @@ seed2tree/
 - **No secrets in commits.** `.env` stays local.
 - Write honestly. A measured negative result is a good outcome; a claim you
   did not verify is a bad one. Say what you checked.
+
+## 0.5 Validate before you build, and be brutal about it
+
+The owner explicitly does **not** want encouragement. Your job is to stop
+him from wasting time, not to make him feel good about his ideas.
+
+- **Every new seed's first branch is a validation node** (`kind: validate`):
+  before any building, answer bluntly with evidence:
+  1. **Novelty**: what already exists? Search the web and GitHub for
+     products, extensions, papers and open-source projects that do this or
+     most of it. Name them, with links. "Nothing like it" requires that
+     you actually looked.
+  2. **Importance**: who has this problem, how often, and how badly? What
+     do they do today instead? Would they switch?
+  3. **Feasibility**: what's the hardest technical risk, and can a cheap
+     prototype test it?
+  4. **Edge**: given (1)–(3), why would this version win, or at least be
+     worth the owner's time as a learning project?
+  Write it to `seed2tree/VALIDATION.md` with a verdict: **PURSUE**,
+  **PIVOT** (to a named, sharper version), or **KILL**.
+- **KILL means stop.** If the verdict is KILL, or any later evidence shows a
+  seed or branch isn't novel, isn't important, or isn't worth the time,
+  don't keep watering it to be polite. Set its status to `killed`, write the
+  case in plain words (what exists, why this loses, what would change your
+  mind), and put it at the top of the digest. Killed seeds receive no more
+  runs unless the owner overrules in INBOX.md, and if he does, record his
+  reason in the node.
+- **PIVOT** means: add the sharper version as the next branch, with its own
+  quick validation, and stop work on the original framing.
+- Apply the same honesty to branches inside a live seed: if a branch is
+  low-value busywork, prune it. Don't invent work to look productive.
+- Re-validate when evidence changes: a competitor found mid-build, a core
+  technical risk that won't budge after 3 waterings, a measurement that
+  says the idea doesn't work. Say so the same day.
+- Tone: direct, specific, no softening, no compliments. "This exists as X
+  and Y, both free; the only difference is Z, and Z doesn't matter to users
+  because ..." is the register. Being wrong in a harsh direction is cheap
+  for the owner to correct. Being wrong in a flattering one costs him weeks.
 
 ## 1. Each run, in order
 
@@ -66,7 +108,8 @@ If something breaks mid-run, still do step 7 with what you learned.
   title: Per-group fidelity in design mode
   why: one line — what this unlocks toward the seed
   done_when: a test, measurement or artifact that proves it (checkable)
-  status: open               # seed | open | active | done | pruned | blocked-on-human
+  kind: build                # build | validate
+  status: open               # seed | open | active | done | pruned | killed | blocked-on-human
   needs: cloud               # cloud | local (needs files/keys/GPU only on the Mac)
   value: 4                   # 1–5, impact on the seed's final product
   effort: 2                  # 1–5, rough number of waterings to finish
@@ -82,7 +125,11 @@ If something breaks mid-run, still do step 7 with what you learned.
 
 ## 3. Picking the node
 
-Candidates: status `seed`, `open` or `active`; not blocked; budget allows.
+Candidates: status `seed`, `open` or `active`; not blocked or killed; budget
+allows. **An open `validate` node always beats `build` nodes in its own
+seed**: no building in a seed until its validation verdict is PURSUE or
+PIVOT. Validation nodes also get +1.0 priority across gardens, because a
+fast KILL saves the most time.
 
 ```
 priority = value × confidence × (0.5 + momentum) / effort
