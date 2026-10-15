@@ -6,7 +6,7 @@ acts on it, and marks each item `[handled <date>]` on its own branch.
 
 ## Open
 
-- 2026-10-15: New rule in GARDENER.md section 0.5: validate before
+- [handled 2026-10-15: fash-007 added, runs next] 2026-10-15: New rule in GARDENER.md section 0.5: validate before
   building, and be brutal. Add a `validate` node under fash-000 now and do it
   next: what already does "item photo + text -> real outfits wearing it"
   (Pinterest Lens / shop-the-look, Google Lens, Whering, Indyx, Acloset,

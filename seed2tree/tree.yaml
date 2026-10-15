@@ -2,8 +2,8 @@
 # Owner: edit freely — change value/status, prune, or add nodes. Keep ids unique.
 garden: fashion-outfit-indexing
 prefix: fash
-next_id: 7
-lock: {run: cloud-20261015T0855, until: "2026-10-15T10:10Z"}
+next_id: 8
+lock: null
 
 nodes:
 - id: fash-000
@@ -133,3 +133,23 @@ nodes:
   blocked_on: null
   outputs: []
   log: []
+
+- id: fash-007
+  parent: fash-000
+  kind: validate
+  title: "VALIDATE: does item photo + text -> real outfits survive Pinterest Lens, Google Lens, Whering, Indyx, Acloset, Lykdat, Alta, ChatGPT/Gemini, TikTok/IG search?"
+  why: "GARDENER 0.5 + owner INBOX 2026-10-15: no more building in this seed until novelty/importance/edge are checked, given the licensing problem (fash-004)."
+  done_when: "seed2tree/VALIDATION.md with linked evidence (each named competitor actually tried/read), who has the problem and what they do today, the licensing risk priced in, and a PURSUE/PIVOT/KILL verdict."
+  status: open
+  needs: cloud
+  value: 5
+  effort: 1
+  confidence: 0.7
+  momentum: 0.5
+  depth: 1
+  watered: 0
+  last_watered: null
+  blocked_on: null
+  outputs: []
+  log:
+  - "2026-10-15: added from owner INBOX. Blocks all build nodes in this seed until it has a verdict. Next cloud run should pick it (validate +1.0)."
