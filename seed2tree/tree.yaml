@@ -3,7 +3,7 @@
 garden: fashion-outfit-indexing
 prefix: fash
 next_id: 7
-lock: null
+lock: {run: cloud-20261015T0855, until: "2026-10-15T10:10Z"}
 
 nodes:
 - id: fash-000
