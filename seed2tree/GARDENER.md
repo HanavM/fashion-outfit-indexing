@@ -11,6 +11,7 @@ Gardens (one per repo, same layout in each):
 | `HanavM/sketch-to-code` | `seed2tree` | `main` |
 | `HanavM/fashion-outfit-indexing` | `seed2tree` | `main` |
 | `HanavM/sidequest` | `seed2tree` | `main` |
+| `HanavM/fine-routing` | `seed2tree` | `main` |
 
 (A garden whose repo doesn't exist or has no `seed2tree/` on `main` yet is
 skipped.)
@@ -206,5 +207,7 @@ follows these same rules but only waters `needs: local` nodes. It has a Linux
 shell over the Mac's project folders (not macOS itself: no Xcode, no Mac
 `.venv`; build a fresh venv if Python is needed). It must not modify the
 owner's working tree: copy results into the cloud session and commit them
-to `seed2tree` from there. If a local node can't run in that environment,
+to `seed2tree` from there. Mac folders: `~/sketch-to-code`,
+`~/fashion-tests`, and `~/meta-learning` for fine-routing (Russ's repos in
+there are strictly read-only). If a local node can't run in that environment,
 mark it `blocked-on-human` with what is needed.
