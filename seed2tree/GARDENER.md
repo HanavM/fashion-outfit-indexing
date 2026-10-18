@@ -191,8 +191,15 @@ two weak nodes into one.
 
 ## 7. DIGEST.md entry (prepend, keep under 15 lines)
 
+The `Plain:` line is mandatory and comes first; the owner's dashboard shows
+it as the run's summary. If any of the 10 most recent entries lacks one, add
+it this run (rewrite only that line; keep the rest).
+
 ```
 ## 2026-10-15 03:00 PT — sketch-to-code / s2c-012 Per-group fidelity
+Plain: 2–4 sentences for the owner, no jargon, ids, file names or numbers
+  that need context (same rules as STATUS.md): what you worked on, what you
+  found, and what it means for the product.
 Picked because: priority 2.41 (next: fash-007 1.98, s2c-009 1.70)
 Did: …  (commit abc1234)
 Result: …  momentum 0.5 → 0.7
