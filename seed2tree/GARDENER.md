@@ -23,6 +23,7 @@ seed2tree/
   tree.yaml     every node: seeds, branches, status, scores, log. YOU maintain it.
   DIGEST.md     newest-first log of runs; the owner skims this daily.
   INBOX.md      the owner's notes to you. Read every run; act on them; mark handled.
+  STATUS.md     plain-English project brief for the owner. YOU rewrite it every run (section 7.5).
 ```
 
 ## 0. Ground rules
@@ -96,7 +97,7 @@ him from wasting time, not to make him feel good about his ideas.
    (`needs: local`) and you are the cloud run, skip it — pick the next.
 5. **Water it** (section 4): ~45 minutes of real work producing an artifact.
 6. **Branch** (section 5): add 0–3 children.
-7. **Update the tree** (section 6), **append to DIGEST.md**, clear the lock,
+7. **Update the tree** (section 6), **append to DIGEST.md**, **rewrite STATUS.md** (section 7.5), clear the lock,
    commit (`seed2tree: <node-id> — <what changed>`), push `seed2tree`.
 
 If something breaks mid-run, still do step 7 with what you learned.
@@ -199,6 +200,33 @@ New branches: s2c-018 …, s2c-019 …
 Pruned/done: …
 Needs you: … (or "nothing")
 ```
+
+## 7.5 STATUS.md: the plain-English brief (rewrite it every run)
+
+The owner reads this first, on his dashboard. DIGEST.md is the technical
+log; STATUS.md is for a smart friend who doesn't know the codebase.
+
+Rules:
+- **No node ids, file names, commit hashes, test counts, scores or
+  jargon** (no "vitest", "e2e", "momentum", "watering", "HMR"). Say what
+  it means for the product: "a scribble could delete the things next to
+  it; fixed", not "10/1,400 bad fires, 0/4,400 after".
+- Short sentences. Bullets where it helps. The whole file fits on one screen.
+- Keep it true to the current state, not a log: rewrite sections, don't
+  append.
+
+Exact sections, in this order:
+```
+# <project>: project brief
+## Right now        2–3 sentences: what's being worked on and why, in plain words
+## The idea         the product in 3–4 sentences (from SEED.md; update only if it changes)
+## What works today bullets of real, usable features, as a user would describe them
+## Lately           2–4 sentences on what changed in the last day or so
+## What's next      1–3 sentences
+## Waiting on you   numbered plain questions, each answerable in one reply; or "Nothing."
+```
+If the project is killed or paused, say so plainly in "Right now" and add
+a "## Why it was stopped" section.
 
 ## 8. The local run (`needs: local` nodes)
 
